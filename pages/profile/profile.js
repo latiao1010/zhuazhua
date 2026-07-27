@@ -70,6 +70,7 @@ function careStatus(label, dateKey, todayText) {
 function getCareItems(schedule) {
   return [
     { key: 'deworming', icon: '🪱', label: '体内外驱虫', last: schedule.dewormingLast, dateKey: schedule.deworming, date: shortDate(schedule.deworming), status: careStatus('驱虫', schedule.deworming, '今天该驱虫了'), cycle: `每 ${schedule.dewormingCycle} 个月` },
+    { key: 'medicine', icon: '💊', label: '宠物用药', last: schedule.medicineLast, dateKey: schedule.medicine, date: shortDate(schedule.medicine), status: careStatus('用药', schedule.medicine, '今天该用药了'), cycle: `每 ${schedule.medicineCycle} 天` },
     { key: 'vaccine', icon: '💉', label: '疫苗接种', last: schedule.vaccineLast, dateKey: schedule.vaccine, date: shortDate(schedule.vaccine), status: careStatus('疫苗', schedule.vaccine, '今天该接种了'), cycle: `每 ${schedule.vaccineCycle} 个月` },
     { key: 'bath', icon: '🛁', label: '洗澡护理', last: schedule.bathLast, dateKey: schedule.bath, date: shortDate(schedule.bath), status: careStatus('洗澡', schedule.bath, '今天可以洗澡'), cycle: `每 ${schedule.bathCycle} 天` },
     { key: 'dental', icon: '🦷', label: '刷牙护理', last: schedule.dentalLast, dateKey: schedule.dental, date: shortDate(schedule.dental), status: careStatus('刷牙', schedule.dental, '今天建议刷牙'), cycle: `每 ${schedule.dentalCycle} 天` },
@@ -119,12 +120,13 @@ Page({
     const todayFeedCount = store.get('feeds').filter(item => item.dayKey === dayKey).length
     const todayStoolCount = store.get('stools').filter(item => item.dayKey === dayKey).length
     const waterTarget = Math.round((Number(pet.weight) || 0) * 55)
+    const todayWater = store.get('waters').filter(item => item.dayKey === dayKey).reduce((sum, item) => sum + (parseInt(item.amount, 10) || 0), 0)
     const birthday = getBirthdayInfo(pet.birthday)
     const festivals = getFestivalInfo(togetherSince, daysTogether)
     const careSchedule = store.normalizeCareSchedule(store.get('care'))
     store.set('care', careSchedule)
     const health = getHealthTips(pet, months / 12, careSchedule)
-    this.setData({ pet: { ...pet, togetherSince }, careSchedule, ageText, daysTogether, todayFeedCount, todayStoolCount, waterTarget, ...birthday, ...festivals, ...health })
+    this.setData({ pet: { ...pet, togetherSince }, careSchedule, ageText, daysTogether, todayFeedCount, todayStoolCount, waterTarget, todayWater, ...birthday, ...festivals, ...health })
   },
   loadWeather() {
     this.setData({ weatherLoading: true })

@@ -6,7 +6,9 @@ const KEYS = {
   stools: 'paw_stools',
   care: 'paw_care_schedule',
   careRecords: 'paw_care_records',
-  supplies: 'paw_supply_records'
+  supplies: 'paw_supply_records',
+  waters: 'paw_water_records',
+  walks: 'paw_walk_records'
 }
 
 const seedPet = {
@@ -38,7 +40,8 @@ function getDefaultCareSchedule() {
     vaccine: offsetDateKey(30), vaccineCycle: 12, vaccineLast: '',
     bath: offsetDateKey(7), bathCycle: 14, bathLast: '',
     dental: todayKey(), dentalCycle: 1, dentalLast: '',
-    nail: todayKey(), nailCycle: 30, nailLast: ''
+    nail: todayKey(), nailCycle: 30, nailLast: '',
+    medicine: offsetDateKey(30), medicineCycle: 30, medicineLast: ''
   }
 }
 
@@ -82,6 +85,15 @@ const seedStools = [
   { id: 1, date: '今天', time: '08:05', condition: '正常成形', color: '棕色', note: '', icon: '💩', abnormal: false }
 ]
 
+const seedWaters = [
+  { id: 2, date: '今天', time: '15:20', amount: '160ml', note: '', icon: '💧' },
+  { id: 1, date: '今天', time: '09:10', amount: '180ml', note: '散步回来喝的', icon: '💧' }
+]
+
+const seedWalks = [
+  { id: 1, date: '今天', time: '08:20', duration: 35, distance: '1.6', note: '小区一圈', icon: '🐾' }
+]
+
 function ensureSeedData() {
   if (!wx.getStorageSync(KEYS.pet)) wx.setStorageSync(KEYS.pet, seedPet)
   const pet = wx.getStorageSync(KEYS.pet)
@@ -90,6 +102,8 @@ function ensureSeedData() {
   if (!wx.getStorageSync(KEYS.diaries)) wx.setStorageSync(KEYS.diaries, seedDiaries)
   if (!wx.getStorageSync(KEYS.chats)) wx.setStorageSync(KEYS.chats, [])
   if (!wx.getStorageSync(KEYS.stools)) wx.setStorageSync(KEYS.stools, seedStools)
+  if (!wx.getStorageSync(KEYS.waters)) wx.setStorageSync(KEYS.waters, seedWaters)
+  if (!wx.getStorageSync(KEYS.walks)) wx.setStorageSync(KEYS.walks, seedWalks)
   if (!wx.getStorageSync(KEYS.careRecords)) wx.setStorageSync(KEYS.careRecords, [])
   const supplies = wx.getStorageSync(KEYS.supplies)
   const normalizedSupplies = normalizeSupplies(supplies)
@@ -97,7 +111,7 @@ function ensureSeedData() {
   const care = wx.getStorageSync(KEYS.care)
   const normalizedCare = normalizeCareSchedule(care)
   if (!care || Object.keys(normalizedCare).some(key => care[key] === undefined)) wx.setStorageSync(KEYS.care, normalizedCare)
-  ;['feeds', 'stools'].forEach(key => {
+  ;['feeds', 'stools', 'waters', 'walks'].forEach(key => {
     const records = wx.getStorageSync(KEYS[key]) || []
     if (records.some(item => !item.dayKey)) {
       wx.setStorageSync(KEYS[key], records.map(item => ({ ...item, dayKey: item.dayKey || todayKey() })))

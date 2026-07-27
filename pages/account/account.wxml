@@ -10,15 +10,15 @@
       <image src="{{pet.avatar}}" mode="aspectFill"></image>
     </view>
     <view class="profile-display-info">
-      <view class="display-name-line"><view><text>我的宝贝</text><view>{{pet.name}}</view></view></view>
+      <view class="display-name-line">
+        <view><text>我的宝贝</text><view>{{pet.name}}</view></view>
+        <view class="birthday-chip"><text>🎂 宠物生日</text><view>{{pet.birthday}}</view></view>
+      </view>
       <view class="pet-meta">
         <view><text>🐾</text>{{pet.breed}}</view>
         <view><text>•</text>{{pet.sex}}</view>
         <view><text>⚖️</text>{{pet.weight}} kg</view>
       </view>
-    </view>
-    <view class="cover-dates">
-      <view class="cover-date-row static-date-row"><view class="cover-date-icon yellow">🎂</view><view class="birthday-info"><text>宠物生日</text><view>{{pet.birthday}}</view></view></view>
     </view>
   </view>
 
@@ -26,6 +26,8 @@
   <view class="care-section-note">点击项目记录护理，系统会自动计算下一次提醒</view>
   <view class="care-plan-card care-dashboard">
     <view class="care-plan-row care-deworming" data-key="deworming" bindtap="openCareDetail"><view class="care-plan-icon">驱</view><view class="care-plan-copy"><view>体内外驱虫</view></view><view class="care-countdown {{careView.deworming.countdownClass}}">{{careView.deworming.countdown}}</view><text class="care-arrow">›</text></view>
+    <view class="divider care-divider"></view>
+    <view class="care-plan-row care-medicine" data-key="medicine" bindtap="openCareDetail"><view class="care-plan-icon">药</view><view class="care-plan-copy"><view>宠物用药</view></view><view class="care-countdown {{careView.medicine.countdownClass}}">{{careView.medicine.countdown}}</view><text class="care-arrow">›</text></view>
     <view class="divider care-divider"></view>
     <view class="care-plan-row care-vaccine" data-key="vaccine" bindtap="openCareDetail"><view class="care-plan-icon">苗</view><view class="care-plan-copy"><view>疫苗接种</view></view><view class="care-countdown {{careView.vaccine.countdownClass}}">{{careView.vaccine.countdown}}</view><text class="care-arrow">›</text></view>
     <view class="divider care-divider"></view>
@@ -35,18 +37,8 @@
     <view class="divider care-divider"></view>
     <view class="care-plan-row care-nail" data-key="nail" bindtap="openCareDetail"><view class="care-plan-icon">剪</view><view class="care-plan-copy"><view>修剪指甲</view></view><view class="care-countdown {{careView.nail.countdownClass}}">{{careView.nail.countdown}}</view><text class="care-arrow">›</text></view>
     <view class="supply-inline-head"><view>用品余量</view><text>结合喂食记录自动估算</text></view>
-    <view class="supply-card supply-food {{supplyView.dogFood.level}}" data-key="dogFood" bindtap="openSupply">
-      <view class="supply-card-top"><view class="supply-icon">粮</view><view class="supply-title"><view>狗粮</view><text>{{supplyView.dogFood.productName}}</text></view><text class="supply-arrow">›</text></view>
-      <view class="supply-days">{{supplyView.dogFood.daysText}}</view>
-      <view class="supply-progress"><view style="width:{{supplyView.dogFood.progress}}%"></view></view>
-      <view class="supply-remaining">{{supplyView.dogFood.remainingText}}</view>
-    </view>
-    <view class="supply-card supply-snack {{supplyView.snack.level}}" data-key="snack" bindtap="openSupply">
-      <view class="supply-card-top"><view class="supply-icon">骨</view><view class="supply-title"><view>零食</view><text>{{supplyView.snack.productName}}</text></view><text class="supply-arrow">›</text></view>
-      <view class="supply-days">{{supplyView.snack.daysText}}</view>
-      <view class="supply-progress"><view style="width:{{supplyView.snack.progress}}%"></view></view>
-      <view class="supply-remaining">{{supplyView.snack.remainingText}}</view>
-    </view>
+    <view class="care-plan-row supply-food" data-key="dogFood" bindtap="openSupply"><view class="care-plan-icon">粮</view><view class="care-plan-copy"><view>狗粮</view></view><view class="care-countdown {{supplyView.dogFood.countdownClass}}">{{supplyView.dogFood.daysText}}</view><text class="care-arrow">›</text></view>
+    <view class="care-plan-row supply-snack" data-key="snack" bindtap="openSupply"><view class="care-plan-icon">骨</view><view class="care-plan-copy"><view>零食</view></view><view class="care-countdown {{supplyView.snack.countdownClass}}">{{supplyView.snack.daysText}}</view><text class="care-arrow">›</text></view>
   </view>
 
   <view class="privacy-note">🔒 资料仅保存在本机，可随时修改</view>

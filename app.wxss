@@ -52,17 +52,6 @@ page {
   box-shadow: 0 12rpx 36rpx rgba(101, 76, 54, .07);
 }
 
-.pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 10rpx 18rpx;
-  border-radius: 999rpx;
-  background: var(--orange-soft);
-  color: var(--orange);
-  font-size: 23rpx;
-  font-weight: 700;
-}
-
 .primary-btn,
 .ghost-btn {
   display: flex;
@@ -87,9 +76,9 @@ page {
   background: #fff;
 }
 
-button::after { border: 0; }
+button::after{ border: 0; }
 
-.muted { color: var(--muted); }
+.muted{ color: var(--muted); }
 
 .empty {
   padding: 60rpx 30rpx;
@@ -123,8 +112,8 @@ button::after { border: 0; }
   font-weight: 800;
 }
 
-.field { margin-bottom: 22rpx; }
-.label { display: block; margin-bottom: 10rpx; color: #766d66; font-size: 24rpx; font-weight: 700; }
+.field{ margin-bottom: 22rpx; }
+.label{ display: block; margin-bottom: 10rpx; color: #766d66; font-size: 24rpx; font-weight: 700; }
 .input {
   width: 100%;
   height: 84rpx;

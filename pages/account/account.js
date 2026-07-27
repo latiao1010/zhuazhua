@@ -2,6 +2,7 @@ const store = require('../../utils/store')
 
 const CARE_TYPES = {
   deworming: { label: '体内外驱虫', actionText: '记录驱虫', cycleKey: 'dewormingCycle', lastKey: 'dewormingLast', unit: 'month', icon: '🪱' },
+  medicine: { label: '宠物用药', actionText: '记录用药', cycleKey: 'medicineCycle', lastKey: 'medicineLast', unit: 'day', icon: '💊' },
   vaccine: { label: '疫苗接种', actionText: '记录接种', cycleKey: 'vaccineCycle', lastKey: 'vaccineLast', unit: 'month', icon: '💉' },
   bath: { label: '洗澡护理', actionText: '记录洗澡', cycleKey: 'bathCycle', lastKey: 'bathLast', unit: 'day', icon: '🛁' },
   dental: { label: '刷牙护理', actionText: '记录刷牙', cycleKey: 'dentalCycle', lastKey: 'dentalLast', unit: 'day', icon: '🦷' },
@@ -93,6 +94,8 @@ function parseGrams(amount) {
   return match ? Number(match[0]) || 0 : 0
 }
 
+const SUPPLY_COUNTDOWN_CLASS = { unset: 'upcoming', normal: 'upcoming', low: 'today', urgent: 'overdue', empty: 'overdue' }
+
 function buildSupplyView(supplies, feeds) {
   const today = store.todayKey()
   return Object.keys(SUPPLY_TYPES).reduce((view, key) => {
@@ -102,7 +105,8 @@ function buildSupplyView(supplies, feeds) {
     if (!item.openedDate || packageAmount <= 0) {
       view[key] = {
         key, ...config, configured: false, productName: '尚未记录拆封',
-        daysText: '去设置', remainingText: '填写包装重量和拆封日期', progress: 0, level: 'unset'
+        daysText: '去设置', remainingText: '填写包装重量和拆封日期', progress: 0, level: 'unset',
+        countdownClass: SUPPLY_COUNTDOWN_CLASS.unset
       }
       return view
     }
@@ -122,7 +126,8 @@ function buildSupplyView(supplies, feeds) {
       daysText: remaining === 0 ? '建议补货' : daysLeft === null ? '等待记录' : `约 ${daysLeft} 天`,
       remainingText: dailyAverage > 0 ? `剩余约 ${remaining}g · 日均 ${Math.round(dailyAverage)}g` : `剩余 ${remaining}g · 等待喂食记录`,
       consumed, remaining, dailyAverage: Math.round(dailyAverage), daysLeft,
-      progress: Math.min(100, Math.round(consumed / packageAmount * 100)), level
+      progress: Math.min(100, Math.round(consumed / packageAmount * 100)), level,
+      countdownClass: SUPPLY_COUNTDOWN_CLASS[level]
     }
     return view
   }, {})
@@ -344,7 +349,7 @@ Page({
     if (!draft.weight || Number(draft.weight) <= 0) return wx.showToast({ title: '请填写正确体重', icon: 'none' })
     if (draft.birthday > this.data.today) return wx.showToast({ title: '生日不能晚于今天', icon: 'none' })
     if (draft.togetherSince > this.data.today) return wx.showToast({ title: '相遇日不能晚于今天', icon: 'none' })
-    const cycleKeys = ['dewormingCycle', 'vaccineCycle', 'bathCycle', 'dentalCycle', 'nailCycle']
+    const cycleKeys = ['dewormingCycle', 'vaccineCycle', 'bathCycle', 'dentalCycle', 'nailCycle', 'medicineCycle']
     if (cycleKeys.some(key => !careDraft[key] || Number(careDraft[key]) <= 0)) return wx.showToast({ title: '护理周期需大于 0', icon: 'none' })
     cycleKeys.forEach(key => { careDraft[key] = Number(careDraft[key]) })
 

@@ -38,7 +38,7 @@
     </view>
     <view class="rain-alert {{weather.rainTime ? 'has-rain' : ''}}"><text>{{weather.rainTime ? '☂' : '✓'}}</text><view><view>{{weather.rainText}}</view><text>{{weather.rainTime ? '建议提前或延后遛狗，并带好雨具' : '适合按计划遛狗，出门前仍请留意天气变化'}}</text></view></view>
     <view class="season-tip"><text>🍃 {{seasonName}}提醒</text><view>{{seasonTip}}</view></view>
-    <view class="water-line">💧 {{pet.name}}今日建议饮水约 {{waterTarget}}ml</view>
+    <view class="water-line">💧 {{pet.name}}今日已喝 {{todayWater}}ml，建议约 {{waterTarget}}ml</view>
   </view>
 
   <view class="section-title health-section-title">日常小贴士</view>
