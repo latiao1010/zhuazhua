@@ -1,0 +1,101 @@
+<view class="page home-page">
+  <view class="topbar">
+    <view>
+      <view class="eyebrow">MY LITTLE FAMILY</view>
+      <view class="page-title">你好，铲屎官 👋</view>
+    </view>
+    <view class="notify">♡</view>
+  </view>
+
+  <view class="stats">
+    <view class="stat card">
+      <view class="stat-icon peach">⚖</view>
+      <view><text class="stat-number">{{pet.weight}}</text><text class="unit"> kg</text></view>
+      <view class="stat-label">当前体重</view>
+    </view>
+    <view class="stat card">
+      <view class="stat-icon blue">🥣</view>
+      <view><text class="stat-number">{{todayFeedCount}}</text><text class="unit"> 次</text></view>
+      <view class="stat-label">今日喂食</view>
+    </view>
+    <view class="stat card">
+      <view class="stat-icon green">💩</view>
+      <view><text class="stat-number">{{todayStoolCount}}</text><text class="unit"> 次</text></view>
+      <view class="stat-label">今日排便</view>
+    </view>
+    <view class="stat festival-stat card" bindtap="openFestivals">
+      <view class="stat-icon yellow">🎉</view>
+      <view><text class="stat-number">{{daysTogether}}</text><text class="unit"> 天</text></view>
+      <view class="stat-label">重大节日</view>
+    </view>
+  </view>
+
+  <view class="section-title">今日小贴士</view>
+  <view class="weather-card card">
+    <view class="weather-top">
+      <view class="weather-main"><text class="weather-icon">{{weather.icon}}</text><view><view><text class="temperature">{{weather.temperature}}°</text> {{weather.condition}}</view><text>{{weather.location}} · 体感 {{weather.apparent}}℃</text></view></view>
+      <view class="live-badge">{{weatherLoading ? '更新中' : weather.live ? '实时预报' : '离线提示'}}</view>
+    </view>
+    <view class="rain-alert {{weather.rainTime ? 'has-rain' : ''}}"><text>{{weather.rainTime ? '☂' : '✓'}}</text><view><view>{{weather.rainText}}</view><text>{{weather.rainTime ? '建议提前或延后遛狗，并带好雨具' : '适合按计划遛狗，出门前仍请留意天气变化'}}</text></view></view>
+    <view class="season-tip"><text>🍃 {{seasonName}}提醒</text><view>{{seasonTip}}</view></view>
+    <view class="water-line">💧 {{pet.name}}今日建议饮水约 {{waterTarget}}ml</view>
+  </view>
+
+  <view class="section-title health-section-title">日常小贴士</view>
+  <view class="health-list">
+    <view class="health-tip card" wx:for="{{healthTips}}" wx:key="title" data-index="{{index}}" bindtap="openHealthTip">
+      <view class="health-icon">{{item.icon}}</view>
+      <view class="health-copy"><view>{{item.title}}</view><text>{{item.desc}}</text></view>
+      <view class="health-side"><view class="health-badge">{{item.badge}}</view><text>›</text></view>
+    </view>
+  </view>
+
+</view>
+
+<view class="overlay" wx:if="{{healthTipOpen}}" catchtap="closeHealthTip">
+  <view class="sheet health-sheet" catchtap="noop">
+    <view class="sheet-head"><text>日常小贴士</text><text class="close" bindtap="closeHealthTip">×</text></view>
+    <view class="health-detail-head">
+      <view class="detail-icon">{{selectedHealthTip.icon}}</view>
+      <view><view>{{selectedHealthTip.title}}</view><text>{{lifeStage}} · {{selectedHealthTip.badge}}</text></view>
+    </view>
+    <view class="detail-summary">{{selectedHealthTip.desc}}</view>
+    <view class="care-editor" wx:if="{{selectedHealthTip.type === 'care'}}">
+      <view class="detail-title">护理计划</view>
+      <view class="care-edit-row" wx:for="{{selectedHealthTip.careItems}}" wx:key="key"><text>{{item.icon}}</text><view><view>{{item.label}}</view><text>{{item.status}} · {{item.cycle}}</text><text wx:if="{{item.last}}">上次完成 {{item.last}}</text></view><view class="care-date">{{item.date}}</view></view>
+      <view class="care-manage" bindtap="goAccount">前往“我的”记录护理或调整周期 <text>›</text></view>
+    </view>
+    <view class="detail-title">给{{pet.name}}的详细建议</view>
+    <view class="advice-list">
+      <view class="advice-item" wx:for="{{selectedHealthTip.detail}}" wx:key="*this"><text>✓</text><view>{{item}}</view></view>
+    </view>
+    <view class="medical-note">🩺 提醒根据年龄、品种和生活方式生成，仅用于健康管理参考，不能替代兽医检查与诊断。</view>
+    <button class="primary-btn" bindtap="closeHealthTip">我知道了</button>
+  </view>
+</view>
+
+<view class="overlay" wx:if="{{festivalOpen}}" catchtap="closeFestivals">
+  <view class="sheet festival-sheet" catchtap="noop">
+    <view class="sheet-head"><text>重大节日</text><text class="close" bindtap="closeFestivals">×</text></view>
+    <view class="together-hero">
+      <view class="together-paw">🐾</view>
+      <view>我们已经相伴</view>
+      <view class="together-number">{{daysTogether}}<text>天</text></view>
+      <text>从 {{togetherLabel}} 开始，每一天都值得收藏</text>
+    </view>
+    <scroll-view class="festival-scroll" scroll-y enhanced show-scrollbar="false">
+      <view class="festival-event birthday-event">
+        <view class="event-icon">🎂</view>
+        <view class="event-copy"><view>{{pet.name}}{{nextAge}}岁生日</view><text>{{birthdayLabel}}</text></view>
+        <view class="event-status {{birthdayDays === 0 ? 'today' : ''}}">{{birthdayDays === 0 ? '就是今天' : '还有' + birthdayDays + '天'}}</view>
+      </view>
+      <view class="milestone-title">百日纪念时间轴</view>
+      <view class="festival-event {{item.state}}" wx:for="{{festivalItems}}" wx:key="days">
+        <view class="event-line" wx:if="{{index < festivalItems.length - 1}}"></view>
+        <view class="event-icon">{{item.state === 'today' ? '🎊' : item.state === 'upcoming' ? '✨' : '✓'}}</view>
+        <view class="event-copy"><view>相伴 {{item.days}} 天</view><text>{{item.date}}</text></view>
+        <view class="event-status {{item.state}}">{{item.status}}</view>
+      </view>
+    </scroll-view>
+  </view>
+</view>

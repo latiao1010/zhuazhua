@@ -1,0 +1,32 @@
+<view class="chat-page">
+  <view class="chat-head">
+    <view class="ai-avatar">✦</view>
+    <view class="head-copy"><view>爪爪 AI 顾问</view><view class="status"><text class="status-dot"></text>在线 · 了解{{pet.name}}的档案</view></view>
+    <view class="head-action" bindtap="clearChat">···</view>
+  </view>
+
+  <scroll-view class="chat-scroll" scroll-y enhanced show-scrollbar="false" scroll-into-view="{{scrollTo}}">
+    <view class="date-chip">今天</view>
+    <view class="welcome">
+      <view class="welcome-icon">🐾</view>
+      <view class="welcome-title">有什么能帮到你？</view>
+      <view class="welcome-sub">喂养、行为、健康小疑问，都可以和我聊聊</view>
+    </view>
+    <view class="quick-list" wx:if="{{messages.length === 0}}">
+      <view class="quick" wx:for="{{quickQuestions}}" wx:key="*this" data-text="{{item}}" bindtap="askQuick">{{item}}<text>›</text></view>
+    </view>
+    <view class="messages">
+      <view id="msg-{{index}}" class="message-row {{item.role}}" wx:for="{{messages}}" wx:key="id">
+        <view class="bubble-avatar" wx:if="{{item.role === 'ai'}}">✦</view>
+        <view class="bubble {{item.role}}-bubble">{{item.text}}<view class="msg-time">{{item.time}}</view></view>
+      </view>
+      <view class="message-row ai" wx:if="{{thinking}}"><view class="bubble-avatar">✦</view><view class="bubble ai-bubble typing"><text></text><text></text><text></text></view></view>
+      <view class="medical-tip" wx:if="{{messages.length}}">AI 建议仅供日常参考，如有持续不适请及时咨询专业兽医。</view>
+    </view>
+  </scroll-view>
+
+  <view class="composer">
+    <view class="input-wrap"><input value="{{input}}" bindinput="onInput" bindconfirm="send" confirm-type="send" placeholder="问问关于{{pet.name}}的事…" /><text>☺</text></view>
+    <button class="send {{input ? 'ready' : ''}}" bindtap="send">↑</button>
+  </view>
+</view>

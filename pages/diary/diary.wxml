@@ -1,0 +1,38 @@
+<view class="page diary-page">
+  <view class="topbar">
+    <view><view class="eyebrow">PAWPRINT DIARY</view><view class="page-title">{{pet.name}}的小日子</view></view>
+    <view class="streak"><text>🔥</text><view><view class="bold">{{streak}}</view><text class="small">连续记录</text></view></view>
+  </view>
+
+  <view class="ai-create card">
+    <view class="magic">✦</view>
+    <view class="create-copy"><view>AI 帮我写今天</view><text>根据喂食与心情，生成第一人称宠物日记</text></view>
+    <button bindtap="openCreate">写一篇</button>
+  </view>
+
+  <view class="section-row"><view class="section-title">日记时光轴</view><view class="count">共 {{diaries.length}} 篇</view></view>
+  <view class="diary-list" wx:if="{{diaries.length}}">
+    <view class="diary card" wx:for="{{diaries}}" wx:key="id">
+      <view class="paper-tape"></view>
+      <view class="diary-head"><view><view class="diary-date">{{item.date}}</view><view class="diary-title">{{item.title}}</view></view><view class="mood">{{item.mood === '开心' ? '😄' : item.mood === '平静' ? '😌' : '🥺'}}</view></view>
+      <view class="chips"><text>{{item.weather}}</text><text>心情 · {{item.mood}}</text></view>
+      <view class="diary-body">{{item.content}}</view>
+      <view class="highlight">✦ {{item.highlight}}</view>
+      <view class="diary-foot"><view class="paw">🐾 {{pet.name}}</view><view><text data-content="{{item.content}}" bindtap="copyDiary">⧉</text><text data-id="{{item.id}}" bindtap="removeDiary">···</text></view></view>
+    </view>
+  </view>
+  <view class="empty card" wx:else>还没有日记。今天，就从第一篇开始吧。</view>
+</view>
+
+<view class="overlay" wx:if="{{creating}}" catchtap="closeCreate">
+  <view class="sheet create-sheet" catchtap="noop">
+    <view class="sheet-head"><text>今天过得怎么样？</text><text class="close" bindtap="closeCreate">×</text></view>
+    <view class="label">{{pet.name}}今天的心情</view>
+    <view class="moods">
+      <view class="mood-item {{draft.mood === item.name ? 'active' : ''}}" wx:for="{{moods}}" wx:key="name" data-name="{{item.name}}" bindtap="chooseMood"><text>{{item.icon}}</text>{{item.name}}</view>
+    </view>
+    <view class="field"><text class="label">想特别记录的事（选填）</text><textarea class="note" placeholder="例如：傍晚去了公园，认识了新朋友…" maxlength="120" value="{{draft.note}}" bindinput="onNote"></textarea></view>
+    <view class="data-source"><text>✦</text><view><view class="bold">AI 会读懂今天的记录</view><text class="small">已关联 {{todayFeedCount}} 条喂食记录和{{pet.name}}的宠物档案</text></view></view>
+    <button class="primary-btn" loading="{{generating}}" disabled="{{generating}}" bindtap="generateDiary">{{generating ? 'AI 正在写作…' : '✦ 生成今天的日记'}}</button>
+  </view>
+</view>

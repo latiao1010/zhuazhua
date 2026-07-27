@@ -1,0 +1,104 @@
+<view class="page account-page">
+  <view class="topbar">
+    <view><view class="eyebrow">PET PROFILE</view><view class="page-title">我的宠物资料</view></view>
+    <view class="settings-icon">⚙</view>
+  </view>
+
+  <view class="profile-cover card">
+    <view class="cover-glow"></view>
+    <view class="avatar-wrap" bindtap="chooseAvatar">
+      <image src="{{newAvatarTemp || draft.avatar}}" mode="aspectFill"></image>
+      <view class="camera">📷</view>
+    </view>
+    <view class="cover-edit">
+      <view class="cover-field name-field"><text>昵称</text><input value="{{draft.name}}" data-key="name" bindinput="onInput" placeholder="宠物昵称" /></view>
+      <view class="cover-meta">
+        <view class="cover-field breed-field"><text>品种</text><input value="{{draft.breed}}" data-key="breed" bindinput="onInput" placeholder="宠物品种" /></view>
+        <picker class="cover-sex" mode="selector" range="{{sexOptions}}" value="{{sexIndex}}" bindchange="onSex"><view><text>性别</text><view>{{draft.sex}} ›</view></view></picker>
+      </view>
+      <view class="cover-actions">
+        <view class="cover-weight"><text>体重</text><input type="digit" value="{{draft.weight}}" data-key="weight" bindinput="onInput" placeholder="0.0" /><text>kg</text></view>
+        <view class="change-avatar" bindtap="chooseAvatar">更换头像</view>
+      </view>
+    </view>
+    <view class="cover-dates">
+      <view class="cover-date-row"><view class="cover-date-icon yellow">🎂</view><view><text>宠物生日</text><picker mode="date" value="{{draft.birthday}}" end="{{today}}" bindchange="onDate"><view>{{draft.birthday}}<text>›</text></view></picker></view></view>
+      <view class="cover-date-divider"></view>
+      <view class="cover-date-row"><view class="cover-date-icon purple">🤝</view><view><text>相遇日 / 到家日</text><picker mode="date" value="{{draft.togetherSince || draft.birthday}}" end="{{today}}" bindchange="onTogetherDate"><view>{{draft.togetherSince || '请选择日期'}}<text>›</text></view></picker></view></view>
+    </view>
+  </view>
+
+  <view class="section-title care-section-title">护理与疫苗记录</view>
+  <view class="care-section-note">点击项目记录护理，系统会自动计算下一次提醒</view>
+  <view class="care-plan-card card">
+    <view class="care-plan-row" data-key="deworming" bindtap="openCareDetail"><view class="care-plan-icon">🪱</view><view class="care-plan-copy"><view>体内外驱虫</view></view><view class="care-countdown {{careView.deworming.countdownClass}}">{{careView.deworming.countdown}}</view><text class="care-arrow">›</text></view>
+    <view class="divider care-divider"></view>
+    <view class="care-plan-row" data-key="vaccine" bindtap="openCareDetail"><view class="care-plan-icon">💉</view><view class="care-plan-copy"><view>疫苗接种</view></view><view class="care-countdown {{careView.vaccine.countdownClass}}">{{careView.vaccine.countdown}}</view><text class="care-arrow">›</text></view>
+    <view class="divider care-divider"></view>
+    <view class="care-plan-row" data-key="bath" bindtap="openCareDetail"><view class="care-plan-icon">🛁</view><view class="care-plan-copy"><view>洗澡护理</view></view><view class="care-countdown {{careView.bath.countdownClass}}">{{careView.bath.countdown}}</view><text class="care-arrow">›</text></view>
+    <view class="divider care-divider"></view>
+    <view class="care-plan-row" data-key="dental" bindtap="openCareDetail"><view class="care-plan-icon">🦷</view><view class="care-plan-copy"><view>刷牙护理</view></view><view class="care-countdown {{careView.dental.countdownClass}}">{{careView.dental.countdown}}</view><text class="care-arrow">›</text></view>
+    <view class="divider care-divider"></view>
+    <view class="care-plan-row" data-key="nail" bindtap="openCareDetail"><view class="care-plan-icon">✂️</view><view class="care-plan-copy"><view>修剪指甲</view></view><view class="care-countdown {{careView.nail.countdownClass}}">{{careView.nail.countdown}}</view><text class="care-arrow">›</text></view>
+  </view>
+
+  <view class="date-note">重要日期会用于计算生日倒计时、陪伴天数和百日纪念。</view>
+  <button class="save-btn" loading="{{saving}}" disabled="{{saving}}" bindtap="savePet">{{saving ? '正在保存…' : '保存资料'}}</button>
+  <view class="privacy-note">🔒 资料仅保存在本机，可随时修改</view>
+</view>
+
+<view class="care-full-page" wx:if="{{careDetailOpen}}">
+  <view class="care-full-top">
+    <view class="care-back" catchtap="backCareView"><text>←</text></view>
+    <view class="care-top-title">
+      <view>{{careSubView === 'history' ? '历史记录' : careSubView === 'settings' ? '提醒设置' : selectedCare.label}}</view>
+      <picker wx:if="{{!careSubView}}" mode="date" fields="month" value="{{selectedMonth}}" end="{{today}}" bindchange="onCareMonth"><text>{{selectedMonthText}}⌄</text></picker>
+    </view>
+    <text class="care-more" wx:if="{{!careSubView}}" bindtap="toggleCareMenu">⋮</text>
+    <view class="care-more-space" wx:else></view>
+    <view class="care-menu" wx:if="{{careMenuOpen}}">
+      <view bindtap="showCareHistory">历史记录</view>
+      <view bindtap="showCareSettings">提醒设置</view>
+    </view>
+  </view>
+
+  <block wx:if="{{!careSubView}}">
+    <view class="care-calendar-card">
+      <view class="calendar-summary">
+        <view>今日</view>
+        <text>距离下次{{selectedCare.label}}：{{selectedCare.countdown}}</text>
+      </view>
+      <view class="calendar-divider"></view>
+      <view class="calendar-legend"><view><text class="legend-dot recorded"></text>已记录</view><view><text class="legend-dot selected"></text>选中日期</view></view>
+      <view class="calendar-week"><text wx:for="{{weekNames}}" wx:key="*this">{{item}}</text></view>
+      <view class="calendar-grid">
+        <view class="calendar-day {{item.inMonth ? '' : 'muted'}} {{item.future ? 'disabled' : ''}} {{item.recorded ? 'recorded' : ''}} {{item.selected ? 'selected' : ''}} {{item.today ? 'today' : ''}}" wx:for="{{careCalendar}}" wx:key="key" data-key="{{item.key}}" bindtap="selectCareDay"><text>{{item.day}}</text></view>
+      </view>
+      <view class="calendar-divider bottom"></view>
+      <view class="calendar-record-row"><view><text>记录{{selectedCare.label}}</text><view>已选择 {{selectedRecordDate}}</view></view><button data-key="{{selectedCare.key}}" bindtap="markCareDone">确认记录</button></view>
+    </view>
+
+  </block>
+
+  <block wx:elif="{{careSubView === 'history'}}">
+    <view class="care-subtitle">{{selectedCare.label}}历史</view>
+    <view class="history-list-card">
+      <view class="history-empty" wx:if="{{!selectedCareRecords.length}}">暂无记录</view>
+      <view class="history-list-row" wx:for="{{selectedCareRecords}}" wx:key="id"><view><text>{{item.date}}</text><view>已完成{{selectedCare.label}}</view></view><text>下次 {{item.nextDate}}</text></view>
+    </view>
+  </block>
+
+  <block wx:elif="{{careSubView === 'settings'}}">
+    <view class="care-subtitle">{{selectedCare.label}}设置</view>
+    <view class="settings-group-title">提醒日期</view>
+    <view class="care-settings-card">
+      <view class="care-settings-row"><view><text>上次完成</text><view>{{selectedCare.last || '暂无记录'}}</view></view></view>
+      <view class="care-settings-row"><view><text>下次提醒</text><view>{{selectedCare.nextDate}}</view></view><picker mode="date" value="{{selectedCare.nextDate}}" bindchange="onSelectedCareDate"><text>修改 ›</text></picker></view>
+    </view>
+    <view class="settings-group-title">提醒周期</view>
+    <view class="care-settings-card">
+      <view class="care-settings-row"><view><text>间隔时间</text><view>每隔多久提醒一次</view></view><view class="detail-cycle-input"><input type="number" value="{{selectedCare.cycle}}" bindinput="onSelectedCareCycle"/><text>{{selectedCare.unitText}}</text></view></view>
+    </view>
+    <button class="settings-save-btn" bindtap="saveCareSettings">保存设置</button>
+  </block>
+</view>

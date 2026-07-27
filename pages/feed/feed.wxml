@@ -1,0 +1,79 @@
+<view class="page">
+  <view class="topbar">
+    <view><view class="eyebrow">DAILY TRACKER</view><view class="page-title">{{pet.name}}的日常</view></view>
+    <view class="calendar">{{day}}<text>{{month}}月</text></view>
+  </view>
+
+  <view class="record-tabs">
+    <view class="record-tab {{currentType === 'feed' ? 'active' : ''}}" data-type="feed" bindtap="switchType"><text>🥣</text>喂食记录</view>
+    <view class="record-tab {{currentType === 'stool' ? 'active' : ''}}" data-type="stool" bindtap="switchType"><text>💩</text>排便记录</view>
+  </view>
+
+  <block wx:if="{{currentType === 'feed'}}">
+    <view class="summary card">
+      <view class="summary-top">
+        <view><view class="summary-label">今日已摄入</view><view><text class="summary-num">{{totalAmount}}</text><text class="summary-unit"> g</text></view></view>
+        <view class="goal">目标 260g</view>
+      </view>
+      <view class="progress"><view class="progress-inner" style="width: {{progress}}%"></view></view>
+      <view class="summary-foot"><text>今日 {{todayCount}} 餐</text><text>还差 {{remaining}}g</text></view>
+    </view>
+  </block>
+  <block wx:else>
+    <view class="stool-summary card">
+      <view class="stool-score {{abnormalCount ? 'warning' : ''}}">{{abnormalCount ? '!' : '✓'}}</view>
+      <view class="stool-summary-copy"><view>{{abnormalCount ? '今天有异常记录' : '今天状态正常'}}</view><text>已记录 {{todayStoolCount}} 次{{abnormalCount ? ' · 建议持续观察' : ' · 继续保持规律饮食'}}</text></view>
+      <view class="stool-count"><text class="count-number">{{todayStoolCount}}</text><text>次</text></view>
+    </view>
+  </block>
+
+  <view class="section-row"><view class="section-title">{{currentType === 'feed' ? '喂食时间轴' : '排便时间轴'}}</view><view class="filter">今天⌄</view></view>
+
+  <view class="timeline" wx:if="{{currentType === 'feed' && feeds.length}}">
+    <view class="feed-row" wx:for="{{feeds}}" wx:key="id">
+      <view class="time"><text>{{item.time}}</text><text class="date">{{item.date}}</text></view>
+      <view class="rail"><view class="dot"></view><view class="line" wx:if="{{index < feeds.length - 1}}"></view></view>
+      <view class="feed-card card">
+        <view class="food-icon">{{item.icon}}</view>
+        <view class="food-copy"><view class="food-head"><text>{{item.type}}</text><text class="amount">{{item.amount}}</text></view><view class="food-name">{{item.food}}</view></view>
+        <view class="more" data-id="{{item.id}}" bindtap="removeFeed">···</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="timeline" wx:if="{{currentType === 'stool' && stools.length}}">
+    <view class="feed-row" wx:for="{{stools}}" wx:key="id">
+      <view class="time"><text>{{item.time}}</text><text class="date">{{item.date}}</text></view>
+      <view class="rail"><view class="dot stool-dot {{item.abnormal ? 'warning-dot' : ''}}"></view><view class="line" wx:if="{{index < stools.length - 1}}"></view></view>
+      <view class="feed-card stool-card card">
+        <view class="food-icon stool-icon">💩</view>
+        <view class="food-copy"><view class="food-head"><text>{{item.condition}}</text><text class="condition {{item.abnormal ? 'warning-text' : ''}}">{{item.abnormal ? '需观察' : '正常'}}</text></view><view class="food-name">{{item.color}}{{item.note ? ' · ' + item.note : ''}}</view></view>
+        <view class="more" data-id="{{item.id}}" bindtap="removeStool">···</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="empty card" wx:if="{{currentType === 'feed' && !feeds.length}}">今天还没有喂食记录。</view>
+  <view class="empty card" wx:if="{{currentType === 'stool' && !stools.length}}">今天还没有排便记录。</view>
+  <button class="add-btn" bindtap="openAdd"><text>＋</text> {{currentType === 'feed' ? '记录一次喂食' : '记录一次排便'}}</button>
+</view>
+
+<view class="overlay" wx:if="{{adding}}" catchtap="closeAdd">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-head"><text>{{currentType === 'feed' ? '记一餐' : '记录排便情况'}}</text><text class="close" bindtap="closeAdd">×</text></view>
+    <block wx:if="{{currentType === 'feed'}}">
+      <view class="meal-tabs"><view wx:for="{{mealTypes}}" wx:key="*this" class="meal-tab {{draft.type === item ? 'active' : ''}}" data-value="{{item}}" bindtap="chooseType">{{item}}</view></view>
+      <view class="field"><text class="label">吃了什么</text><input class="input" placeholder="例如：低敏犬粮" value="{{draft.food}}" data-key="food" bindinput="onInput" /></view>
+      <view class="form-grid"><view class="field"><text class="label">分量（g）</text><input class="input" type="number" placeholder="90" value="{{draft.amount}}" data-key="amount" bindinput="onInput" /></view><view class="field"><text class="label">时间</text><picker mode="time" value="{{draft.time}}" bindchange="onTime"><view class="input picker">{{draft.time}}</view></picker></view></view>
+    </block>
+    <block wx:else>
+      <view class="label">便便状态</view>
+      <view class="condition-grid"><view wx:for="{{stoolConditions}}" wx:key="*this" class="condition-option {{draft.condition === item ? 'active' : ''}}" data-value="{{item}}" bindtap="chooseCondition">{{item}}</view></view>
+      <view class="label">颜色</view>
+      <view class="color-list"><view wx:for="{{stoolColors}}" wx:key="*this" class="color-option {{draft.color === item ? 'active' : ''}}" data-value="{{item}}" bindtap="chooseColor">{{item}}</view></view>
+      <view class="form-grid"><view class="field"><text class="label">备注（选填）</text><input class="input" placeholder="气味、异物等" value="{{draft.note}}" data-key="note" bindinput="onInput" /></view><view class="field"><text class="label">时间</text><picker mode="time" value="{{draft.time}}" bindchange="onTime"><view class="input picker">{{draft.time}}</view></picker></view></view>
+      <view class="stool-alert" wx:if="{{draft.condition === '稀便' || draft.condition === '便秘/干硬' || draft.color === '黑色' || draft.color === '红色'}}">⚠ 已标记为需观察；若反复出现或伴随精神、食欲异常，请联系兽医。</view>
+    </block>
+    <button class="primary-btn" bindtap="saveRecord">保存记录</button>
+  </view>
+</view>

@@ -1,0 +1,136 @@
+page {
+  --ink: #352f2b;
+  --muted: #978d85;
+  --orange: #ff6f4d;
+  --orange-soft: #fff0e8;
+  --cream: #fff9f2;
+  --line: #f2e9e1;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 28rpx;
+}
+
+.page {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 28rpx 28rpx 56rpx;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28rpx;
+}
+
+.eyebrow {
+  color: var(--orange);
+  font-size: 22rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+}
+
+.page-title {
+  margin-top: 8rpx;
+  font-size: 44rpx;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.section-title {
+  margin: 38rpx 0 20rpx;
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.card {
+  box-sizing: border-box;
+  border: 1rpx solid rgba(232, 219, 208, .9);
+  border-radius: 30rpx;
+  background: #fff;
+  box-shadow: 0 12rpx 36rpx rgba(101, 76, 54, .07);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  background: var(--orange-soft);
+  color: var(--orange);
+  font-size: 23rpx;
+  font-weight: 700;
+}
+
+.primary-btn,
+.ghost-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 92rpx;
+  border-radius: 26rpx;
+  font-size: 28rpx;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.primary-btn {
+  color: #fff;
+  background: linear-gradient(135deg, #ff8b68, #ff6346);
+  box-shadow: 0 14rpx 28rpx rgba(255, 99, 70, .22);
+}
+
+.ghost-btn {
+  border: 2rpx solid #f1dfd4;
+  color: var(--orange);
+  background: #fff;
+}
+
+button::after { border: 0; }
+
+.muted { color: var(--muted); }
+
+.empty {
+  padding: 60rpx 30rpx;
+  text-align: center;
+  color: var(--muted);
+}
+
+.overlay {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(43, 34, 28, .38);
+}
+
+.sheet {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 34rpx 30rpx calc(38rpx + env(safe-area-inset-bottom));
+  border-radius: 40rpx 40rpx 0 0;
+  background: #fff;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28rpx;
+  font-size: 34rpx;
+  font-weight: 800;
+}
+
+.field { margin-bottom: 22rpx; }
+.label { display: block; margin-bottom: 10rpx; color: #766d66; font-size: 24rpx; font-weight: 700; }
+.input {
+  width: 100%;
+  height: 84rpx;
+  box-sizing: border-box;
+  padding: 0 24rpx;
+  border: 2rpx solid #f0e6df;
+  border-radius: 22rpx;
+  background: #fffcf9;
+}

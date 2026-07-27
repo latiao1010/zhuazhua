@@ -1,0 +1,35 @@
+{
+  "pages": [
+    "pages/profile/profile",
+    "pages/feed/feed",
+    "pages/chat/chat",
+    "pages/avatar/avatar",
+    "pages/account/account"
+  ],
+  "window": {
+    "navigationBarTitleText": "爪爪日常",
+    "navigationBarBackgroundColor": "#FFF9F2",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#FFF9F2",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#A59C94",
+    "selectedColor": "#FF6F4D",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/profile/profile", "text": "首页" },
+      { "pagePath": "pages/feed/feed", "text": "日常" },
+      { "pagePath": "pages/chat/chat", "text": "AI 聊聊" },
+      { "pagePath": "pages/avatar/avatar", "text": "头像" },
+      { "pagePath": "pages/account/account", "text": "我的" }
+    ]
+  },
+  "permission": {
+    "scope.userLocation": { "desc": "用于获取本地天气与遛宠降雨提醒" }
+  },
+  "requiredPrivateInfos": ["getLocation"],
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
