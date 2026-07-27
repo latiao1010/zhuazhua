@@ -8,6 +8,11 @@ const CARE_TYPES = {
   nail: { label: '修剪指甲', actionText: '记录剪指甲', cycleKey: 'nailCycle', lastKey: 'nailLast', unit: 'day', icon: '✂️' }
 }
 
+const SUPPLY_TYPES = {
+  dogFood: { label: '狗粮', icon: '粮', theme: 'food' },
+  snack: { label: '零食', icon: '骨', theme: 'snack' }
+}
+
 function dateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
@@ -83,19 +88,121 @@ function monthText(monthKey) {
   return `${year}年${month}月`
 }
 
+function parseGrams(amount) {
+  const match = String(amount || '').match(/[\d.]+/)
+  return match ? Number(match[0]) || 0 : 0
+}
+
+function buildSupplyView(supplies, feeds) {
+  const today = store.todayKey()
+  return Object.keys(SUPPLY_TYPES).reduce((view, key) => {
+    const item = supplies[key] || {}
+    const config = SUPPLY_TYPES[key]
+    const packageAmount = Number(item.packageAmount) || 0
+    if (!item.openedDate || packageAmount <= 0) {
+      view[key] = {
+        key, ...config, configured: false, productName: '尚未记录拆封',
+        daysText: '去设置', remainingText: '填写包装重量和拆封日期', progress: 0, level: 'unset'
+      }
+      return view
+    }
+    const matched = feeds.filter(feed => {
+      const inRange = feed.dayKey && feed.dayKey >= item.openedDate && feed.dayKey <= today
+      const isSnack = feed.type === '零食'
+      return inRange && (key === 'snack' ? isSnack : !isSnack)
+    })
+    const consumed = Math.round(matched.reduce((sum, feed) => sum + parseGrams(feed.amount), 0))
+    const recordedDays = new Set(matched.map(feed => feed.dayKey)).size
+    const dailyAverage = recordedDays ? consumed / recordedDays : 0
+    const remaining = Math.max(0, Math.round(packageAmount - consumed))
+    const daysLeft = dailyAverage > 0 ? Math.max(0, Math.ceil(remaining / dailyAverage)) : null
+    const level = remaining === 0 ? 'empty' : daysLeft !== null && daysLeft <= 3 ? 'urgent' : daysLeft !== null && daysLeft <= 7 ? 'low' : 'normal'
+    view[key] = {
+      key, ...config, configured: true, productName: item.productName || config.label,
+      daysText: remaining === 0 ? '建议补货' : daysLeft === null ? '等待记录' : `约 ${daysLeft} 天`,
+      remainingText: dailyAverage > 0 ? `剩余约 ${remaining}g · 日均 ${Math.round(dailyAverage)}g` : `剩余 ${remaining}g · 等待喂食记录`,
+      consumed, remaining, dailyAverage: Math.round(dailyAverage), daysLeft,
+      progress: Math.min(100, Math.round(consumed / packageAmount * 100)), level
+    }
+    return view
+  }, {})
+}
+
 Page({
   data: {
-    pet: {}, draft: {}, careDraft: {}, careView: {}, careRecords: [],
+    pet: {}, draft: {}, profileEditOpen: false, careDraft: {}, careView: {}, careRecords: [],
     careDetailOpen: false, careMenuOpen: false, careSubView: '', selectedCare: {}, selectedCareRecords: [],
     selectedRecordDate: '', selectedMonth: '', selectedMonthText: '', careCalendar: [], weekNames: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+    supplies: {}, supplyView: {}, supplyOpen: false, selectedSupplyKey: '', selectedSupply: {}, supplyDraft: {}, supplyHistory: [],
     newAvatarTemp: '', saving: false, changed: false, today: '', sexOptions: ['男孩', '女孩'], sexIndex: 0
   },
   onShow() {
     const pet = store.get('pet')
     const draft = { ...pet, togetherSince: pet.togetherSince || pet.birthday, sex: pet.sex || '男孩' }
     const careDraft = store.normalizeCareSchedule(store.get('care'))
+    const supplies = store.normalizeSupplies(store.get('supplies'))
+    const supplyView = buildSupplyView(supplies, store.get('feeds'))
     const today = store.todayKey()
-    this.setData({ pet, draft, careDraft, careView: buildCareView(careDraft), careRecords: store.get('careRecords'), careDetailOpen: false, careMenuOpen: false, careSubView: '', selectedCare: {}, selectedCareRecords: [], selectedRecordDate: today, selectedMonth: today.slice(0, 7), selectedMonthText: monthText(today.slice(0, 7)), careCalendar: [], newAvatarTemp: '', saving: false, changed: false, today, sexIndex: draft.sex === '女孩' ? 1 : 0 })
+    this.setData({ pet, draft, profileEditOpen: false, careDraft, careView: buildCareView(careDraft), careRecords: store.get('careRecords'), careDetailOpen: false, careMenuOpen: false, careSubView: '', selectedCare: {}, selectedCareRecords: [], selectedRecordDate: today, selectedMonth: today.slice(0, 7), selectedMonthText: monthText(today.slice(0, 7)), careCalendar: [], supplies, supplyView, supplyOpen: false, selectedSupplyKey: '', selectedSupply: {}, supplyDraft: {}, supplyHistory: [], newAvatarTemp: '', saving: false, changed: false, today, sexIndex: draft.sex === '女孩' ? 1 : 0 })
+  },
+  openSupply(e) {
+    const key = e.currentTarget.dataset.key
+    const current = this.data.supplies[key]
+    const selectedSupply = this.data.supplyView[key]
+    if (!current || !selectedSupply) return
+    this.setData({
+      supplyOpen: true,
+      selectedSupplyKey: key,
+      selectedSupply,
+      supplyDraft: {
+        productName: current.productName || '',
+        packageAmount: current.packageAmount || '',
+        openedDate: store.todayKey()
+      },
+      supplyHistory: (current.history || []).slice(0, 10)
+    })
+  },
+  closeSupply() {
+    this.setData({ supplyOpen: false })
+  },
+  onSupplyInput(e) {
+    this.setData({ supplyDraft: { ...this.data.supplyDraft, [e.currentTarget.dataset.key]: e.detail.value } })
+  },
+  onSupplyDate(e) {
+    this.setData({ supplyDraft: { ...this.data.supplyDraft, openedDate: e.detail.value } })
+  },
+  saveSupplyOpening() {
+    const key = this.data.selectedSupplyKey
+    const config = SUPPLY_TYPES[key]
+    const draft = { ...this.data.supplyDraft }
+    const amount = Number(draft.packageAmount)
+    if (!config) return
+    if (!draft.productName.trim()) return wx.showToast({ title: `请填写${config.label}名称`, icon: 'none' })
+    if (!amount || amount <= 0) return wx.showToast({ title: '请填写正确的包装重量', icon: 'none' })
+    if (!draft.openedDate || draft.openedDate > store.todayKey()) return wx.showToast({ title: '请选择正确的拆封日期', icon: 'none' })
+    const record = { id: Date.now(), productName: draft.productName.trim(), packageAmount: amount, openedDate: draft.openedDate }
+    const supplies = store.normalizeSupplies(this.data.supplies)
+    supplies[key] = {
+      ...supplies[key],
+      productName: record.productName,
+      packageAmount: amount,
+      openedDate: record.openedDate,
+      history: [record, ...(supplies[key].history || [])].slice(0, 30)
+    }
+    store.set('supplies', supplies)
+    const supplyView = buildSupplyView(supplies, store.get('feeds'))
+    this.setData({ supplies, supplyView, supplyOpen: false, selectedSupply: supplyView[key], supplyHistory: supplies[key].history.slice(0, 10) })
+    wx.showToast({ title: `${config.label}拆封记录已保存`, icon: 'none' })
+  },
+  openProfileEdit() {
+    const draft = { ...this.data.pet, togetherSince: this.data.pet.togetherSince || this.data.pet.birthday, sex: this.data.pet.sex || '男孩' }
+    if (wx.hideTabBar) wx.hideTabBar({ animation: false })
+    this.setData({ profileEditOpen: true, draft, sexIndex: draft.sex === '女孩' ? 1 : 0, newAvatarTemp: '', changed: false })
+  },
+  closeProfileEdit() {
+    const draft = { ...this.data.pet, togetherSince: this.data.pet.togetherSince || this.data.pet.birthday, sex: this.data.pet.sex || '男孩' }
+    this.setData({ profileEditOpen: false, draft, sexIndex: draft.sex === '女孩' ? 1 : 0, newAvatarTemp: '', saving: false, changed: false })
+    if (wx.showTabBar) wx.showTabBar({ animation: false })
   },
   chooseAvatar() {
     wx.chooseMedia({ count: 1, mediaType: ['image'], sourceType: ['album', 'camera'], sizeType: ['compressed'], success: res => this.setData({ newAvatarTemp: res.tempFiles[0].tempFilePath, changed: true }) })
@@ -108,9 +215,6 @@ Page({
   onDate(e) {
     const birthday = e.detail.value
     this.setData({ draft: { ...this.data.draft, birthday, togetherSince: this.data.draft.togetherSince || birthday }, changed: true })
-  },
-  onTogetherDate(e) {
-    this.setData({ draft: { ...this.data.draft, togetherSince: e.detail.value }, changed: true })
   },
   onCareDate(e) {
     const careDraft = { ...this.data.careDraft, [e.currentTarget.dataset.key]: e.detail.value }
@@ -249,7 +353,8 @@ Page({
       const pet = { ...draft, avatar }
       store.set('pet', pet)
       store.set('care', careDraft)
-      this.setData({ pet, draft: { ...pet }, careDraft: { ...careDraft }, newAvatarTemp: '', saving: false, changed: false })
+      this.setData({ pet, draft: { ...pet }, profileEditOpen: false, careDraft: { ...careDraft }, newAvatarTemp: '', saving: false, changed: false })
+      if (wx.showTabBar) wx.showTabBar({ animation: false })
       if (oldAvatar && oldAvatar.indexOf('wxfile://') === 0 && oldAvatar !== avatar) wx.removeSavedFile({ filePath: oldAvatar })
       wx.showToast({ title: '资料已保存' })
     }

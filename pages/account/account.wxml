@@ -1,50 +1,98 @@
 <view class="page account-page">
   <view class="topbar">
-    <view><view class="eyebrow">PET PROFILE</view><view class="page-title">我的宠物资料</view></view>
-    <view class="settings-icon">⚙</view>
+    <view><view class="page-title">我的宠物资料</view></view>
+    <view class="settings-icon" bindtap="openProfileEdit">⚙</view>
   </view>
 
-  <view class="profile-cover card">
+  <view class="profile-cover display-profile-card card">
     <view class="cover-glow"></view>
-    <view class="avatar-wrap" bindtap="chooseAvatar">
-      <image src="{{newAvatarTemp || draft.avatar}}" mode="aspectFill"></image>
-      <view class="camera">📷</view>
+    <view class="avatar-wrap display-avatar">
+      <image src="{{pet.avatar}}" mode="aspectFill"></image>
     </view>
-    <view class="cover-edit">
-      <view class="cover-field name-field"><text>昵称</text><input value="{{draft.name}}" data-key="name" bindinput="onInput" placeholder="宠物昵称" /></view>
-      <view class="cover-meta">
-        <view class="cover-field breed-field"><text>品种</text><input value="{{draft.breed}}" data-key="breed" bindinput="onInput" placeholder="宠物品种" /></view>
-        <picker class="cover-sex" mode="selector" range="{{sexOptions}}" value="{{sexIndex}}" bindchange="onSex"><view><text>性别</text><view>{{draft.sex}} ›</view></view></picker>
-      </view>
-      <view class="cover-actions">
-        <view class="cover-weight"><text>体重</text><input type="digit" value="{{draft.weight}}" data-key="weight" bindinput="onInput" placeholder="0.0" /><text>kg</text></view>
-        <view class="change-avatar" bindtap="chooseAvatar">更换头像</view>
+    <view class="profile-display-info">
+      <view class="display-name-line"><view><text>我的宝贝</text><view>{{pet.name}}</view></view></view>
+      <view class="pet-meta">
+        <view><text>🐾</text>{{pet.breed}}</view>
+        <view><text>•</text>{{pet.sex}}</view>
+        <view><text>⚖️</text>{{pet.weight}} kg</view>
       </view>
     </view>
     <view class="cover-dates">
-      <view class="cover-date-row"><view class="cover-date-icon yellow">🎂</view><view><text>宠物生日</text><picker mode="date" value="{{draft.birthday}}" end="{{today}}" bindchange="onDate"><view>{{draft.birthday}}<text>›</text></view></picker></view></view>
-      <view class="cover-date-divider"></view>
-      <view class="cover-date-row"><view class="cover-date-icon purple">🤝</view><view><text>相遇日 / 到家日</text><picker mode="date" value="{{draft.togetherSince || draft.birthday}}" end="{{today}}" bindchange="onTogetherDate"><view>{{draft.togetherSince || '请选择日期'}}<text>›</text></view></picker></view></view>
+      <view class="cover-date-row static-date-row"><view class="cover-date-icon yellow">🎂</view><view class="birthday-info"><text>宠物生日</text><view>{{pet.birthday}}</view></view></view>
     </view>
   </view>
 
-  <view class="section-title care-section-title">护理与疫苗记录</view>
+  <view class="care-heading"><view>护理与疫苗记录</view></view>
   <view class="care-section-note">点击项目记录护理，系统会自动计算下一次提醒</view>
-  <view class="care-plan-card card">
-    <view class="care-plan-row" data-key="deworming" bindtap="openCareDetail"><view class="care-plan-icon">🪱</view><view class="care-plan-copy"><view>体内外驱虫</view></view><view class="care-countdown {{careView.deworming.countdownClass}}">{{careView.deworming.countdown}}</view><text class="care-arrow">›</text></view>
+  <view class="care-plan-card care-dashboard">
+    <view class="care-plan-row care-deworming" data-key="deworming" bindtap="openCareDetail"><view class="care-plan-icon">驱</view><view class="care-plan-copy"><view>体内外驱虫</view></view><view class="care-countdown {{careView.deworming.countdownClass}}">{{careView.deworming.countdown}}</view><text class="care-arrow">›</text></view>
     <view class="divider care-divider"></view>
-    <view class="care-plan-row" data-key="vaccine" bindtap="openCareDetail"><view class="care-plan-icon">💉</view><view class="care-plan-copy"><view>疫苗接种</view></view><view class="care-countdown {{careView.vaccine.countdownClass}}">{{careView.vaccine.countdown}}</view><text class="care-arrow">›</text></view>
+    <view class="care-plan-row care-vaccine" data-key="vaccine" bindtap="openCareDetail"><view class="care-plan-icon">苗</view><view class="care-plan-copy"><view>疫苗接种</view></view><view class="care-countdown {{careView.vaccine.countdownClass}}">{{careView.vaccine.countdown}}</view><text class="care-arrow">›</text></view>
     <view class="divider care-divider"></view>
-    <view class="care-plan-row" data-key="bath" bindtap="openCareDetail"><view class="care-plan-icon">🛁</view><view class="care-plan-copy"><view>洗澡护理</view></view><view class="care-countdown {{careView.bath.countdownClass}}">{{careView.bath.countdown}}</view><text class="care-arrow">›</text></view>
+    <view class="care-plan-row care-bath" data-key="bath" bindtap="openCareDetail"><view class="care-plan-icon">浴</view><view class="care-plan-copy"><view>洗澡护理</view></view><view class="care-countdown {{careView.bath.countdownClass}}">{{careView.bath.countdown}}</view><text class="care-arrow">›</text></view>
     <view class="divider care-divider"></view>
-    <view class="care-plan-row" data-key="dental" bindtap="openCareDetail"><view class="care-plan-icon">🦷</view><view class="care-plan-copy"><view>刷牙护理</view></view><view class="care-countdown {{careView.dental.countdownClass}}">{{careView.dental.countdown}}</view><text class="care-arrow">›</text></view>
+    <view class="care-plan-row care-dental" data-key="dental" bindtap="openCareDetail"><view class="care-plan-icon">牙</view><view class="care-plan-copy"><view>刷牙护理</view></view><view class="care-countdown {{careView.dental.countdownClass}}">{{careView.dental.countdown}}</view><text class="care-arrow">›</text></view>
     <view class="divider care-divider"></view>
-    <view class="care-plan-row" data-key="nail" bindtap="openCareDetail"><view class="care-plan-icon">✂️</view><view class="care-plan-copy"><view>修剪指甲</view></view><view class="care-countdown {{careView.nail.countdownClass}}">{{careView.nail.countdown}}</view><text class="care-arrow">›</text></view>
+    <view class="care-plan-row care-nail" data-key="nail" bindtap="openCareDetail"><view class="care-plan-icon">剪</view><view class="care-plan-copy"><view>修剪指甲</view></view><view class="care-countdown {{careView.nail.countdownClass}}">{{careView.nail.countdown}}</view><text class="care-arrow">›</text></view>
+    <view class="supply-inline-head"><view>用品余量</view><text>结合喂食记录自动估算</text></view>
+    <view class="supply-card supply-food {{supplyView.dogFood.level}}" data-key="dogFood" bindtap="openSupply">
+      <view class="supply-card-top"><view class="supply-icon">粮</view><view class="supply-title"><view>狗粮</view><text>{{supplyView.dogFood.productName}}</text></view><text class="supply-arrow">›</text></view>
+      <view class="supply-days">{{supplyView.dogFood.daysText}}</view>
+      <view class="supply-progress"><view style="width:{{supplyView.dogFood.progress}}%"></view></view>
+      <view class="supply-remaining">{{supplyView.dogFood.remainingText}}</view>
+    </view>
+    <view class="supply-card supply-snack {{supplyView.snack.level}}" data-key="snack" bindtap="openSupply">
+      <view class="supply-card-top"><view class="supply-icon">骨</view><view class="supply-title"><view>零食</view><text>{{supplyView.snack.productName}}</text></view><text class="supply-arrow">›</text></view>
+      <view class="supply-days">{{supplyView.snack.daysText}}</view>
+      <view class="supply-progress"><view style="width:{{supplyView.snack.progress}}%"></view></view>
+      <view class="supply-remaining">{{supplyView.snack.remainingText}}</view>
+    </view>
   </view>
 
-  <view class="date-note">重要日期会用于计算生日倒计时、陪伴天数和百日纪念。</view>
-  <button class="save-btn" loading="{{saving}}" disabled="{{saving}}" bindtap="savePet">{{saving ? '正在保存…' : '保存资料'}}</button>
   <view class="privacy-note">🔒 资料仅保存在本机，可随时修改</view>
+</view>
+
+<view class="profile-edit-page" wx:if="{{profileEditOpen}}">
+  <view class="profile-edit-top">
+    <view class="profile-edit-back" catchtap="closeProfileEdit">←</view>
+    <view>编辑宠物资料</view>
+    <view class="profile-edit-space"></view>
+  </view>
+  <view class="profile-edit-card card">
+    <view class="profile-edit-avatar" bindtap="chooseAvatar">
+      <image src="{{newAvatarTemp || draft.avatar}}" mode="aspectFill"></image>
+      <view>📷</view>
+      <text>点击更换头像</text>
+    </view>
+    <view class="edit-form-row"><text>宠物昵称</text><input value="{{draft.name}}" data-key="name" bindinput="onInput" placeholder="请输入昵称" /></view>
+    <view class="edit-form-row"><text>宠物品种</text><input value="{{draft.breed}}" data-key="breed" bindinput="onInput" placeholder="请输入品种" /></view>
+    <view class="edit-form-row"><text>性别</text><picker mode="selector" range="{{sexOptions}}" value="{{sexIndex}}" bindchange="onSex"><view>{{draft.sex}} ›</view></picker></view>
+    <view class="edit-form-row"><text>当前体重</text><view class="edit-weight"><input type="digit" value="{{draft.weight}}" data-key="weight" bindinput="onInput" placeholder="0.0" /><text>kg</text></view></view>
+    <view class="edit-form-row"><text>宠物生日</text><picker mode="date" value="{{draft.birthday}}" end="{{today}}" bindchange="onDate"><view>{{draft.birthday}} ›</view></picker></view>
+  </view>
+  <button class="profile-edit-save" loading="{{saving}}" disabled="{{saving}}" bindtap="savePet">{{saving ? '正在保存…' : '保存资料'}}</button>
+  <view class="profile-edit-note">🔒 资料仅保存在本机，可随时修改</view>
+</view>
+
+<view class="overlay" wx:if="{{supplyOpen}}" catchtap="closeSupply">
+  <view class="sheet supply-sheet" catchtap="noop">
+    <view class="sheet-head"><text>{{selectedSupply.label}}拆封记录</text><text class="close" bindtap="closeSupply">×</text></view>
+    <view class="supply-current" wx:if="{{selectedSupply.configured}}">
+      <view class="supply-current-icon">{{selectedSupply.icon}}</view>
+      <view><text>当前预计还能吃</text><view>{{selectedSupply.daysText}}</view><text>{{selectedSupply.remainingText}}</text></view>
+    </view>
+    <view class="supply-form-note">拆开新包装时记录一次，后续会根据喂食克数自动扣减。</view>
+    <view class="field"><text class="label">{{selectedSupply.label}}名称</text><input class="input" value="{{supplyDraft.productName}}" data-key="productName" bindinput="onSupplyInput" placeholder="例如：低敏成犬粮" /></view>
+    <view class="supply-form-grid">
+      <view class="field"><text class="label">包装重量（g）</text><input class="input" type="number" value="{{supplyDraft.packageAmount}}" data-key="packageAmount" bindinput="onSupplyInput" placeholder="例如：2500" /></view>
+      <view class="field"><text class="label">拆封日期</text><picker mode="date" value="{{supplyDraft.openedDate}}" end="{{today}}" bindchange="onSupplyDate"><view class="input supply-picker">{{supplyDraft.openedDate}}</view></picker></view>
+    </view>
+    <button class="supply-save-btn" bindtap="saveSupplyOpening">记录本次拆封</button>
+    <view class="supply-history" wx:if="{{supplyHistory.length}}">
+      <view class="supply-history-title">拆封历史</view>
+      <view class="supply-history-row" wx:for="{{supplyHistory}}" wx:key="id"><view><text>{{item.productName}}</text><view>{{item.openedDate}}</view></view><text>{{item.packageAmount}}g</text></view>
+    </view>
+  </view>
 </view>
 
 <view class="care-full-page" wx:if="{{careDetailOpen}}">

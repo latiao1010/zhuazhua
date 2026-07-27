@@ -5,7 +5,8 @@ const KEYS = {
   chats: 'paw_chats',
   stools: 'paw_stools',
   care: 'paw_care_schedule',
-  careRecords: 'paw_care_records'
+  careRecords: 'paw_care_records',
+  supplies: 'paw_supply_records'
 }
 
 const seedPet = {
@@ -45,6 +46,21 @@ function normalizeCareSchedule(schedule) {
   return { ...getDefaultCareSchedule(), ...(schedule || {}) }
 }
 
+function getDefaultSupplies() {
+  return {
+    dogFood: { productName: '', openedDate: '', packageAmount: '', history: [] },
+    snack: { productName: '', openedDate: '', packageAmount: '', history: [] }
+  }
+}
+
+function normalizeSupplies(supplies) {
+  const defaults = getDefaultSupplies()
+  return {
+    dogFood: { ...defaults.dogFood, ...((supplies && supplies.dogFood) || {}) },
+    snack: { ...defaults.snack, ...((supplies && supplies.snack) || {}) }
+  }
+}
+
 const seedFeeds = [
   { id: 3, date: '今天', time: '18:30', type: '晚餐', food: '低敏犬粮', amount: '95g', icon: '🥣' },
   { id: 2, date: '今天', time: '12:15', type: '零食', food: '鸡胸肉干', amount: '18g', icon: '🦴' },
@@ -75,6 +91,9 @@ function ensureSeedData() {
   if (!wx.getStorageSync(KEYS.chats)) wx.setStorageSync(KEYS.chats, [])
   if (!wx.getStorageSync(KEYS.stools)) wx.setStorageSync(KEYS.stools, seedStools)
   if (!wx.getStorageSync(KEYS.careRecords)) wx.setStorageSync(KEYS.careRecords, [])
+  const supplies = wx.getStorageSync(KEYS.supplies)
+  const normalizedSupplies = normalizeSupplies(supplies)
+  if (!supplies || !supplies.dogFood || !supplies.snack) wx.setStorageSync(KEYS.supplies, normalizedSupplies)
   const care = wx.getStorageSync(KEYS.care)
   const normalizedCare = normalizeCareSchedule(care)
   if (!care || Object.keys(normalizedCare).some(key => care[key] === undefined)) wx.setStorageSync(KEYS.care, normalizedCare)
@@ -89,4 +108,4 @@ function ensureSeedData() {
 const get = key => wx.getStorageSync(KEYS[key]) || []
 const set = (key, value) => wx.setStorageSync(KEYS[key], value)
 
-module.exports = { KEYS, ensureSeedData, get, set, todayKey, getDefaultCareSchedule, normalizeCareSchedule }
+module.exports = { KEYS, ensureSeedData, get, set, todayKey, getDefaultCareSchedule, normalizeCareSchedule, getDefaultSupplies, normalizeSupplies }
