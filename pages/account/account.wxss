@@ -23,3 +23,29 @@
 .care-dashboard .supply-food{background:linear-gradient(145deg,#f4edda,#fcf8ef)}.care-dashboard .supply-snack{background:linear-gradient(145deg,#f8e8df,#fff5f0)}.supply-food .care-plan-icon{color:#75684e}.supply-snack .care-plan-icon{color:#a56b58}.supply-sheet{max-height:84vh;overflow-y:auto}.supply-current{display:flex;align-items:center;margin-bottom:22rpx;padding:22rpx;border-radius:24rpx;background:linear-gradient(145deg,#fff0e7,#fff8f4)}.supply-current-icon{display:flex;align-items:center;justify-content:center;flex:none;width:64rpx;height:64rpx;margin-right:17rpx;border-radius:20rpx;color:#a86950;background:#fff;font-size:24rpx;font-weight:900}.supply-current>view:last-child>text{display:block;color:#9b877b;font-size:18rpx}.supply-current>view:last-child>view{margin:3rpx 0;color:#423731;font-size:30rpx;font-weight:900}.supply-form-note{margin-bottom:20rpx;padding:16rpx 18rpx;border-radius:18rpx;color:#7b716a;background:#f7f4f0;font-size:19rpx;line-height:1.5}.supply-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14rpx}.supply-picker{display:flex;align-items:center;color:#423a35;font-size:21rpx;font-weight:800}.supply-save-btn{height:86rpx;margin-top:8rpx;border-radius:24rpx;color:#fff;background:linear-gradient(135deg,#ff8965,#ff674b);font-size:26rpx;font-weight:900;line-height:86rpx}.supply-history{margin-top:26rpx}.supply-history-title{margin-bottom:8rpx;font-size:24rpx;font-weight:900}.supply-history-row{display:flex;align-items:center;justify-content:space-between;min-height:82rpx;border-bottom:1rpx solid #eee5de}.supply-history-row>view>text{font-size:21rpx;font-weight:800}.supply-history-row>view>view{margin-top:4rpx;color:#9e938b;font-size:17rpx}.supply-history-row>text{color:#7e726a;font-size:20rpx;font-weight:800}
 
 .supply-inline-head{grid-column:1/-1;display:flex;align-items:flex-end;justify-content:space-between;margin:8rpx 2rpx 0;padding-top:16rpx;border-top:1rpx dashed rgba(218,205,195,.8)}.supply-inline-head>view{color:#4a403a;font-size:24rpx;font-weight:900}.supply-inline-head>text{color:#8c8179;font-size:17rpx}
+
+/* 单屏布局 */
+.account-page{height:100vh;min-height:0;overflow-y:auto;display:flex;flex-direction:column;box-sizing:border-box;padding:20rpx 24rpx 16rpx}
+.account-page>.topbar,.account-page>.display-profile-card,.account-page>.care-heading,.account-page>.care-section-note,.account-page>.privacy-note{flex:none}
+.account-page>.topbar{margin-bottom:16rpx}
+.account-page .page-title{font-size:36rpx}
+.account-page .settings-icon{width:64rpx;height:64rpx;border-radius:20rpx;font-size:24rpx}
+.display-profile-card{padding:22rpx;border-radius:32rpx}
+.display-avatar image{width:116rpx;height:116rpx}
+.display-name-line>view:first-child>view{font-size:30rpx}
+.profile-display-info{margin-left:22rpx}
+.pet-meta{gap:7rpx;margin-top:12rpx}
+.pet-meta view{padding:6rpx 11rpx;font-size:17rpx}
+.birthday-chip{margin-left:10rpx;padding:8rpx 13rpx;border-radius:17rpx}
+.birthday-chip>view{font-size:19rpx}
+.care-heading{margin:18rpx 2rpx 0}
+.care-heading>view:first-child{font-size:27rpx}
+.care-section-note{margin:4rpx 2rpx 10rpx;font-size:18rpx}
+.account-page .care-dashboard{flex:1 1 auto;min-height:0;align-content:space-between;grid-template-rows:repeat(3,minmax(0,170rpx)) auto minmax(0,170rpx);gap:10rpx}
+.account-page .care-dashboard .care-plan-row{min-height:0;overflow:hidden;padding:12rpx 14rpx;grid-template-rows:44rpx auto auto}
+.care-dashboard .care-plan-icon{width:44rpx;height:44rpx;border-radius:15rpx}
+.care-dashboard .care-plan-copy{margin:6rpx 0 0}
+.account-page .care-dashboard .care-countdown{margin:4rpx 0 0;padding:6rpx 11rpx}
+.supply-inline-head{margin:0 2rpx;padding-top:8rpx}
+.supply-inline-head>view{font-size:22rpx}
+.account-page .privacy-note{margin-top:10rpx;font-size:16rpx}
