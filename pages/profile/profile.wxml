@@ -1,55 +1,145 @@
 <view class="page home-page">
-  <view class="topbar">
-    <view>
-      <view class="eyebrow">MY LITTLE FAMILY</view>
-      <view class="page-title">你好，铲屎官 👋</view>
+  <view class="home-head">
+    <view class="greeting-row">
+      <view class="greeting-copy">
+        <view>{{homeDashboard.greeting}}，铲屎官 👋</view>
+        <text>今天也和{{pet.name}}好好生活</text>
+      </view>
+      <view class="score-pill {{homeDashboard.scoreLevel}}">
+        <text>健康评分</text>
+        <view>{{homeDashboard.healthScore}}<text>分</text></view>
+      </view>
     </view>
-    <view class="notify">♡</view>
-  </view>
-
-  <view class="stats">
-    <view class="stat card">
-      <view class="stat-icon peach">⚖</view>
-      <view><text class="stat-number">{{pet.weight}}</text><text class="unit"> kg</text></view>
-      <view class="stat-label">当前体重</view>
+    <view class="pet-row">
+      <image src="{{pet.avatar}}" mode="aspectFill"></image>
+      <view class="pet-name"><text>🐶</text>{{pet.name}}</view>
+      <view class="pet-chip" bindtap="openWeightTrend">⚖ {{pet.weight}}kg <text>›</text></view>
+      <view class="pet-chip festival-chip" bindtap="openFestivals">🎉 {{daysTogether}}天 <text>›</text></view>
     </view>
-    <view class="stat card">
-      <view class="stat-icon blue">🥣</view>
-      <view><text class="stat-number">{{todayFeedCount}}</text><text class="unit"> 次</text></view>
-      <view class="stat-label">今日喂食</view>
-    </view>
-    <view class="stat card">
-      <view class="stat-icon green">💩</view>
-      <view><text class="stat-number">{{todayStoolCount}}</text><text class="unit"> 次</text></view>
-      <view class="stat-label">今日排便</view>
-    </view>
-    <view class="stat festival-stat card" bindtap="openFestivals">
-      <view class="stat-icon yellow">🎉</view>
-      <view><text class="stat-number">{{daysTogether}}</text><text class="unit"> 天</text></view>
-      <view class="stat-label">重大节日</view>
+    <view class="ai-status"><text>AI</text><view>{{homeDashboard.healthSummary}}</view></view>
+    <view class="home-progress">
+      <text>今日进度</text>
+      <view><view style="width:{{homeDashboard.progress}}%"></view></view>
+      <text>{{homeDashboard.completedCount}}/{{homeDashboard.totalTasks}}</text>
+      <text>点击状态查看详情</text>
     </view>
   </view>
 
-  <view class="section-title">今日小贴士</view>
-  <view class="weather-card card">
-    <view class="weather-top">
-      <view class="weather-main"><text class="weather-icon">{{weather.icon}}</text><view><view><text class="temperature">{{weather.temperature}}°</text> {{weather.condition}}</view><text>{{weather.location}} · 体感 {{weather.apparent}}℃</text></view></view>
-      <view class="live-badge">{{weatherLoading ? '更新中' : weather.live ? '实时预报' : '离线提示'}}</view>
-    </view>
-    <view class="rain-alert {{weather.rainTime ? 'has-rain' : ''}}"><text>{{weather.rainTime ? '☂' : '✓'}}</text><view><view>{{weather.rainText}}</view><text>{{weather.rainTime ? '建议提前或延后遛狗，并带好雨具' : '适合按计划遛狗，出门前仍请留意天气变化'}}</text></view></view>
-    <view class="season-tip"><text>🍃 {{seasonName}}提醒</text><view>{{seasonTip}}</view></view>
-    <view class="water-line">💧 {{pet.name}}今日已喝 {{todayWater}}ml，建议约 {{waterTarget}}ml</view>
-  </view>
-
-  <view class="section-title health-section-title">日常小贴士</view>
-  <view class="health-list">
-    <view class="health-tip card" wx:for="{{healthTips}}" wx:key="title" data-index="{{index}}" bindtap="openHealthTip">
-      <view class="health-icon">{{item.icon}}</view>
-      <view class="health-copy"><view>{{item.title}}</view><text>{{item.desc}}</text></view>
-      <view class="health-side"><view class="health-badge">{{item.badge}}</view><text>›</text></view>
+  <view class="home-block next-block">
+    <view class="home-block-title"><view><text>📍</text>下一件事</view><text>最重要</text></view>
+    <view class="next-task-card">
+      <view class="next-time"><text>{{homeDashboard.nextTask.time}}</text><view>{{homeDashboard.nextTask.waitText}}</view></view>
+      <view class="next-task-copy"><view><text>{{homeDashboard.nextTask.icon}}</text>{{homeDashboard.nextTask.label}}</view><text>{{homeDashboard.nextTask.detail}}</text></view>
+      <button bindtap="goNextTask">{{homeDashboard.nextTask.actionText}}</button>
     </view>
   </view>
 
+  <view class="home-block status-block">
+    <view class="home-block-title"><view><text>🐶</text>今日状态</view><text>AI 综合判断</text></view>
+    <view class="status-grid">
+      <view class="status-card {{item.tone}}" wx:for="{{homeDashboard.statusCards}}" wx:key="label" data-index="{{index}}" bindtap="openStatusDetail">
+        <view class="status-icon">{{item.icon}}</view>
+        <view><text>{{item.label}}</text><view>{{item.value}}</view></view>
+        <text>›</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="home-block finding-block">
+    <view class="home-block-title"><view><text>🤖</text>AI 今日发现</view><text>已更新</text></view>
+    <view class="finding-list">
+      <view class="finding-row {{item.tone}}" wx:for="{{homeDashboard.findings}}" wx:key="id"><text>{{item.icon}}</text><view>{{item.text}}</view></view>
+    </view>
+  </view>
+
+  <view class="knowledge-card" bindtap="openKnowledge">
+    <view class="knowledge-icon">{{homeDashboard.knowledge.icon}}</view>
+    <view><text>今日养宠知识</text><view>「{{homeDashboard.knowledge.title}}」</view></view>
+    <text>›</text>
+  </view>
+</view>
+
+<view class="overlay" wx:if="{{knowledgeOpen}}" catchtap="closeKnowledge">
+  <view class="sheet knowledge-sheet" catchtap="noop">
+    <view class="sheet-head"><text>今日养宠知识</text><text class="close" bindtap="closeKnowledge">×</text></view>
+    <view class="knowledge-hero"><text>{{homeDashboard.knowledge.icon}}</text><view><view>{{homeDashboard.knowledge.title}}</view><text>{{homeDashboard.knowledge.summary}}</text></view></view>
+    <view class="knowledge-points">
+      <view wx:for="{{homeDashboard.knowledge.detail}}" wx:key="*this"><text>{{index + 1}}</text><view>{{item}}</view></view>
+    </view>
+    <view class="medical-note">🩺 内容用于日常养护参考；出现精神不佳、呼吸急促或其他异常时，请及时咨询兽医。</view>
+    <button class="primary-btn" bindtap="closeKnowledge">我知道了</button>
+  </view>
+</view>
+
+<view class="overlay" wx:if="{{stoolDetailOpen}}" catchtap="closeStoolDetail">
+  <view class="sheet stool-sheet" catchtap="noop">
+    <view class="sheet-head"><text>今日排便</text><text class="close" bindtap="closeStoolDetail">×</text></view>
+    <view class="stool-summary {{todayStoolAbnormalCount ? 'has-warning' : ''}}">
+      <view class="stool-summary-icon">💩</view>
+      <view><text>今日记录</text><view>{{todayStoolCount}}<text>次</text></view></view>
+      <view class="stool-summary-status">{{todayStoolStatus}}</view>
+    </view>
+    <scroll-view class="today-stool-list" wx:if="{{todayStools.length}}" scroll-y enhanced show-scrollbar="false">
+      <view class="today-stool-row" wx:for="{{todayStools}}" wx:key="id">
+        <view class="today-stool-state {{item.abnormal ? 'warning' : ''}}">{{item.abnormal ? '!' : '✓'}}</view>
+        <view class="today-stool-copy">
+          <view>{{item.conditionText}}<text>{{item.colorText}}</text></view>
+          <text>{{item.noteText || item.statusText}}</text>
+        </view>
+        <view class="today-stool-meta"><view class="{{item.abnormal ? 'warning' : ''}}">{{item.statusText}}</view><text>{{item.timeText}}</text></view>
+      </view>
+    </scroll-view>
+    <view class="stool-empty" wx:else><text>💩</text><view>今天还没有排便记录</view><text>记录状态后，这里会自动同步</text></view>
+    <button class="primary-btn stool-manage-btn" bindtap="goStool">{{todayStools.length ? '前往日常查看或继续记录' : '去记录排便'}}</button>
+    <view class="stool-sync-note">这里与“日常”的排便记录实时同步</view>
+  </view>
+</view>
+
+<view class="overlay" wx:if="{{feedDetailOpen}}" catchtap="closeFeedDetail">
+  <view class="sheet feed-sheet" catchtap="noop">
+    <view class="sheet-head"><text>今日喂食</text><text class="close" bindtap="closeFeedDetail">×</text></view>
+    <view class="feed-summary">
+      <view class="feed-summary-icon">🥣</view>
+      <view><text>今日累计</text><view>{{todayFeedTotal}}<text>g</text></view></view>
+      <view class="feed-summary-count">{{todayFeedCount}} 次喂食</view>
+    </view>
+    <scroll-view class="today-feed-list" wx:if="{{todayFeeds.length}}" scroll-y enhanced show-scrollbar="false">
+      <view class="today-feed-row" wx:for="{{todayFeeds}}" wx:key="id">
+        <view class="today-feed-icon">{{item.iconText}}</view>
+        <view class="today-feed-copy"><view>{{item.type}}</view><text>{{item.foodText}}</text></view>
+        <view class="today-feed-meta"><view>{{item.amountText}}</view><text>{{item.timeText}}</text></view>
+      </view>
+    </scroll-view>
+    <view class="feed-empty" wx:else><text>🥣</text><view>今天还没有喂食记录</view><text>去“日常”记录第一餐吧</text></view>
+    <button class="primary-btn feed-manage-btn" bindtap="goFeed">{{todayFeeds.length ? '前往日常查看或继续记录' : '去记录喂食'}}</button>
+    <view class="feed-sync-note">这里与“日常”的喂食记录实时同步</view>
+  </view>
+</view>
+
+<view class="overlay" wx:if="{{weightTrendOpen}}" catchtap="closeWeightTrend">
+  <view class="sheet weight-sheet" catchtap="noop">
+    <view class="sheet-head"><text>体重趋势</text><text class="close" bindtap="closeWeightTrend">×</text></view>
+    <view class="weight-hero">
+      <view><text>当前体重</text><view>{{weightTrend.current}}<text>kg</text></view></view>
+      <view class="weight-change {{weightTrend.changeClass}}"><text>相比首次记录</text><view>{{weightTrend.changeText}}</view></view>
+    </view>
+    <view class="weight-chart-card">
+      <view class="weight-chart-title"><view>最近 {{weightTrend.bars.length}} 次记录</view><text>{{weightTrend.min}}–{{weightTrend.max}} kg</text></view>
+      <view class="weight-chart">
+        <view class="weight-column" wx:for="{{weightTrend.bars}}" wx:key="dayKey">
+          <text class="weight-value">{{item.weight}}</text>
+          <view class="weight-bar-area"><view class="weight-bar {{index === weightTrend.bars.length - 1 ? 'latest' : ''}}" style="height:{{item.height}}rpx"></view></view>
+          <text class="weight-date">{{item.dateLabel}}</text>
+        </view>
+      </view>
+      <view class="weight-empty-tip" wx:if="{{!weightTrend.hasTrend}}">目前只有一条记录，下一次修改体重后即可看到变化趋势。</view>
+    </view>
+    <view class="weight-history-title">历史记录</view>
+    <scroll-view class="weight-history" scroll-y enhanced show-scrollbar="false">
+      <view class="weight-history-row" wx:for="{{weightTrend.history}}" wx:key="dayKey"><text>{{item.date}}</text><view>{{item.weight}}<text>kg</text></view></view>
+    </scroll-view>
+    <view class="weight-note">每次在“我的 → 设置”中修改体重，系统会自动记录当天数据。</view>
+  </view>
 </view>
 
 <view class="overlay" wx:if="{{healthTipOpen}}" catchtap="closeHealthTip">
@@ -60,10 +150,9 @@
       <view><view>{{selectedHealthTip.title}}</view><text>{{lifeStage}} · {{selectedHealthTip.badge}}</text></view>
     </view>
     <view class="detail-summary">{{selectedHealthTip.desc}}</view>
-    <view class="care-editor" wx:if="{{selectedHealthTip.type === 'care'}}">
-      <view class="detail-title">护理计划</view>
-      <view class="care-edit-row" wx:for="{{selectedHealthTip.careItems}}" wx:key="key"><text>{{item.icon}}</text><view><view>{{item.label}}</view><text>{{item.status}} · {{item.cycle}}</text><text wx:if="{{item.last}}">上次完成 {{item.last}}</text></view><view class="care-date">{{item.date}}</view></view>
-      <view class="care-manage" bindtap="goAccount">前往“我的”记录护理或调整周期 <text>›</text></view>
+    <view class="care-home-link" wx:if="{{selectedHealthTip.type === 'care'}}" bindtap="goAccount">
+      <view><text>📋</text><view><view>护理与疫苗记录</view><text>历史记录、完成日期和提醒周期统一在“我的”管理</text></view></view>
+      <text>›</text>
     </view>
     <view class="detail-title">给{{pet.name}}的详细建议</view>
     <view class="advice-list">
@@ -84,10 +173,12 @@
       <text>从 {{togetherLabel}} 开始，每一天都值得收藏</text>
     </view>
     <scroll-view class="festival-scroll" scroll-y enhanced show-scrollbar="false">
-      <view class="festival-event birthday-event">
-        <view class="event-icon">🎂</view>
-        <view class="event-copy"><view>{{pet.name}}{{nextAge}}岁生日</view><text>{{birthdayLabel}}</text></view>
-        <view class="event-status {{birthdayDays === 0 ? 'today' : ''}}">{{birthdayDays === 0 ? '就是今天' : '还有' + birthdayDays + '天'}}</view>
+      <view class="milestone-title birthday-timeline-title">每岁生日</view>
+      <view class="festival-event birthday-event {{item.state}}" wx:for="{{birthdayItems}}" wx:key="age">
+        <view class="event-line birthday-line" wx:if="{{index < birthdayItems.length - 1}}"></view>
+        <view class="event-icon">{{item.state === 'today' ? '🎉' : item.state === 'upcoming' ? '🎂' : '✓'}}</view>
+        <view class="event-copy"><view>{{pet.name}} {{item.age}} 岁生日</view><text>{{item.date}}</text></view>
+        <view class="event-status {{item.state}}">{{item.status}}</view>
       </view>
       <view class="milestone-title">百日纪念时间轴</view>
       <view class="festival-event {{item.state}}" wx:for="{{festivalItems}}" wx:key="days">

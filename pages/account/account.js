@@ -355,9 +355,16 @@ Page({
 
     const commit = avatar => {
       const oldAvatar = this.data.pet.avatar
+      const oldWeight = Number(this.data.pet.weight)
       const pet = { ...draft, avatar }
       store.set('pet', pet)
       store.set('care', careDraft)
+      if (Number(pet.weight) !== oldWeight) {
+        const dayKey = store.todayKey()
+        const weightRecord = { id: Date.now(), dayKey, weight: Number(pet.weight) }
+        const weightRecords = [weightRecord, ...store.get('weightRecords').filter(item => item.dayKey !== dayKey)].slice(0, 100)
+        store.set('weightRecords', weightRecords)
+      }
       this.setData({ pet, draft: { ...pet }, profileEditOpen: false, careDraft: { ...careDraft }, newAvatarTemp: '', saving: false, changed: false })
       if (wx.showTabBar) wx.showTabBar({ animation: false })
       if (oldAvatar && oldAvatar.indexOf('wxfile://') === 0 && oldAvatar !== avatar) wx.removeSavedFile({ filePath: oldAvatar })

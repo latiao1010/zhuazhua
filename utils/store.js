@@ -8,7 +8,8 @@ const KEYS = {
   careRecords: 'paw_care_records',
   supplies: 'paw_supply_records',
   waters: 'paw_water_records',
-  walks: 'paw_walk_records'
+  walks: 'paw_walk_records',
+  weightRecords: 'paw_weight_records'
 }
 
 const seedPet = {
@@ -98,6 +99,9 @@ function ensureSeedData() {
   if (!wx.getStorageSync(KEYS.pet)) wx.setStorageSync(KEYS.pet, seedPet)
   const pet = wx.getStorageSync(KEYS.pet)
   if (pet && !pet.togetherSince) wx.setStorageSync(KEYS.pet, { ...pet, togetherSince: pet.birthday })
+  if (!wx.getStorageSync(KEYS.weightRecords)) {
+    wx.setStorageSync(KEYS.weightRecords, [{ id: Date.now(), dayKey: todayKey(), weight: Number(pet.weight) || 0 }])
+  }
   if (!wx.getStorageSync(KEYS.feeds)) wx.setStorageSync(KEYS.feeds, seedFeeds)
   if (!wx.getStorageSync(KEYS.diaries)) wx.setStorageSync(KEYS.diaries, seedDiaries)
   if (!wx.getStorageSync(KEYS.chats)) wx.setStorageSync(KEYS.chats, [])

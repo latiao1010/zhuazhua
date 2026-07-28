@@ -20,7 +20,6 @@
     "borderStyle": "white",
     "list": [
       { "pagePath": "pages/profile/profile", "text": "首页" },
-      { "pagePath": "pages/feed/feed", "text": "日常" },
       { "pagePath": "pages/chat/chat", "text": "AI 聊聊" },
       { "pagePath": "pages/avatar/avatar", "text": "头像" },
       { "pagePath": "pages/account/account", "text": "我的" }

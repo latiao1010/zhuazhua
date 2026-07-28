@@ -72,13 +72,28 @@ function buildSummary(type, records, pet) {
 
 Page({
   data: {
-    pet: {}, day: '', month: '', currentType: 'feed',
+    pet: {}, day: '', month: '', currentType: 'feed', singleMode: true, detailTitle: '喂食详情', detailEyebrow: 'FEEDING DETAIL',
     tabs: Object.keys(TYPES).map(key => ({ key, tab: TYPES[key].tab, icon: TYPES[key].icon })),
     rows: [], summary: {}, typeMeta: {},
     adding: false, mealTypes: ['早餐', '午餐', '晚餐', '零食'],
     stoolConditions: ['正常成形', '偏软', '稀便', '便秘/干硬'], stoolColors: ['棕色', '黄色', '黑色', '红色'], draft: {}
   },
-  onShow() { this.refresh() },
+  onLoad(options) {
+    const targetType = options && TYPES[options.type] ? options.type : 'feed'
+    this.pendingAdd = !!(options && options.add === '1')
+    this.pendingMealType = options && options.meal === 'breakfast' ? '早餐' : options && options.meal === 'dinner' ? '晚餐' : ''
+    this.setData({ currentType: targetType, singleMode: !options || options.single !== '0', adding: false })
+    if (wx.setNavigationBarTitle) wx.setNavigationBarTitle({ title: `${TYPES[targetType].tab}详情` })
+  },
+  onShow() {
+    this.refresh()
+    if (this.pendingAdd) {
+      this.pendingAdd = false
+      this.openAdd()
+      if (this.data.currentType === 'feed' && this.pendingMealType) this.setData({ 'draft.type': this.pendingMealType })
+    }
+    this.pendingMealType = ''
+  },
   refresh() {
     const type = this.data.currentType
     const dayKey = store.todayKey()
@@ -87,6 +102,8 @@ Page({
     const now = new Date()
     this.setData({
       pet, day: now.getDate(), month: now.getMonth() + 1, typeMeta: TYPES[type],
+      detailTitle: `${pet.name}的${TYPES[type].tab}`,
+      detailEyebrow: { feed: 'FEEDING DETAIL', stool: 'STOOL DETAIL', water: 'WATER DETAIL', walk: 'WALK DETAIL' }[type],
       rows: records.map(item => toRow(type, item)), summary: buildSummary(type, records, pet)
     })
   },
