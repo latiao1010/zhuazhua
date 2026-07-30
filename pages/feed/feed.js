@@ -14,6 +14,136 @@ function parseNumber(value) {
   return match ? Number(match[0]) || 0 : 0
 }
 
+function offsetDateKey(sourceKey, days) {
+  const date = new Date(`${sourceKey}T00:00:00`)
+  date.setDate(date.getDate() + days)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
+function recordDateLabel(item, today, yesterday) {
+  if (item.dayKey === today) return '今天'
+  if (item.dayKey === yesterday) return '昨天'
+  const match = String(item.dayKey || '').match(/^\d{4}-(\d{2})-(\d{2})$/)
+  if (match) return `${Number(match[1])}月${Number(match[2])}日`
+  return item.date || '历史记录'
+}
+
+function getTrendConfig(type, pet) {
+  const waterGoal = Math.round((Number(pet && pet.weight) || 0) * 55) || 600
+  return {
+    feed: {
+      title: '近 30 天喂食趋势', unit: 'g', eventUnit: '餐', goal: FEED_GOAL,
+      goalText: `目标线 ${FEED_GOAL}g`, mergeText: '单日多餐已合并', threshold: 5,
+      metricLabels: ['记录日均 / g', '近 7 天日均 / g', '30 天总餐次']
+    },
+    water: {
+      title: '近 30 天饮水趋势', unit: 'ml', eventUnit: '次', goal: waterGoal,
+      goalText: `目标线 ${waterGoal}ml`, mergeText: '单日多次已合并', threshold: 20,
+      metricLabels: ['记录日均 / ml', '近 7 天日均 / ml', '30 天总次数']
+    },
+    stool: {
+      title: '近 30 天排便趋势', unit: '次', eventUnit: '次', goal: 2,
+      goalText: '参考线 2次/天', mergeText: '异常记录已标色', threshold: 1,
+      metricLabels: ['30 天总次数', '正常记录占比', '异常天数']
+    },
+    walk: {
+      title: '近 30 天活动趋势', unit: '分钟', eventUnit: '次', goal: 30,
+      goalText: '目标线 30分钟', mergeText: '单日多次已合并', threshold: 3,
+      metricLabels: ['记录日均 / 分钟', '近 7 天日均 / 分钟', '30 天总次数']
+    }
+  }[type]
+}
+
+function getTrendDayValue(type, dayRecords) {
+  if (type === 'stool') return dayRecords.length
+  const valueKey = type === 'walk' ? 'duration' : 'amount'
+  return Math.round(dayRecords.reduce((sum, item) => sum + parseNumber(item[valueKey]), 0))
+}
+
+function buildTrend(type, records, endDate, selectedDate, pet) {
+  const config = getTrendConfig(type, pet)
+  const days = Array.from({ length: 30 }, (_, index) => {
+    const dayKey = offsetDateKey(endDate, index - 29)
+    const dayRecords = (records || []).filter(item => item && item.dayKey === dayKey)
+    const total = getTrendDayValue(type, dayRecords)
+    const abnormal = type === 'stool' ? dayRecords.filter(item => item.abnormal).length : 0
+    const parts = dayKey.split('-').map(Number)
+    return {
+      dayKey,
+      total,
+      count: dayRecords.length,
+      abnormal,
+      warning: abnormal > 0,
+      countText: dayRecords.length
+        ? type === 'stool' && abnormal ? `${abnormal}异常` : `${dayRecords.length}${config.eventUnit}`
+        : '—',
+      dateLabel: parts[2] === 1 ? `${parts[1]}/1` : String(parts[2]),
+      isLatest: index === 29,
+      selected: dayKey === selectedDate
+    }
+  })
+  const maxValue = Math.max(config.goal, ...days.map(item => item.total), 1)
+  const activeDays = days.filter(item => item.total > 0)
+  const totalEvents = days.reduce((sum, item) => sum + item.count, 0)
+  const average = activeDays.length ? Math.round(activeDays.reduce((sum, item) => sum + item.total, 0) / activeDays.length) : 0
+  const latest7 = days.slice(-7)
+  const previous7 = days.slice(-14, -7)
+  const latest7Average = Math.round(latest7.reduce((sum, item) => sum + item.total, 0) / 7)
+  const previous7Average = Math.round(previous7.reduce((sum, item) => sum + item.total, 0) / 7)
+  const change = latest7Average - previous7Average
+  let changeText = '近两周基本稳定'
+  let changeClass = 'stable'
+  if (type === 'stool') {
+    const latestAbnormal = latest7.reduce((sum, item) => sum + item.abnormal, 0)
+    const previousAbnormal = previous7.reduce((sum, item) => sum + item.abnormal, 0)
+    const abnormalChange = latestAbnormal - previousAbnormal
+    if (!latestAbnormal) {
+      changeText = '近 7 天状态稳定'
+      changeClass = 'down'
+    } else if (abnormalChange) {
+      changeText = `近 7 天异常${abnormalChange > 0 ? '增加' : '减少'} ${Math.abs(abnormalChange)} 次`
+      changeClass = abnormalChange > 0 ? 'up' : 'down'
+    } else {
+      changeText = `近 7 天有 ${latestAbnormal} 次需观察`
+      changeClass = 'up'
+    }
+  } else if (!previous7Average && latest7Average) {
+    changeText = '近 7 天开始形成记录'
+    changeClass = 'up'
+  } else if (Math.abs(change) >= config.threshold) {
+    changeText = `近 7 天日均${change > 0 ? '增加' : '减少'} ${Math.abs(change)}${config.unit}`
+    changeClass = change > 0 ? 'up' : 'down'
+  }
+  const abnormalDays = days.filter(item => item.abnormal > 0).length
+  const normalRecords = totalEvents - days.reduce((sum, item) => sum + item.abnormal, 0)
+  const normalRate = totalEvents ? Math.round(normalRecords / totalEvents * 100) : 0
+  const metricValues = type === 'stool'
+    ? [totalEvents, `${normalRate}%`, abnormalDays]
+    : [average, latest7Average, totalEvents]
+  return {
+    days: days.map(item => ({
+      ...item,
+      barHeight: item.total ? Math.max(14, Math.round(item.total / maxValue * 132)) : 0
+    })),
+    theme: type,
+    title: config.title,
+    metrics: config.metricLabels.map((label, index) => ({ label, value: metricValues[index] })),
+    chartWidth: days.length * 70,
+    scrollLeft: days.length * 70,
+    endLabel: `${Number(endDate.slice(5, 7))}月${Number(endDate.slice(8, 10))}日`,
+    goalBottom: Math.min(100, Math.round(config.goal / maxValue * 100)),
+    goalText: config.goalText,
+    footText: `${activeDays.length} 天有记录 · ${config.mergeText}`,
+    activeDays: activeDays.length,
+    totalMeals: totalEvents,
+    average,
+    latest7Average,
+    changeText,
+    changeClass,
+    hasData: activeDays.length > 0
+  }
+}
+
 function toRow(type, item) {
   const base = { id: item.id, time: item.time, date: item.date }
   if (type === 'feed') {
@@ -34,55 +164,58 @@ function toRow(type, item) {
   return { ...base, icon: '🐾', iconClass: 'walk-icon', dotClass: 'walk-dot', title: '散步', meta: `${item.duration} 分钟`, metaClass: 'amount', sub: detail }
 }
 
-function buildSummary(type, records, pet) {
+function buildSummary(type, records, pet, isToday) {
+  const dayText = isToday ? '今日' : '当日'
+  const naturalDayText = isToday ? '今天' : '当日'
   if (type === 'feed') {
     const total = records.reduce((sum, item) => sum + parseNumber(item.amount), 0)
     return {
-      kind: 'progress', label: '今日已摄入', value: total, unit: 'g', goalText: `目标 ${FEED_GOAL}g`,
+      kind: 'progress', label: `${dayText}已摄入`, value: total, unit: 'g', goalText: `目标 ${FEED_GOAL}g`,
       progress: Math.min(100, Math.round(total / FEED_GOAL * 100)),
-      footLeft: `今日 ${records.length} 餐`, footRight: total >= FEED_GOAL ? '已达标' : `还差 ${FEED_GOAL - total}g`
+      footLeft: `${dayText} ${records.length} 餐`, footRight: total >= FEED_GOAL ? '已达标' : `还差 ${FEED_GOAL - total}g`
     }
   }
   if (type === 'water') {
     const goal = Math.round((Number(pet.weight) || 0) * 55) || FEED_GOAL
     const total = records.reduce((sum, item) => sum + parseNumber(item.amount), 0)
     return {
-      kind: 'progress', label: '今日已饮水', value: total, unit: 'ml', goalText: `目标 ${goal}ml`,
+      kind: 'progress', label: `${dayText}已饮水`, value: total, unit: 'ml', goalText: `目标 ${goal}ml`,
       progress: Math.min(100, Math.round(total / goal * 100)),
-      footLeft: `今日 ${records.length} 次`, footRight: total >= goal ? '已达标' : `还差 ${goal - total}ml`
+      footLeft: `${dayText} ${records.length} 次`, footRight: total >= goal ? '已达标' : `还差 ${goal - total}ml`
     }
   }
   if (type === 'stool') {
     const abnormal = records.filter(item => item.abnormal).length
     return {
       kind: 'count', warning: !!abnormal, score: abnormal ? '!' : '✓',
-      headline: abnormal ? '今天有异常记录' : '今天状态正常',
-      sub: `已记录 ${records.length} 次${abnormal ? ' · 建议持续观察' : ' · 继续保持规律饮食'}`,
+      headline: !records.length ? `${naturalDayText}暂无记录` : abnormal ? `${naturalDayText}有异常记录` : `${naturalDayText}状态正常`,
+      sub: records.length ? `已记录 ${records.length} 次${abnormal ? ' · 建议持续观察' : ' · 继续保持规律饮食'}` : '选择其他日期可查看历史记录',
       count: records.length, countUnit: '次'
     }
   }
   const minutes = records.reduce((sum, item) => sum + parseNumber(item.duration), 0)
   return {
     kind: 'count', warning: false, score: '🐾',
-    headline: minutes ? `今天累计走了 ${minutes} 分钟` : '今天还没出门',
-    sub: records.length ? '保持每天规律活动，有助于消化和情绪' : '带它出去走走吧',
+    headline: minutes ? `${naturalDayText}累计走了 ${minutes} 分钟` : `${naturalDayText}没有散步记录`,
+    sub: records.length ? '保持每天规律活动，有助于消化和情绪' : isToday ? '带它出去走走吧' : '选择其他日期可查看历史记录',
     count: records.length, countUnit: '次'
   }
 }
 
 Page({
   data: {
-    pet: {}, day: '', month: '', currentType: 'feed', singleMode: true, detailTitle: '喂食详情', detailEyebrow: 'FEEDING DETAIL',
+    pet: {}, day: '', month: '', today: '', selectedDate: '', trendEndDate: '', dateFilterText: '今天', emptyText: '', currentType: 'feed', singleMode: true, detailTitle: '喂食详情', detailEyebrow: 'FEEDING DETAIL',
     tabs: Object.keys(TYPES).map(key => ({ key, tab: TYPES[key].tab, icon: TYPES[key].icon })),
-    rows: [], summary: {}, typeMeta: {},
+    rows: [], summary: {}, typeMeta: {}, feedTrend: { days: [], scrollLeft: 0, activeDays: 0, totalMeals: 0, average: 0, latest7Average: 0 },
     adding: false, mealTypes: ['早餐', '午餐', '晚餐', '零食'],
     stoolConditions: ['正常成形', '偏软', '稀便', '便秘/干硬'], stoolColors: ['棕色', '黄色', '黑色', '红色'], draft: {}
   },
   onLoad(options) {
     const targetType = options && TYPES[options.type] ? options.type : 'feed'
+    const today = store.todayKey()
     this.pendingAdd = !!(options && options.add === '1')
     this.pendingMealType = options && options.meal === 'breakfast' ? '早餐' : options && options.meal === 'dinner' ? '晚餐' : ''
-    this.setData({ currentType: targetType, singleMode: !options || options.single !== '0', adding: false })
+    this.setData({ currentType: targetType, singleMode: !options || options.single !== '0', adding: false, today, selectedDate: today, trendEndDate: today })
     if (wx.setNavigationBarTitle) wx.setNavigationBarTitle({ title: `${TYPES[targetType].tab}详情` })
   },
   onShow() {
@@ -96,16 +229,42 @@ Page({
   },
   refresh() {
     const type = this.data.currentType
-    const dayKey = store.todayKey()
+    const today = store.todayKey()
+    const selectedDate = this.data.selectedDate || today
+    const trendEndDate = this.data.trendEndDate || selectedDate
+    const yesterdayKey = offsetDateKey(today, -1)
+    const dateFilterText = recordDateLabel({ dayKey: selectedDate }, today, yesterdayKey)
     const pet = store.get('pet')
-    const records = store.get(TYPES[type].storeKey).filter(item => item.dayKey === dayKey)
-    const now = new Date()
+    const typeRecords = store.get(TYPES[type].storeKey)
+    const records = typeRecords
+      .filter(item => item && item.dayKey === selectedDate)
+      .sort((a, b) => String(b.time || '').localeCompare(String(a.time || '')))
+    const rows = records.map(item => toRow(type, {
+      ...item,
+      date: dateFilterText
+    }))
+    const selected = new Date(`${selectedDate}T00:00:00`)
+    const isToday = selectedDate === today
     this.setData({
-      pet, day: now.getDate(), month: now.getMonth() + 1, typeMeta: TYPES[type],
+      pet, today, selectedDate, day: selected.getDate(), month: selected.getMonth() + 1, dateFilterText,
+      emptyText: isToday ? TYPES[type].empty : `${dateFilterText}没有${TYPES[type].tab}记录。`,
+      typeMeta: TYPES[type],
       detailTitle: `${pet.name}的${TYPES[type].tab}`,
       detailEyebrow: { feed: 'FEEDING DETAIL', stool: 'STOOL DETAIL', water: 'WATER DETAIL', walk: 'WALK DETAIL' }[type],
-      rows: records.map(item => toRow(type, item)), summary: buildSummary(type, records, pet)
+      rows,
+      summary: buildSummary(type, records, pet, isToday),
+      feedTrend: buildTrend(type, typeRecords, trendEndDate, selectedDate, pet)
     })
+  },
+  onRecordDate(e) {
+    this.setData({ selectedDate: e.detail.value, trendEndDate: e.detail.value })
+    this.refresh()
+  },
+  onTrendDay(e) {
+    const selectedDate = e.currentTarget.dataset.date
+    if (!selectedDate) return
+    this.setData({ selectedDate })
+    this.refresh()
   },
   switchType(e) {
     this.setData({ currentType: e.currentTarget.dataset.type, adding: false })
@@ -135,8 +294,10 @@ Page({
   },
   saveFeed() {
     const d = this.data.draft
-    if (!d.food.trim() || !d.amount) return wx.showToast({ title: '请补充食物和分量', icon: 'none' })
-    const feeds = [{ id: Date.now(), dayKey: store.todayKey(), date: '今天', time: d.time, type: d.type, food: d.food, amount: `${parseInt(d.amount, 10)}g`, icon: d.type === '零食' ? '🦴' : '🥣' }, ...store.get('feeds')]
+    const food = String(d.food || '').trim()
+    const amount = Number(d.amount)
+    if (!food || !Number.isFinite(amount) || amount <= 0) return wx.showToast({ title: '请补充正确的食物和分量', icon: 'none' })
+    const feeds = [{ id: Date.now(), dayKey: store.todayKey(), date: '今天', time: d.time, type: d.type, food, amount: `${amount}g`, icon: d.type === '零食' ? '🦴' : '🥣' }, ...store.get('feeds')]
     store.set('feeds', feeds)
     this.finishSave('喂食记录已保存')
   },
@@ -149,21 +310,29 @@ Page({
   },
   saveWater() {
     const d = this.data.draft
-    const amount = parseInt(d.amount, 10)
-    if (!amount || amount <= 0) return wx.showToast({ title: '请填写饮水量', icon: 'none' })
+    const amount = Number(d.amount)
+    if (!Number.isFinite(amount) || amount <= 0) return wx.showToast({ title: '请填写正确的饮水量', icon: 'none' })
     const waters = [{ id: Date.now(), dayKey: store.todayKey(), date: '今天', time: d.time, amount: `${amount}ml`, note: (d.note || '').trim(), icon: '💧' }, ...store.get('waters')]
     store.set('waters', waters)
     this.finishSave('饮水记录已保存')
   },
   saveWalk() {
     const d = this.data.draft
-    const duration = parseInt(d.duration, 10)
-    if (!duration || duration <= 0) return wx.showToast({ title: '请填写散步时长', icon: 'none' })
-    const walks = [{ id: Date.now(), dayKey: store.todayKey(), date: '今天', time: d.time, duration, distance: String(d.distance || '').trim(), note: (d.note || '').trim(), icon: '🐾' }, ...store.get('walks')]
+    const duration = Number(d.duration)
+    const distance = String(d.distance || '').trim()
+    const distanceValue = distance ? Number(distance) : 0
+    if (!Number.isFinite(duration) || duration <= 0) return wx.showToast({ title: '请填写正确的散步时长', icon: 'none' })
+    if (distance && (!Number.isFinite(distanceValue) || distanceValue < 0)) return wx.showToast({ title: '请填写正确的散步距离', icon: 'none' })
+    const walks = [{ id: Date.now(), dayKey: store.todayKey(), date: '今天', time: d.time, duration, distance, note: (d.note || '').trim(), icon: '🐾' }, ...store.get('walks')]
     store.set('walks', walks)
     this.finishSave('散步记录已保存')
   },
-  finishSave(title) { this.setData({ adding: false }); this.refresh(); wx.showToast({ title, icon: 'none' }) },
+  finishSave(title) {
+    const today = store.todayKey()
+    this.setData({ adding: false, selectedDate: today, trendEndDate: today })
+    this.refresh()
+    wx.showToast({ title, icon: 'none' })
+  },
   removeRecord(e) {
     const key = TYPES[this.data.currentType].storeKey
     const id = e.currentTarget.dataset.id

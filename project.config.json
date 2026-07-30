@@ -1,7 +1,28 @@
 {
   "description": "宠物陪伴与记录小程序",
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      {
+        "type": "folder",
+        "value": "server"
+      },
+      {
+        "type": "folder",
+        "value": "tests"
+      },
+      {
+        "type": "file",
+        "value": "Start-AI-Proxy.ps1"
+      },
+      {
+        "type": "file",
+        "value": ".gitignore"
+      },
+      {
+        "type": "file",
+        "value": "README.md"
+      }
+    ],
     "include": []
   },
   "setting": {

@@ -11,8 +11,11 @@
 ## 数据与 AI
 
 - 档案、喂食、排便和聊天记录存储在 `wx` 本地存储中。
-- AI 功能当前使用本地演示逻辑，可完整体验交互。
-- 接入真实服务时，将 `pages/chat/chat.js`、`pages/avatar/avatar.js` 中标注的演示方法替换为 `wx.cloud.callFunction` 或自有 API；密钥应只放在服务端。
+- “AI聊聊”通过本机代理调用 DeepSeek，API Key 不会进入小程序代码或安装包；服务不可用时自动回退到离线建议。
+- 默认模型为 `deepseek-v4-flash`。如需使用 Pro，可在 `server/.env.local` 中设置 `DEEPSEEK_MODEL=deepseek-v4-pro`。
+- 本地启动代理：`powershell -ExecutionPolicy Bypass -File .\Start-AI-Proxy.ps1`。
+- 正式发布时需要把 `server/deepseek-proxy.js` 部署到 HTTPS 服务，在小程序中通过 `wx.setStorageSync('paw_ai_proxy_url', 'https://你的域名/api/chat')` 设置地址，并在微信公众平台配置 request 合法域名。
+- “AI Q版头像”通过本机代理调用即梦 `image2image`；需要先安装 `dreamina` CLI 并完成 OAuth 登录，生成会消耗即梦积分。
 
 ## 实时天气
 

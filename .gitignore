@@ -1,12 +1,4 @@
-# WeChat DevTools local settings
+server/.env.local
+server/*.log
+server/generated/
 project.private.config.json
-
-# Dependencies and generated files
-node_modules/
-miniprogram_npm/
-dist/
-
-# OS and editor files
-.DS_Store
-Thumbs.db
-*.log

@@ -1,5 +1,15 @@
 const store = require('../../utils/store')
 
+function showNativeTabBar() {
+  if (!wx.showTabBar) return
+  wx.showTabBar({ animation: false, fail() {} })
+}
+
+function hideNativeTabBar() {
+  if (!wx.hideTabBar) return
+  wx.hideTabBar({ animation: false, fail() {} })
+}
+
 const CARE_TYPES = {
   deworming: { label: '体内外驱虫', actionText: '记录驱虫', cycleKey: 'dewormingCycle', lastKey: 'dewormingLast', unit: 'month', icon: '🪱' },
   medicine: { label: '宠物用药', actionText: '记录用药', cycleKey: 'medicineCycle', lastKey: 'medicineLast', unit: 'day', icon: '💊' },
@@ -16,6 +26,13 @@ const SUPPLY_TYPES = {
 
 function dateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
+function isValidDateKey(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ''))) return false
+  const [year, month, day] = String(value).split('-').map(Number)
+  const date = new Date(year, month - 1, day)
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day
 }
 
 function nextDateKey(startKey, amount, unit) {
@@ -139,16 +156,23 @@ Page({
     careDetailOpen: false, careMenuOpen: false, careSubView: '', selectedCare: {}, selectedCareRecords: [],
     selectedRecordDate: '', selectedMonth: '', selectedMonthText: '', careCalendar: [], weekNames: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
     supplies: {}, supplyView: {}, supplyOpen: false, selectedSupplyKey: '', selectedSupply: {}, supplyDraft: {}, supplyHistory: [],
-    newAvatarTemp: '', saving: false, changed: false, today: '', sexOptions: ['男孩', '女孩'], sexIndex: 0
+    newAvatarTemp: '', weightPhotoTemp: '', saving: false, changed: false, today: '', sexOptions: ['男孩', '女孩'], sexIndex: 0
   },
   onShow() {
+    showNativeTabBar()
     const pet = store.get('pet')
     const draft = { ...pet, togetherSince: pet.togetherSince || pet.birthday, sex: pet.sex || '男孩' }
     const careDraft = store.normalizeCareSchedule(store.get('care'))
     const supplies = store.normalizeSupplies(store.get('supplies'))
     const supplyView = buildSupplyView(supplies, store.get('feeds'))
     const today = store.todayKey()
-    this.setData({ pet, draft, profileEditOpen: false, careDraft, careView: buildCareView(careDraft), careRecords: store.get('careRecords'), careDetailOpen: false, careMenuOpen: false, careSubView: '', selectedCare: {}, selectedCareRecords: [], selectedRecordDate: today, selectedMonth: today.slice(0, 7), selectedMonthText: monthText(today.slice(0, 7)), careCalendar: [], supplies, supplyView, supplyOpen: false, selectedSupplyKey: '', selectedSupply: {}, supplyDraft: {}, supplyHistory: [], newAvatarTemp: '', saving: false, changed: false, today, sexIndex: draft.sex === '女孩' ? 1 : 0 })
+    this.setData({ pet, draft, profileEditOpen: false, careDraft, careView: buildCareView(careDraft), careRecords: store.get('careRecords'), careDetailOpen: false, careMenuOpen: false, careSubView: '', selectedCare: {}, selectedCareRecords: [], selectedRecordDate: today, selectedMonth: today.slice(0, 7), selectedMonthText: monthText(today.slice(0, 7)), careCalendar: [], supplies, supplyView, supplyOpen: false, selectedSupplyKey: '', selectedSupply: {}, supplyDraft: {}, supplyHistory: [], newAvatarTemp: '', weightPhotoTemp: '', saving: false, changed: false, today, sexIndex: draft.sex === '女孩' ? 1 : 0 })
+  },
+  onHide() {
+    showNativeTabBar()
+  },
+  onUnload() {
+    showNativeTabBar()
   },
   openSupply(e) {
     const key = e.currentTarget.dataset.key
@@ -181,11 +205,12 @@ Page({
     const config = SUPPLY_TYPES[key]
     const draft = { ...this.data.supplyDraft }
     const amount = Number(draft.packageAmount)
+    const productName = String(draft.productName || '').trim()
     if (!config) return
-    if (!draft.productName.trim()) return wx.showToast({ title: `请填写${config.label}名称`, icon: 'none' })
-    if (!amount || amount <= 0) return wx.showToast({ title: '请填写正确的包装重量', icon: 'none' })
-    if (!draft.openedDate || draft.openedDate > store.todayKey()) return wx.showToast({ title: '请选择正确的拆封日期', icon: 'none' })
-    const record = { id: Date.now(), productName: draft.productName.trim(), packageAmount: amount, openedDate: draft.openedDate }
+    if (!productName) return wx.showToast({ title: `请填写${config.label}名称`, icon: 'none' })
+    if (!Number.isFinite(amount) || amount <= 0) return wx.showToast({ title: '请填写正确的包装重量', icon: 'none' })
+    if (!isValidDateKey(draft.openedDate) || draft.openedDate > store.todayKey()) return wx.showToast({ title: '请选择正确的拆封日期', icon: 'none' })
+    const record = { id: Date.now(), productName, packageAmount: amount, openedDate: draft.openedDate }
     const supplies = store.normalizeSupplies(this.data.supplies)
     supplies[key] = {
       ...supplies[key],
@@ -201,16 +226,28 @@ Page({
   },
   openProfileEdit() {
     const draft = { ...this.data.pet, togetherSince: this.data.pet.togetherSince || this.data.pet.birthday, sex: this.data.pet.sex || '男孩' }
-    if (wx.hideTabBar) wx.hideTabBar({ animation: false })
-    this.setData({ profileEditOpen: true, draft, sexIndex: draft.sex === '女孩' ? 1 : 0, newAvatarTemp: '', changed: false })
+    hideNativeTabBar()
+    this.setData({ profileEditOpen: true, draft, sexIndex: draft.sex === '女孩' ? 1 : 0, newAvatarTemp: '', weightPhotoTemp: '', changed: false })
   },
   closeProfileEdit() {
     const draft = { ...this.data.pet, togetherSince: this.data.pet.togetherSince || this.data.pet.birthday, sex: this.data.pet.sex || '男孩' }
-    this.setData({ profileEditOpen: false, draft, sexIndex: draft.sex === '女孩' ? 1 : 0, newAvatarTemp: '', saving: false, changed: false })
-    if (wx.showTabBar) wx.showTabBar({ animation: false })
+    this.setData({ profileEditOpen: false, draft, sexIndex: draft.sex === '女孩' ? 1 : 0, newAvatarTemp: '', weightPhotoTemp: '', saving: false, changed: false })
+    showNativeTabBar()
   },
   chooseAvatar() {
     wx.chooseMedia({ count: 1, mediaType: ['image'], sourceType: ['album', 'camera'], sizeType: ['compressed'], success: res => this.setData({ newAvatarTemp: res.tempFiles[0].tempFilePath, changed: true }) })
+  },
+  chooseWeightPhoto() {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['camera', 'album'],
+      sizeType: ['compressed'],
+      success: res => this.setData({ weightPhotoTemp: res.tempFiles[0].tempFilePath, changed: true })
+    })
+  },
+  removeWeightPhoto() {
+    this.setData({ weightPhotoTemp: '', changed: true })
   },
   onInput(e) { this.setData({ [`draft.${e.currentTarget.dataset.key}`]: e.detail.value, changed: true }) },
   onSex(e) {
@@ -235,7 +272,7 @@ Page({
     const selectedRecordDate = store.todayKey()
     const selectedMonth = selectedRecordDate.slice(0, 7)
     const selectedCareRecords = this.data.careRecords.filter(item => item.key === key).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 50)
-    if (wx.hideTabBar) wx.hideTabBar({ animation: false })
+    hideNativeTabBar()
     this.setData({
       careDetailOpen: true,
       careMenuOpen: false,
@@ -250,7 +287,7 @@ Page({
   },
   closeCareDetail() {
     this.setData({ careDetailOpen: false, careMenuOpen: false, careSubView: '' })
-    if (wx.showTabBar) wx.showTabBar({ animation: false })
+    showNativeTabBar()
   },
   noop() {},
   backCareView() {
@@ -344,35 +381,68 @@ Page({
   savePet() {
     const draft = { ...this.data.draft, togetherSince: this.data.draft.togetherSince || this.data.draft.birthday }
     const careDraft = { ...this.data.careDraft }
-    if (!draft.name.trim()) return wx.showToast({ title: '请填写昵称', icon: 'none' })
-    if (!draft.breed.trim()) return wx.showToast({ title: '请填写品种', icon: 'none' })
-    if (!draft.weight || Number(draft.weight) <= 0) return wx.showToast({ title: '请填写正确体重', icon: 'none' })
-    if (draft.birthday > this.data.today) return wx.showToast({ title: '生日不能晚于今天', icon: 'none' })
-    if (draft.togetherSince > this.data.today) return wx.showToast({ title: '相遇日不能晚于今天', icon: 'none' })
+    const weight = Number(draft.weight)
+    draft.name = String(draft.name || '').trim()
+    draft.breed = String(draft.breed || '').trim()
+    if (!draft.name) return wx.showToast({ title: '请填写昵称', icon: 'none' })
+    if (!draft.breed) return wx.showToast({ title: '请填写品种', icon: 'none' })
+    if (!Number.isFinite(weight) || weight <= 0) return wx.showToast({ title: '请填写正确体重', icon: 'none' })
+    if (!isValidDateKey(draft.birthday) || draft.birthday > this.data.today) return wx.showToast({ title: '请选择正确的生日', icon: 'none' })
+    if (!isValidDateKey(draft.togetherSince) || draft.togetherSince > this.data.today) return wx.showToast({ title: '请选择正确的相遇日', icon: 'none' })
+    if (draft.togetherSince < draft.birthday) return wx.showToast({ title: '相遇日不能早于生日', icon: 'none' })
+    draft.weight = weight
     const cycleKeys = ['dewormingCycle', 'vaccineCycle', 'bathCycle', 'dentalCycle', 'nailCycle', 'medicineCycle']
-    if (cycleKeys.some(key => !careDraft[key] || Number(careDraft[key]) <= 0)) return wx.showToast({ title: '护理周期需大于 0', icon: 'none' })
+    if (cycleKeys.some(key => !Number.isFinite(Number(careDraft[key])) || Number(careDraft[key]) <= 0)) return wx.showToast({ title: '护理周期需填写正确数字', icon: 'none' })
     cycleKeys.forEach(key => { careDraft[key] = Number(careDraft[key]) })
 
-    const commit = avatar => {
+    const weightChanged = Number(draft.weight) !== Number(this.data.pet.weight)
+    const commit = (avatar, weightPhotoPath) => {
       const oldAvatar = this.data.pet.avatar
-      const oldWeight = Number(this.data.pet.weight)
       const pet = { ...draft, avatar }
       store.set('pet', pet)
       store.set('care', careDraft)
-      if (Number(pet.weight) !== oldWeight) {
+      if (weightChanged || weightPhotoPath) {
+        const capturedAt = Date.now()
+        const capturedDate = new Date(capturedAt)
         const dayKey = store.todayKey()
-        const weightRecord = { id: Date.now(), dayKey, weight: Number(pet.weight) }
-        const weightRecords = [weightRecord, ...store.get('weightRecords').filter(item => item.dayKey !== dayKey)].slice(0, 100)
+        const time = `${String(capturedDate.getHours()).padStart(2, '0')}:${String(capturedDate.getMinutes()).padStart(2, '0')}`
+        const weightRecord = { id: capturedAt, createdAt: capturedAt, dayKey, time, weight: Number(pet.weight), photoPath: weightPhotoPath || '' }
+        const allWeightRecords = [weightRecord, ...store.get('weightRecords')]
+        const weightRecords = allWeightRecords.slice(0, 100)
+        allWeightRecords.slice(100).forEach(item => {
+          if (item.photoPath && item.photoPath.indexOf('wxfile://') === 0) wx.removeSavedFile({ filePath: item.photoPath })
+        })
         store.set('weightRecords', weightRecords)
       }
-      this.setData({ pet, draft: { ...pet }, profileEditOpen: false, careDraft: { ...careDraft }, newAvatarTemp: '', saving: false, changed: false })
-      if (wx.showTabBar) wx.showTabBar({ animation: false })
+      this.setData({ pet, draft: { ...pet }, profileEditOpen: false, careDraft: { ...careDraft }, newAvatarTemp: '', weightPhotoTemp: '', saving: false, changed: false })
+      showNativeTabBar()
       if (oldAvatar && oldAvatar.indexOf('wxfile://') === 0 && oldAvatar !== avatar) wx.removeSavedFile({ filePath: oldAvatar })
-      wx.showToast({ title: '资料已保存' })
+      wx.showToast({ title: weightPhotoPath ? '体重和成长照片已保存' : '资料已保存', icon: 'none' })
     }
 
-    if (!this.data.newAvatarTemp) return commit(draft.avatar)
+    const saveAvatar = weightPhotoPath => {
+      if (!this.data.newAvatarTemp) return commit(draft.avatar, weightPhotoPath)
+      wx.saveFile({
+        tempFilePath: this.data.newAvatarTemp,
+        success: res => commit(res.savedFilePath, weightPhotoPath),
+        fail: () => {
+          if (weightPhotoPath && weightPhotoPath.indexOf('wxfile://') === 0) wx.removeSavedFile({ filePath: weightPhotoPath })
+          this.setData({ saving: false })
+          wx.showToast({ title: '头像保存失败', icon: 'none' })
+        }
+      })
+    }
+
+    if (!this.data.newAvatarTemp && !this.data.weightPhotoTemp) return commit(draft.avatar, '')
     this.setData({ saving: true })
-    wx.saveFile({ tempFilePath: this.data.newAvatarTemp, success: res => commit(res.savedFilePath), fail: () => { this.setData({ saving: false }); wx.showToast({ title: '头像保存失败', icon: 'none' }) } })
+    if (!this.data.weightPhotoTemp) return saveAvatar('')
+    wx.saveFile({
+      tempFilePath: this.data.weightPhotoTemp,
+      success: res => saveAvatar(res.savedFilePath),
+      fail: () => {
+        this.setData({ saving: false })
+        wx.showToast({ title: '成长照片保存失败', icon: 'none' })
+      }
+    })
   }
 })

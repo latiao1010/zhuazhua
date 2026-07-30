@@ -111,15 +111,23 @@ function getHealthTips(pet, ageYears, careSchedule) {
 }
 
 function buildWeightTrend(records, currentWeight) {
-  const byDay = {}
-  ;(records || []).forEach(item => {
-    const weight = Number(item.weight)
-    if (item.dayKey && weight > 0 && !byDay[item.dayKey]) byDay[item.dayKey] = { ...item, weight }
-  })
-  let ordered = Object.values(byDay).sort((a, b) => a.dayKey.localeCompare(b.dayKey))
-  if (!ordered.length && Number(currentWeight) > 0) {
-    ordered = [{ id: Date.now(), dayKey: store.todayKey(), weight: Number(currentWeight) }]
+  let normalized = (records || [])
+    .map(item => {
+      const weight = Number(item.weight)
+      const createdAt = Number(item.createdAt) || Number(item.id) || new Date(`${item.dayKey || store.todayKey()}T00:00:00`).getTime()
+      return { ...item, weight, createdAt, photoPath: item.photoPath || '' }
+    })
+    .filter(item => item.dayKey && item.weight > 0)
+    .sort((a, b) => b.createdAt - a.createdAt)
+  if (!normalized.length && Number(currentWeight) > 0) {
+    const createdAt = Date.now()
+    normalized = [{ id: createdAt, createdAt, dayKey: store.todayKey(), time: '', weight: Number(currentWeight), photoPath: '' }]
   }
+  const byDay = {}
+  normalized.forEach(item => {
+    if (!byDay[item.dayKey]) byDay[item.dayKey] = item
+  })
+  const ordered = Object.values(byDay).sort((a, b) => a.dayKey.localeCompare(b.dayKey))
   const recent = ordered.slice(-8)
   const weights = recent.map(item => item.weight)
   const min = Math.min(...weights)
@@ -133,12 +141,17 @@ function buildWeightTrend(records, currentWeight) {
       height: range ? Math.round(42 + (item.weight - min) / range * 78) : 76
     }
   })
-  const first = ordered[0]
-  const last = ordered[ordered.length - 1]
+  const first = normalized[normalized.length - 1]
+  const last = normalized[0]
   const change = first && last ? Number((last.weight - first.weight).toFixed(1)) : 0
   return {
     bars,
-    history: ordered.slice(-10).reverse().map(item => ({ ...item, date: item.dayKey.replace(/-/g, '.') })),
+    history: normalized.slice(0, 30).map(item => ({
+      ...item,
+      date: item.dayKey.replace(/-/g, '.'),
+      timeText: item.time || '',
+      hasPhoto: Boolean(item.photoPath)
+    })),
     current: last ? last.weight : Number(currentWeight) || 0,
     change,
     changeText: change === 0 ? '保持稳定' : `${change > 0 ? '增加' : '减少'} ${Math.abs(change).toFixed(1)}kg`,
@@ -224,44 +237,6 @@ function getDogFoodDays(supplies, feeds) {
   const dailyAverage = recordedDays ? consumed / recordedDays : 0
   const remaining = Math.max(0, packageAmount - consumed)
   return { configured: true, daysLeft: dailyAverage ? Math.max(0, Math.ceil(remaining / dailyAverage)) : null }
-}
-
-function offsetDayKey(offset) {
-  const date = new Date()
-  date.setHours(0, 0, 0, 0)
-  date.setDate(date.getDate() + offset)
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-}
-
-function buildWeeklyMetrics({ pet, feeds, stools, waters, walks }) {
-  const start = offsetDayKey(-6)
-  const end = store.todayKey()
-  const inWeek = item => item.dayKey && item.dayKey >= start && item.dayKey <= end
-  const weekFeeds = (feeds || []).filter(inWeek)
-  const weekStools = (stools || []).filter(inWeek)
-  const weekWaters = (waters || []).filter(inWeek)
-  const weekWalks = (walks || []).filter(inWeek)
-  const waterTarget = Math.round((Number(pet.weight) || 0) * 55)
-  const waterByDay = weekWaters.reduce((result, item) => {
-    result[item.dayKey] = (result[item.dayKey] || 0) + numberFromText(item.amount)
-    return result
-  }, {})
-  const waterReachedDays = waterTarget
-    ? Object.values(waterByDay).filter(amount => amount >= waterTarget).length
-    : 0
-  const stoolsByDay = weekStools.reduce((result, item) => {
-    if (!result[item.dayKey]) result[item.dayKey] = []
-    result[item.dayKey].push(item)
-    return result
-  }, {})
-  const normalStoolDays = Object.values(stoolsByDay).filter(items => items.length && items.every(item => !item.abnormal)).length
-  const walkMinutes = weekWalks.reduce((sum, item) => sum + numberFromText(item.duration), 0)
-  return [
-    { icon: '🥣', label: '喂食记录', value: `${weekFeeds.length} 次`, hint: '近 7 天', action: 'feed', tone: 'feed' },
-    { icon: '💧', label: '饮水达标', value: `${waterReachedDays}/7 天`, hint: waterTarget ? `目标 ${waterTarget}ml` : '待设置体重', action: 'water', tone: 'water' },
-    { icon: '💩', label: '正常排便', value: `${normalStoolDays}/7 天`, hint: '按记录统计', action: 'stool', tone: 'stool' },
-    { icon: '🐾', label: '散步累计', value: `${walkMinutes} 分钟`, hint: `${weekWalks.length} 次记录`, action: 'walk', tone: 'walk' }
-  ]
 }
 
 function getTodayKnowledge(month) {
@@ -358,6 +333,128 @@ function buildCareFindings(careSchedule) {
   return urgentItems
 }
 
+function clockToMinutes(value) {
+  const match = String(value || '').match(/^(\d{1,2}):(\d{2})/)
+  if (!match) return null
+  return Number(match[1]) * 60 + Number(match[2])
+}
+
+function minutesToClock(value) {
+  const minutes = Math.max(0, Math.min(1439, Math.round(value)))
+  return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`
+}
+
+function buildAIPredictions({ now, pet, todayWater, todayWaters, stools, weather, rainWalkTime, dogFood, healthScore, statusCards }) {
+  const waterTarget = Math.round((Number(pet.weight) || 0) * 55)
+  const nowMinutes = now.getHours() * 60 + now.getMinutes()
+  const waterRecords = (todayWaters || [])
+    .map(item => ({ amount: numberFromText(item.amount), minutes: clockToMinutes(item.time) }))
+    .filter(item => item.amount > 0)
+  const waterTimes = waterRecords.map(item => item.minutes).filter(item => item !== null).sort((a, b) => a - b)
+  const averageWater = waterRecords.length ? waterRecords.reduce((sum, item) => sum + item.amount, 0) / waterRecords.length : 0
+  const averageInterval = waterTimes.length > 1
+    ? Math.max(90, (waterTimes[waterTimes.length - 1] - waterTimes[0]) / (waterTimes.length - 1))
+    : 210
+  const projectionStart = Math.max(nowMinutes, waterTimes.length ? waterTimes[waterTimes.length - 1] : nowMinutes)
+  const remainingDrinks = averageWater ? Math.max(0, Math.floor((22 * 60 - projectionStart) / averageInterval)) : 0
+  const projectedWater = Math.round(todayWater + remainingDrinks * averageWater)
+  let waterTitle
+  let waterBadge
+  let waterText
+  let waterTone = 'blue'
+  if (!waterTarget) {
+    waterTitle = '还不能预测饮水结果'
+    waterBadge = '缺少体重'
+    waterText = '补充体重后，模型会自动计算每日目标和预计达标时间。'
+  } else if (!waterRecords.length) {
+    waterTitle = '饮水模型正在学习'
+    waterBadge = '待记录'
+    waterText = `记录今天第一笔饮水后，将预测 ${waterTarget}ml 的达标时间。`
+  } else if (todayWater >= waterTarget) {
+    waterTitle = '今天饮水预计稳定达标'
+    waterBadge = '趋势较高'
+    waterText = `依据今天 ${waterRecords.length} 次记录，预计全天约 ${Math.max(todayWater, projectedWater)}ml。`
+    waterTone = 'green'
+  } else {
+    const hourlyRate = averageWater / averageInterval
+    const targetTime = hourlyRate > 0 ? projectionStart + (waterTarget - todayWater) / hourlyRate : Infinity
+    if (targetTime <= 22 * 60) {
+      waterTitle = `${minutesToClock(targetTime)} 左右可达到饮水目标`
+      waterBadge = '趋势较高'
+      waterText = `依据今天 ${waterRecords.length} 次饮水记录和当前饮水频率推算。`
+      waterTone = 'green'
+    } else {
+      waterTitle = `今天可能少喝 ${Math.max(0, waterTarget - projectedWater)}ml`
+      waterBadge = '趋势偏低'
+      waterText = `依据今天 ${waterRecords.length} 次记录，预计全天约 ${projectedWater}ml，目标为 ${waterTarget}ml。`
+    }
+  }
+
+  const recentStools = (stools || []).slice(0, 7)
+  const abnormalCount = recentStools.filter(item => item.abnormal).length
+  let stoolTitle
+  let stoolBadge
+  let stoolText
+  let stoolTone = 'green'
+  if (recentStools.length < 3) {
+    stoolTitle = '肠胃模型还在学习'
+    stoolBadge = `${recentStools.length}/3 条`
+    stoolText = `再记录 ${3 - recentStools.length} 次排便，模型即可开始判断短期趋势。`
+    stoolTone = 'cream'
+  } else if (abnormalCount) {
+    stoolTitle = '近期肠胃状态有波动'
+    stoolBadge = '需观察'
+    stoolText = `依据最近 ${recentStools.length} 次记录，其中 ${abnormalCount} 次出现异常。`
+    stoolTone = 'orange'
+  } else {
+    stoolTitle = '下一次排便仍偏向正常'
+    stoolBadge = '趋势稳定'
+    stoolText = `最近 ${recentStools.length} 次记录均正常，短期内暂未发现明显波动。`
+  }
+
+  let walkTitle
+  let walkBadge
+  let walkText
+  if (weather && weather.rainTime) {
+    const start = clockToMinutes(rainWalkTime) || 19 * 60
+    walkTitle = `${rainWalkTime}–${minutesToClock(start + 90)} 更适合散步`
+    walkBadge = '天气预测'
+    walkText = `依据逐小时降雨变化，避开 ${weather.rainTime} 前后的降雨时段。`
+  } else if (weather && Number(weather.apparent) >= 30) {
+    walkTitle = '19:00 后更适合散步'
+    walkBadge = '热风险'
+    walkText = `当前体感约 ${weather.apparent}℃，晚间短时出门的热风险相对更低。`
+  } else {
+    walkTitle = '未来 2–3 小时适合散步'
+    walkBadge = '天气稳定'
+    walkText = '逐小时天气暂未出现明显降雨信号，原定散步计划受影响较低。'
+  }
+
+  const attention = (statusCards || []).filter(item => item.tone === 'watch' || item.tone === 'attention')
+  let stateTitle
+  const stateBadge = '综合推演'
+  let stateText
+  let stateTone = 'purple'
+  if (attention.length) {
+    stateTitle = `今天整体平稳，留意${attention.map(item => item.label).join('、')}`
+    stateText = `综合食欲、饮水、排便和活动四项数据，当前健康评分为 ${healthScore} 分。`
+    stateTone = attention.some(item => item.tone === 'attention') ? 'orange' : 'purple'
+  } else if (dogFood.configured && dogFood.daysLeft !== null) {
+    stateTitle = '今天整体状态预计平稳'
+    stateText = `四项日常数据未发现明显偏离；狗粮按近期消耗约可维持 ${dogFood.daysLeft} 天。`
+  } else {
+    stateTitle = '今天整体状态预计平稳'
+    stateText = `综合食欲、饮水、排便和活动四项数据，当前健康评分为 ${healthScore} 分。`
+  }
+
+  return [
+    { id: 'ai-water', icon: '💧', title: waterTitle, badge: waterBadge, text: waterText, tone: waterTone, target: 'water' },
+    { id: 'ai-stool', icon: '🧬', title: stoolTitle, badge: stoolBadge, text: stoolText, tone: stoolTone, target: 'stool' },
+    { id: 'ai-walk', icon: '⛅', title: walkTitle, badge: walkBadge, text: walkText, tone: 'purple', target: 'walk' },
+    { id: 'ai-state', icon: '✨', title: stateTitle, badge: stateBadge, text: stateText, tone: stateTone, target: 'account' }
+  ]
+}
+
 function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, careRecords, supplies, weather }) {
   const now = new Date()
   const today = store.todayKey()
@@ -398,24 +495,6 @@ function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, c
     ? `${weather.rainTime}前后可能下雨，建议${rainWalkTime}后再出去散步。`
     : '天气暂无明显降雨提醒，可以按计划安排散步。'
   const dogFood = getDogFoodDays(supplies, feeds)
-  const waterFinding = waterTarget && todayWater < waterTarget
-    ? `今天饮水偏少，距离建议值还差 ${Math.max(0, waterTarget - todayWater)}ml。`
-    : `今天已喝水 ${todayWater}ml，达到建议饮水量。`
-  const waterSummary = waterTarget && todayWater < waterTarget
-    ? `还差 ${Math.max(0, waterTarget - todayWater)}ml`
-    : '今日饮水已达标'
-  const supplyFinding = !dogFood.configured
-    ? '还未设置狗粮拆封记录，设置后可自动估算余量。'
-    : dogFood.daysLeft === null
-      ? '狗粮余量还无法估算，继续记录喂食克数后会更准确。'
-      : dogFood.daysLeft <= 7
-        ? `狗粮预计还能吃 ${dogFood.daysLeft} 天，建议本周补货。`
-        : `狗粮预计还能吃 ${dogFood.daysLeft} 天，目前余量充足。`
-  const supplySummary = !dogFood.configured
-    ? '尚未设置狗粮余量'
-    : dogFood.daysLeft === null
-      ? '继续记录喂食克数'
-      : `狗粮还能吃 ${dogFood.daysLeft} 天`
   const breakfastDone = tasks[0].done
   const dinnerDone = tasks[3].done
   const walkDuration = todayWalks.reduce((sum, item) => sum + numberFromText(item.duration), 0)
@@ -440,38 +519,23 @@ function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, c
     : weather && weather.rainTime
       ? { value: '雨后再出门', tone: 'neutral' }
       : { value: '等待散步', tone: 'watch' }
-  const findingCandidates = [
-    ...buildCareFindings(careSchedule),
-    {
-      id: 'water',
-      icon: '💧',
-      title: '饮水',
-      summary: waterSummary,
-      text: waterFinding,
-      tone: todayWater < waterTarget ? 'blue' : 'green',
-      priority: todayWater < waterTarget ? 7 : 12,
-      target: 'water'
-    },
-    {
-      id: 'weather',
-      icon: '🌦',
-      title: '天气',
-      summary: weather && weather.rainTime ? `${rainWalkTime} 后适合遛狗` : '今日可按计划散步',
-      text: weather && weather.rainTime ? `${weather.rainText} 建议 ${rainWalkTime} 后遛狗。` : weatherAdvice,
-      tone: 'purple',
-      priority: weather && weather.rainTime ? 6 : 11
-    },
-    {
-      id: 'supply',
-      icon: '📦',
-      title: '用品余量',
-      summary: supplySummary,
-      text: supplyFinding,
-      tone: dogFood.daysLeft !== null && dogFood.daysLeft <= 7 ? 'orange' : 'cream',
-      priority: dogFood.daysLeft !== null && dogFood.daysLeft <= 3 ? 3 : dogFood.daysLeft !== null && dogFood.daysLeft <= 7 ? 5 : 10,
-      target: 'account'
-    }
-  ]
+  const aiPredictions = buildAIPredictions({
+    now,
+    pet,
+    todayWater,
+    todayWaters,
+    stools,
+    weather,
+    rainWalkTime,
+    dogFood,
+    healthScore,
+    statusCards: [
+      { label: '食欲', ...appetiteStatus },
+      { label: '水分', ...waterStatus },
+      { label: '肠胃', ...stomachStatus },
+      { label: '活力', ...activityStatus }
+    ]
+  })
   return {
     greeting: getGreeting(now.getHours()),
     healthScore,
@@ -489,19 +553,18 @@ function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, c
       { icon: '🌿', label: '肠胃', action: 'stool', ...stomachStatus },
       { icon: '🐾', label: '活力', action: 'walk', ...activityStatus }
     ],
-    findings: findingCandidates.sort((a, b) => a.priority - b.priority).slice(0, 4),
-    weekMetrics: buildWeeklyMetrics({ pet, feeds, stools, waters, walks }),
+    findings: aiPredictions,
     knowledge: getTodayKnowledge(now.getMonth() + 1)
   }
 }
 
 Page({
   data: {
-    pet: {}, homeInsightTab: 'ai', festivalOpen: false, healthTipOpen: false, knowledgeOpen: false, weightTrendOpen: false, feedDetailOpen: false, stoolDetailOpen: false, weightTrend: { bars: [], history: [] }, selectedHealthTip: { careItems: [] }, careSchedule: {}, ageText: '', daysTogether: 0,
+    pet: {}, festivalOpen: false, healthTipOpen: false, knowledgeOpen: false, weightTrendOpen: false, feedDetailOpen: false, stoolDetailOpen: false, weightTrend: { bars: [], history: [] }, selectedHealthTip: { careItems: [] }, careSchedule: {}, ageText: '', daysTogether: 0,
     todayFeeds: [], todayFeedCount: 0, todayFeedTotal: 0, todayStools: [], todayStoolCount: 0, todayStoolAbnormalCount: 0, todayStoolStatus: '等待记录', waterTarget: 0, birthdayDays: 0, nextAge: 0, birthdayLabel: '',
     weatherLoading: true, weather: { icon: '🌤️', temperature: '--', apparent: '--', condition: '加载天气', location: '正在定位', rainText: '正在获取逐小时降雨预报', rainTime: '', live: false },
     seasonName: '', seasonTip: '', lifeStage: '', healthTips: [],
-    homeDashboard: { greeting: '', healthScore: 100, healthSummary: '', tasks: [], statusCards: [], completedCount: 0, totalTasks: 6, progress: 0, nextTask: {}, laterTasks: [], findings: [], weekMetrics: [], knowledge: { detail: [] } }
+    homeDashboard: { greeting: '', healthScore: 100, healthSummary: '', tasks: [], statusCards: [], completedCount: 0, totalTasks: 6, progress: 0, nextTask: {}, laterTasks: [], findings: [], knowledge: { detail: [] } }
   },
   onShow() { this.refresh(); this.loadWeather() },
   refresh() {
@@ -549,6 +612,12 @@ Page({
   closeFestivals() { this.setData({ festivalOpen: false }) },
   openWeightTrend() { this.setData({ weightTrendOpen: true }) },
   closeWeightTrend() { this.setData({ weightTrendOpen: false }) },
+  previewWeightPhoto(e) {
+    const item = this.data.weightTrend.history[e.currentTarget.dataset.index]
+    if (!item || !item.photoPath) return wx.showToast({ title: '这次称重没有添加照片', icon: 'none' })
+    const urls = this.data.weightTrend.history.filter(record => record.photoPath).map(record => record.photoPath)
+    wx.previewImage({ current: item.photoPath, urls })
+  },
   openFeedDetail() { this.refresh(); this.setData({ feedDetailOpen: true }) },
   closeFeedDetail() { this.setData({ feedDetailOpen: false }) },
   goFeed() {
@@ -577,15 +646,6 @@ Page({
     const status = this.data.homeDashboard.statusCards[e.currentTarget.dataset.index]
     if (!status) return
     this.goDailyRecord(status.action || 'feed', false)
-  },
-  openWeekDetail(e) {
-    const metric = this.data.homeDashboard.weekMetrics[e.currentTarget.dataset.index]
-    if (!metric) return
-    this.goDailyRecord(metric.action || 'feed', false)
-  },
-  switchHomeInsight(e) {
-    const tab = e.currentTarget.dataset.tab
-    if (tab === 'ai' || tab === 'week') this.setData({ homeInsightTab: tab })
   },
   openKnowledge() { this.setData({ knowledgeOpen: true }) },
   closeKnowledge() { this.setData({ knowledgeOpen: false }) },

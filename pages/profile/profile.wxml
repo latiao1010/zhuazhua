@@ -49,21 +49,14 @@
   </view>
 
   <view class="home-block insight-block">
-    <view class="insight-tabs">
-      <view class="{{homeInsightTab === 'ai' ? 'active' : ''}}" data-tab="ai" bindtap="switchHomeInsight"><text>🤖</text>AI 今日发现</view>
-      <view class="{{homeInsightTab === 'week' ? 'active' : ''}}" data-tab="week" bindtap="switchHomeInsight"><text>📊</text>本周概览</view>
-    </view>
-    <view class="finding-list count-{{homeDashboard.findings.length}}" wx:if="{{homeInsightTab === 'ai'}}">
+    <view class="home-block-title"><view><text>🤖</text>AI 今日发现</view></view>
+    <view class="finding-list count-{{homeDashboard.findings.length}}">
       <view class="finding-row {{item.tone}}" wx:for="{{homeDashboard.findings}}" wx:key="id">
         <text>{{item.icon}}</text>
-        <view class="finding-copy"><text>{{item.title}}</text><view>{{item.text}}</view></view>
-      </view>
-    </view>
-    <view class="week-grid" wx:else>
-      <view class="week-item {{item.tone}}" wx:for="{{homeDashboard.weekMetrics}}" wx:key="label" data-index="{{index}}" bindtap="openWeekDetail">
-        <view class="week-icon">{{item.icon}}</view>
-        <view class="week-copy"><text>{{item.label}}</text><view>{{item.hint}}</view></view>
-        <view class="week-value">{{item.value}}</view>
+        <view class="finding-copy">
+          <view class="finding-heading"><text>{{item.title}}</text><text>{{item.badge}}</text></view>
+          <view class="finding-text">{{item.text}}</view>
+        </view>
       </view>
     </view>
   </view>
@@ -156,9 +149,15 @@
     </view>
     <view class="weight-history-title">历史记录</view>
     <scroll-view class="weight-history" scroll-y enhanced show-scrollbar="false">
-      <view class="weight-history-row" wx:for="{{weightTrend.history}}" wx:key="dayKey"><text>{{item.date}}</text><view>{{item.weight}}<text>kg</text></view></view>
+      <view class="weight-history-row {{item.hasPhoto ? 'has-photo' : ''}}" wx:for="{{weightTrend.history}}" wx:key="id" data-index="{{index}}" bindtap="previewWeightPhoto">
+        <image wx:if="{{item.hasPhoto}}" src="{{item.photoPath}}" mode="aspectFill"></image>
+        <view class="weight-history-photo-empty" wx:else>⚖</view>
+        <view class="weight-history-copy"><text>{{item.date}}</text><view>{{item.timeText || '历史记录'}} · {{item.hasPhoto ? '成长照片' : '未添加照片'}}</view></view>
+        <view class="weight-history-value">{{item.weight}}<text>kg</text></view>
+        <text class="weight-history-arrow">{{item.hasPhoto ? '›' : ''}}</text>
+      </view>
     </scroll-view>
-    <view class="weight-note">每次在“我的 → 设置”中修改体重，系统会自动记录当天数据。</view>
+    <view class="weight-note">在“我的 → 设置”记录体重时可拍照或上传照片；点击带照片的历史记录即可查看成长影像。</view>
   </view>
 </view>
 

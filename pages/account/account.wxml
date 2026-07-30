@@ -60,6 +60,14 @@
     <view class="edit-form-row"><text>宠物品种</text><input value="{{draft.breed}}" data-key="breed" bindinput="onInput" placeholder="请输入品种" /></view>
     <view class="edit-form-row"><text>性别</text><picker mode="selector" range="{{sexOptions}}" value="{{sexIndex}}" bindchange="onSex"><view>{{draft.sex}} ›</view></picker></view>
     <view class="edit-form-row"><text>当前体重</text><view class="edit-weight"><input type="digit" value="{{draft.weight}}" data-key="weight" bindinput="onInput" placeholder="0.0" /><text>kg</text></view></view>
+    <view class="weight-photo-field">
+      <view class="weight-photo-head"><text>本次成长照片</text><text>选填</text></view>
+      <view class="weight-photo-picker {{weightPhotoTemp ? 'has-photo' : ''}}" bindtap="chooseWeightPhoto">
+        <image wx:if="{{weightPhotoTemp}}" src="{{weightPhotoTemp}}" mode="aspectFill"></image>
+        <view wx:else><text>📷</text><view>拍照或上传照片</view><text>与本次体重记录一起保存</text></view>
+      </view>
+      <text class="weight-photo-remove" wx:if="{{weightPhotoTemp}}" catchtap="removeWeightPhoto">移除照片</text>
+    </view>
     <view class="edit-form-row"><text>宠物生日</text><picker mode="date" value="{{draft.birthday}}" end="{{today}}" bindchange="onDate"><view>{{draft.birthday}} ›</view></picker></view>
   </view>
   <button class="profile-edit-save" loading="{{saving}}" disabled="{{saving}}" bindtap="savePet">{{saving ? '正在保存…' : '保存资料'}}</button>

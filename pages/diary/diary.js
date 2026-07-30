@@ -14,6 +14,7 @@ Page({
   chooseMood(e) { this.setData({ 'draft.mood': e.currentTarget.dataset.name }) },
   onNote(e) { this.setData({ 'draft.note': e.detail.value }) },
   generateDiary() {
+    if (this.data.generating) return
     this.setData({ generating: true })
     // MVP 本地生成；生产版在此把结构化记录发送给服务端大模型。
     setTimeout(() => {

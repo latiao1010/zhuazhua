@@ -1,7 +1,9 @@
 <view class="page">
   <view class="topbar">
     <view><view class="eyebrow">{{detailEyebrow}}</view><view class="page-title">{{detailTitle}}</view></view>
-    <view class="calendar">{{day}}<text>{{month}}月</text></view>
+    <picker class="calendar-picker" mode="date" value="{{selectedDate}}" end="{{today}}" bindchange="onRecordDate">
+      <view class="calendar">{{day}}<text>{{month}}月</text></view>
+    </picker>
   </view>
 
   <view class="record-tabs" wx:if="{{!singleMode}}">
@@ -22,7 +24,31 @@
     <view class="stool-count"><text class="count-number">{{summary.count}}</text><text>{{summary.countUnit}}</text></view>
   </view>
 
-  <view class="section-row"><view class="section-title">{{typeMeta.title}}</view><view class="filter">今天⌄</view></view>
+  <view class="feed-trend-card card {{feedTrend.theme}}" wx:if="{{feedTrend.days.length}}">
+    <view class="feed-trend-head">
+      <view><view>{{feedTrend.title}}</view><text>截至 {{feedTrend.endLabel}} · 每天合并显示</text></view>
+      <view class="feed-trend-change {{feedTrend.changeClass}}">{{feedTrend.changeText}}</view>
+    </view>
+    <view class="feed-trend-metrics">
+      <view wx:for="{{feedTrend.metrics}}" wx:key="label"><text>{{item.value}}</text><view>{{item.label}}</view></view>
+    </view>
+    <scroll-view class="feed-trend-scroll" scroll-x enhanced show-scrollbar="false" scroll-left="{{feedTrend.scrollLeft}}">
+      <view class="feed-trend-chart" style="width:{{feedTrend.chartWidth}}rpx">
+        <view class="feed-trend-column {{item.selected ? 'selected' : ''}}" wx:for="{{feedTrend.days}}" wx:key="dayKey" data-date="{{item.dayKey}}" bindtap="onTrendDay">
+          <text class="feed-trend-value">{{item.total || ''}}</text>
+          <view class="feed-trend-bar-track">
+            <view class="feed-trend-goal" style="bottom:{{feedTrend.goalBottom}}%"></view>
+            <view class="feed-trend-bar {{item.warning ? 'warning' : ''}} {{item.isLatest ? 'latest' : ''}}" style="height:{{item.barHeight}}rpx"></view>
+          </view>
+          <text class="feed-trend-date">{{item.dateLabel}}</text>
+          <text class="feed-trend-count">{{item.countText}}</text>
+        </view>
+      </view>
+    </scroll-view>
+    <view class="feed-trend-foot"><view><text class="feed-trend-legend-line"></text><text>{{feedTrend.goalText}}</text></view><text>{{feedTrend.footText}}</text></view>
+  </view>
+
+  <view class="section-row"><view class="section-title">{{typeMeta.title}}</view><view class="filter">{{dateFilterText}}</view></view>
 
   <view class="timeline" wx:if="{{rows.length}}">
     <view class="feed-row" wx:for="{{rows}}" wx:key="id">
@@ -35,7 +61,7 @@
       </view>
     </view>
   </view>
-  <view class="empty card" wx:else>{{typeMeta.empty}}</view>
+  <view class="empty card" wx:else>{{emptyText}}</view>
 
   <button class="add-btn" bindtap="openAdd"><text>＋</text> {{typeMeta.addText}}</button>
 </view>
