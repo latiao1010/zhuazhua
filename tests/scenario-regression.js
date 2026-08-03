@@ -200,7 +200,7 @@ async function main() {
     store.ensureSeedData()
     global.wx = originalWx
     assert.strictEqual(storage.paw_pet.name, '糯米')
-    ;['paw_feeds', 'paw_diaries', 'paw_chats', 'paw_stools', 'paw_water_records', 'paw_walk_records', 'paw_care_records', 'paw_weight_records']
+    ;['paw_feeds', 'paw_diaries', 'paw_chats', 'paw_stools', 'paw_water_records', 'paw_walk_records', 'paw_care_records', 'paw_weight_records', 'paw_growth_photos']
       .forEach(key => assert.ok(Array.isArray(storage[key]), `${key} should be an array`))
     assert.ok(storage.paw_feeds.every(item => /^\d{4}-\d{2}-\d{2}$/.test(item.dayKey)))
     assert.ok(storage.paw_feeds.some(item => item.dayKey === store.todayKey()))
@@ -208,6 +208,17 @@ async function main() {
     assert.ok(storage.paw_stools.length > 60)
     assert.ok(storage.paw_water_records.length > 110)
     assert.ok(storage.paw_walk_records.length > 45)
+    const feedDays = [...new Set(storage.paw_feeds.map(item => item.dayKey))].sort()
+    assert.ok(feedDays.length >= 60)
+    assert.ok((new Date(`${feedDays[feedDays.length - 1]}T00:00:00`) - new Date(`${feedDays[0]}T00:00:00`)) / 86400000 >= 59)
+    assert.ok(storage.paw_weight_records.length >= 9)
+    assert.deepStrictEqual([...new Set(storage.paw_care_records.map(item => item.key))].sort(), ['bath', 'dental', 'deworming', 'medicine', 'nail', 'vaccine'])
+    assert.ok(storage.paw_growth_photos.length >= 10)
+    const photoCounts = storage.paw_growth_photos.reduce((counts, item) => {
+      counts[item.dayKey] = (counts[item.dayKey] || 0) + 1
+      return counts
+    }, {})
+    assert.ok(Math.max(...Object.values(photoCounts)) >= 2)
     const feedCounts = storage.paw_feeds.reduce((counts, item) => {
       counts[item.dayKey] = (counts[item.dayKey] || 0) + 1
       return counts
@@ -215,7 +226,9 @@ async function main() {
     assert.ok(Math.max(...Object.values(feedCounts)) >= 6)
     assert.strictEqual(storage.paw_feed_trend_demo_v1, true)
     assert.strictEqual(storage.paw_daily_trend_demo_v1, true)
-    assert.ok(storage.paw_supply_records.dogFood)
+    assert.strictEqual(storage.paw_two_month_demo_v1, true)
+    assert.ok(storage.paw_supply_records.dogFood.openedDate)
+    assert.ok(storage.paw_supply_records.snack.openedDate)
     assert.ok(storage.paw_care_schedule.dentalCycle > 0)
   })
 

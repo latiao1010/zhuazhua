@@ -150,23 +150,55 @@ function buildSupplyView(supplies, feeds) {
   }, {})
 }
 
+function getGrowthPhotos() {
+  const saved = store.get('growthPhotos')
+    .filter(item => item && item.path)
+    .map(item => ({
+      id: item.id || `${item.createdAt || Date.now()}-${item.path}`,
+      path: item.path,
+      dayKey: item.dayKey || store.todayKey(),
+      time: item.time || '',
+      createdAt: Number(item.createdAt) || 0
+    }))
+  const knownPaths = new Set(saved.map(item => item.path))
+  const legacy = store.get('weightRecords')
+    .filter(item => item && item.photoPath && !knownPaths.has(item.photoPath))
+    .map(item => ({
+      id: `weight-photo-${item.id || item.createdAt || item.photoPath}`,
+      path: item.photoPath,
+      dayKey: item.dayKey || store.todayKey(),
+      time: item.time || '',
+      createdAt: Number(item.createdAt) || Number(item.id) || 0
+    }))
+  const photos = [...saved, ...legacy].sort((a, b) => b.createdAt - a.createdAt)
+  if (legacy.length || saved.length !== store.get('growthPhotos').length) store.set('growthPhotos', photos)
+  return photos
+}
+
+function timeText(date) {
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}
+
 Page({
   data: {
     pet: {}, draft: {}, profileEditOpen: false, careDraft: {}, careView: {}, careRecords: [],
     careDetailOpen: false, careMenuOpen: false, careSubView: '', selectedCare: {}, selectedCareRecords: [],
     selectedRecordDate: '', selectedMonth: '', selectedMonthText: '', careCalendar: [], weekNames: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
     supplies: {}, supplyView: {}, supplyOpen: false, selectedSupplyKey: '', selectedSupply: {}, supplyDraft: {}, supplyHistory: [],
+    growthPhotos: [], growthAlbumOpen: false, uploadingGrowthPhotos: false,
     newAvatarTemp: '', weightPhotoTemp: '', saving: false, changed: false, today: '', sexOptions: ['男孩', '女孩'], sexIndex: 0
   },
   onShow() {
     showNativeTabBar()
+    if (store.ensureSeedData) store.ensureSeedData()
     const pet = store.get('pet')
     const draft = { ...pet, togetherSince: pet.togetherSince || pet.birthday, sex: pet.sex || '男孩' }
     const careDraft = store.normalizeCareSchedule(store.get('care'))
     const supplies = store.normalizeSupplies(store.get('supplies'))
     const supplyView = buildSupplyView(supplies, store.get('feeds'))
+    const growthPhotos = getGrowthPhotos()
     const today = store.todayKey()
-    this.setData({ pet, draft, profileEditOpen: false, careDraft, careView: buildCareView(careDraft), careRecords: store.get('careRecords'), careDetailOpen: false, careMenuOpen: false, careSubView: '', selectedCare: {}, selectedCareRecords: [], selectedRecordDate: today, selectedMonth: today.slice(0, 7), selectedMonthText: monthText(today.slice(0, 7)), careCalendar: [], supplies, supplyView, supplyOpen: false, selectedSupplyKey: '', selectedSupply: {}, supplyDraft: {}, supplyHistory: [], newAvatarTemp: '', weightPhotoTemp: '', saving: false, changed: false, today, sexIndex: draft.sex === '女孩' ? 1 : 0 })
+    this.setData({ pet, draft, profileEditOpen: false, careDraft, careView: buildCareView(careDraft), careRecords: store.get('careRecords'), careDetailOpen: false, careMenuOpen: false, careSubView: '', selectedCare: {}, selectedCareRecords: [], selectedRecordDate: today, selectedMonth: today.slice(0, 7), selectedMonthText: monthText(today.slice(0, 7)), careCalendar: [], supplies, supplyView, supplyOpen: false, selectedSupplyKey: '', selectedSupply: {}, supplyDraft: {}, supplyHistory: [], growthPhotos, growthAlbumOpen: false, uploadingGrowthPhotos: false, newAvatarTemp: '', weightPhotoTemp: '', saving: false, changed: false, today, sexIndex: draft.sex === '女孩' ? 1 : 0 })
   },
   onHide() {
     showNativeTabBar()
@@ -223,6 +255,62 @@ Page({
     const supplyView = buildSupplyView(supplies, store.get('feeds'))
     this.setData({ supplies, supplyView, supplyOpen: false, selectedSupply: supplyView[key], supplyHistory: supplies[key].history.slice(0, 10) })
     wx.showToast({ title: `${config.label}拆封记录已保存`, icon: 'none' })
+  },
+  openGrowthAlbum() {
+    hideNativeTabBar()
+    this.setData({ growthAlbumOpen: true, growthPhotos: getGrowthPhotos() })
+  },
+  closeGrowthAlbum() {
+    this.setData({ growthAlbumOpen: false, uploadingGrowthPhotos: false })
+    showNativeTabBar()
+  },
+  chooseGrowthPhotos() {
+    if (this.data.uploadingGrowthPhotos) return
+    wx.chooseMedia({
+      count: 9,
+      mediaType: ['image'],
+      sourceType: ['camera', 'album'],
+      sizeType: ['compressed'],
+      success: res => {
+        const tempPaths = (res.tempFiles || []).map(item => item.tempFilePath).filter(Boolean)
+        if (!tempPaths.length) return
+        this.setData({ uploadingGrowthPhotos: true })
+        const createdAt = Date.now()
+        const captured = new Date(createdAt)
+        const dayKey = store.todayKey()
+        const savedPhotos = []
+        const saveNext = index => {
+          if (index >= tempPaths.length) {
+            const growthPhotos = [...savedPhotos, ...getGrowthPhotos()].sort((a, b) => b.createdAt - a.createdAt)
+            store.set('growthPhotos', growthPhotos)
+            this.setData({ growthPhotos, uploadingGrowthPhotos: false })
+            wx.showToast({ title: savedPhotos.length ? `已添加 ${savedPhotos.length} 张成长照片` : '成长照片保存失败', icon: 'none' })
+            return
+          }
+          wx.saveFile({
+            tempFilePath: tempPaths[index],
+            success: result => {
+              savedPhotos.push({
+                id: `growth-${createdAt}-${index}`,
+                path: result.savedFilePath,
+                dayKey,
+                time: timeText(captured),
+                createdAt: createdAt + index
+              })
+              saveNext(index + 1)
+            },
+            fail: () => saveNext(index + 1)
+          })
+        }
+        saveNext(0)
+      }
+    })
+  },
+  previewGrowthPhoto(e) {
+    const index = Number(e.currentTarget.dataset.index)
+    const current = this.data.growthPhotos[index]
+    if (!current) return
+    wx.previewImage({ current: current.path, urls: this.data.growthPhotos.map(item => item.path) })
   },
   openProfileEdit() {
     const draft = { ...this.data.pet, togetherSince: this.data.pet.togetherSince || this.data.pet.birthday, sex: this.data.pet.sex || '男孩' }

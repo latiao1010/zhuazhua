@@ -10,10 +10,13 @@ const KEYS = {
   waters: 'paw_water_records',
   walks: 'paw_walk_records',
   weightRecords: 'paw_weight_records',
+  growthPhotos: 'paw_growth_photos',
   generatedAvatar: 'paw_generated_avatar',
   avatarGenerationStatus: 'paw_avatar_generation_status',
   feedTrendDemo: 'paw_feed_trend_demo_v1',
-  dailyTrendDemo: 'paw_daily_trend_demo_v1'
+  dailyTrendDemo: 'paw_daily_trend_demo_v1',
+  growthPhotoDemo: 'paw_growth_photo_demo_v1',
+  twoMonthDemo: 'paw_two_month_demo_v1'
 }
 
 const seedPet = {
@@ -26,6 +29,14 @@ const seedPet = {
   avatar: '/assets/momo-chibi.png',
   tags: ['黏人精', '小吃货', '爱散步']
 }
+
+const seedGrowthPhotos = [
+  { id: 'demo-growth-20260722-1', path: '/assets/growth-demo-home.png', dayKey: '2026-07-22', time: '09:12', createdAt: new Date('2026-07-22T09:12:00').getTime() },
+  { id: 'demo-growth-20260727-1', path: '/assets/growth-demo-lawn.png', dayKey: '2026-07-27', time: '10:05', createdAt: new Date('2026-07-27T10:05:00').getTime() },
+  { id: 'demo-growth-20260727-2', path: '/assets/growth-demo-rain.png', dayKey: '2026-07-27', time: '18:36', createdAt: new Date('2026-07-27T18:36:00').getTime() },
+  { id: 'demo-growth-20260731-1', path: '/assets/growth-demo-home.png', dayKey: '2026-07-31', time: '20:18', createdAt: new Date('2026-07-31T20:18:00').getTime() },
+  { id: 'demo-growth-20260802-1', path: '/assets/growth-demo-lawn.png', dayKey: '2026-08-02', time: '08:46', createdAt: new Date('2026-08-02T08:46:00').getTime() }
+]
 
 function todayKey() {
   const d = new Date()
@@ -139,7 +150,7 @@ const seedTodayFeeds = [
 
 function buildSeedFeedHistory() {
   const records = []
-  for (let daysBack = 1; daysBack <= 29; daysBack += 1) {
+  for (let daysBack = 1; daysBack <= 60; daysBack += 1) {
     const dayKey = offsetDateKey(-daysBack)
     const [, month, day] = dayKey.split('-').map(Number)
     const daily = [
@@ -194,7 +205,7 @@ const seedWalks = [
 
 function buildSeedDailyTrendHistory() {
   const histories = { stools: [], waters: [], walks: [] }
-  for (let daysBack = 1; daysBack <= 29; daysBack += 1) {
+  for (let daysBack = 1; daysBack <= 60; daysBack += 1) {
     const dayKey = offsetDateKey(-daysBack)
     const [, month, day] = dayKey.split('-').map(Number)
     const date = `${month}月${day}日`
@@ -253,6 +264,66 @@ function buildSeedDailyTrendHistory() {
 
 const seedDailyTrendHistory = buildSeedDailyTrendHistory()
 
+function buildSeedWeightHistory() {
+  const records = []
+  for (let daysBack = 7; daysBack <= 56; daysBack += 7) {
+    const dayKey = offsetDateKey(-daysBack)
+    const createdAt = new Date(`${dayKey}T08:30:00`).getTime()
+    records.push({
+      id: `demo-weight-${dayKey}`,
+      createdAt,
+      dayKey,
+      time: '08:30',
+      weight: Number((10.8 + (56 - daysBack) / 56 * 0.4 + (daysBack % 3) * 0.06).toFixed(1)),
+      photoPath: ''
+    })
+  }
+  return records
+}
+
+function buildSeedCareRecords() {
+  const records = []
+  const configs = [
+    { key: 'deworming', label: '体内外驱虫', icon: '🪱', days: [54, 24] },
+    { key: 'medicine', label: '宠物用药', icon: '💊', days: [41, 12] },
+    { key: 'vaccine', label: '疫苗接种', icon: '💉', days: [49] },
+    { key: 'bath', label: '洗澡护理', icon: '🛁', days: [46, 31, 16, 2] },
+    { key: 'dental', label: '刷牙护理', icon: '🦷', days: [56, 42, 28, 14, 7, 1] },
+    { key: 'nail', label: '修剪指甲', icon: '✂️', days: [52, 22] }
+  ]
+  configs.forEach(config => config.days.forEach(daysBack => {
+    const date = offsetDateKey(-daysBack)
+    records.push({ id: `demo-care-${config.key}-${date}`, key: config.key, label: config.label, icon: config.icon, date, nextDate: storeNextDemoDate(date, config.key) })
+  }))
+  return records
+}
+
+function storeNextDemoDate(date, key) {
+  const cycles = { deworming: 90, medicine: 30, vaccine: 365, bath: 14, dental: 1, nail: 30 }
+  const next = new Date(`${date}T00:00:00`)
+  next.setDate(next.getDate() + cycles[key])
+  return `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`
+}
+
+function buildSeedGrowthPhotoHistory() {
+  const records = []
+  const paths = ['/assets/growth-demo-home.png', '/assets/growth-demo-lawn.png', '/assets/growth-demo-rain.png']
+  ;[58, 50, 42, 34, 26, 18, 10, 3].forEach((daysBack, index) => {
+    const dayKey = offsetDateKey(-daysBack)
+    const time = `${String(8 + index % 4 * 3).padStart(2, '0')}:20`
+    records.push({ id: `demo-growth-history-${dayKey}-1`, path: paths[index % paths.length], dayKey, time, createdAt: new Date(`${dayKey}T${time}:00`).getTime() })
+    if (daysBack === 26 || daysBack === 10) {
+      const secondTime = '18:40'
+      records.push({ id: `demo-growth-history-${dayKey}-2`, path: paths[(index + 1) % paths.length], dayKey, time: secondTime, createdAt: new Date(`${dayKey}T${secondTime}:00`).getTime() })
+    }
+  })
+  return records
+}
+
+const seedWeightHistory = buildSeedWeightHistory()
+const seedCareHistory = buildSeedCareRecords()
+const seedGrowthPhotoHistory = buildSeedGrowthPhotoHistory()
+
 function ensureSeedData() {
   const pet = normalizePet(wx.getStorageSync(KEYS.pet))
   wx.setStorageSync(KEYS.pet, pet)
@@ -264,7 +335,8 @@ function ensureSeedData() {
     stools: seedStools,
     waters: seedWaters,
     walks: seedWalks,
-    careRecords: []
+    careRecords: [],
+    growthPhotos: []
   }
   Object.keys(arrayDefaults).forEach(key => {
     const records = wx.getStorageSync(KEYS[key])
@@ -317,12 +389,48 @@ function ensureSeedData() {
           })
           wx.setStorageSync(KEYS.dailyTrendDemo, true)
         }
+        if (!wx.getStorageSync(KEYS.growthPhotoDemo)) {
+          const growthPhotos = wx.getStorageSync(KEYS.growthPhotos)
+          if (Array.isArray(growthPhotos) && !growthPhotos.length) wx.setStorageSync(KEYS.growthPhotos, seedGrowthPhotos)
+          wx.setStorageSync(KEYS.growthPhotoDemo, true)
+        }
+        if (!wx.getStorageSync(KEYS.twoMonthDemo)) {
+          const appendMissing = (key, records) => {
+            const existing = wx.getStorageSync(KEYS[key])
+            const ids = new Set((Array.isArray(existing) ? existing : []).map(item => item.id))
+            const missing = records.filter(item => !ids.has(item.id))
+            if (missing.length) wx.setStorageSync(KEYS[key], [...existing, ...missing])
+          }
+          appendMissing('feeds', seedFeedHistory)
+          appendMissing('stools', seedDailyTrendHistory.stools)
+          appendMissing('waters', seedDailyTrendHistory.waters)
+          appendMissing('walks', seedDailyTrendHistory.walks)
+          appendMissing('weightRecords', seedWeightHistory)
+          appendMissing('careRecords', seedCareHistory)
+          appendMissing('growthPhotos', seedGrowthPhotoHistory)
+
+          const care = normalizeCareSchedule(wx.getStorageSync(KEYS.care))
+          Object.keys({ deworming: 24, medicine: 12, vaccine: 49, bath: 2, dental: 1, nail: 22 }).forEach(key => {
+            const lastKey = `${key}Last`
+            if (care[lastKey]) return
+            const last = offsetDateKey(-({ deworming: 24, medicine: 12, vaccine: 49, bath: 2, dental: 1, nail: 22 }[key]))
+            care[lastKey] = last
+            care[key] = storeNextDemoDate(last, key)
+          })
+          wx.setStorageSync(KEYS.care, care)
+
+          const supplies = normalizeSupplies(wx.getStorageSync(KEYS.supplies))
+          if (!supplies.dogFood.openedDate) supplies.dogFood = { ...supplies.dogFood, productName: '低敏成犬粮', packageAmount: 2500, openedDate: offsetDateKey(-14), history: [{ id: 'demo-food-open', productName: '低敏成犬粮', packageAmount: 2500, openedDate: offsetDateKey(-14) }] }
+          if (!supplies.snack.openedDate) supplies.snack = { ...supplies.snack, productName: '冻干鸡胸肉粒', packageAmount: 500, openedDate: offsetDateKey(-9), history: [{ id: 'demo-snack-open', productName: '冻干鸡胸肉粒', packageAmount: 500, openedDate: offsetDateKey(-9) }] }
+          wx.setStorageSync(KEYS.supplies, supplies)
+          wx.setStorageSync(KEYS.twoMonthDemo, true)
+        }
       }
     } catch (error) {}
   }
 }
 
-const ARRAY_KEYS = new Set(['feeds', 'diaries', 'chats', 'stools', 'careRecords', 'waters', 'walks', 'weightRecords'])
+const ARRAY_KEYS = new Set(['feeds', 'diaries', 'chats', 'stools', 'careRecords', 'waters', 'walks', 'weightRecords', 'growthPhotos'])
 const get = key => {
   const value = wx.getStorageSync(KEYS[key])
   if (key === 'pet') return normalizePet(value)

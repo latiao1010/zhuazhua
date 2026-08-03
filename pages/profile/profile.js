@@ -239,41 +239,106 @@ function getDogFoodDays(supplies, feeds) {
   return { configured: true, daysLeft: dailyAverage ? Math.max(0, Math.ceil(remaining / dailyAverage)) : null }
 }
 
-function getTodayKnowledge(month) {
-  if ([6, 7, 8].includes(month)) {
-    return {
-      icon: '☀️',
-      title: '夏天为什么要避开中午遛狗？',
-      summary: '高温路面可能烫伤脚垫，狗狗也更容易中暑。',
-      detail: [
-        '中午阳光直射时，柏油和水泥路面的温度通常明显高于气温，可能在短时间内烫伤脚垫。',
-        '狗狗主要依靠喘气散热，高温、高湿和剧烈运动叠加时，中暑风险会明显增加。',
-        '优先选择清晨或日落后的凉爽时段，出门前可用手背接触地面数秒，感觉烫手就不要久走。'
-      ]
-    }
+function getTodayKnowledge(month, date = new Date()) {
+  const seasonalKnowledge = {
+    spring: [
+      { icon: '🌿', title: '春天散步后为什么要检查毛发？', summary: '花粉、蜱虫和草籽容易藏进毛发、耳朵与脚趾间。', detail: ['回家后依次检查耳朵、腋下、腹部、趾间和尾巴根部。', '发现蜱虫不要直接硬拽，可联系兽医或使用合适工具处理。', '花粉较多时可用湿毛巾轻擦身体和脚垫，并保持皮肤干燥。'] },
+      { icon: '🪲', title: '外出回来为什么要检查蜱虫？', summary: '蜱虫常藏在耳后、腋下和趾间，越早发现越容易处理。', detail: ['散步后重点查看皮肤褶皱和毛发浓密处。', '发现附着蜱虫时，不要挤压虫体或徒手拔除。', '出现红肿、精神不佳等情况，及时咨询兽医。'] },
+      { icon: '🌼', title: '花粉季怎么减少皮肤刺激？', summary: '减少过敏原残留，能让皮肤和脚垫更舒服。', detail: ['花粉浓度高时缩短草地停留时间。', '回家后擦拭脚垫、腹部和嘴周毛发。', '频繁抓挠、红疹或耳朵发红时应留意并就诊。'] }
+    ],
+    summer: [
+      { icon: '☀️', title: '夏天为什么要避开中午遛狗？', summary: '高温路面可能烫伤脚垫，狗狗也更容易中暑。', detail: ['中午阳光直射时，柏油和水泥路面的温度通常明显高于气温，可能在短时间内烫伤脚垫。', '狗狗主要依靠喘气散热，高温、高湿和剧烈运动叠加时，中暑风险会明显增加。', '优先选择清晨或日落后的凉爽时段，出门前可用手背接触地面数秒，感觉烫手就不要久走。'] },
+      { icon: '💧', title: '夏天喝水要注意什么？', summary: '少量多次补水，比一次猛喝更舒适。', detail: ['外出时随身带干净饮水和便携水碗。', '剧烈活动后先休息片刻，再少量多次喝水。', '不要让狗狗饮用积水或来源不明的水。'] },
+      { icon: '🏠', title: '空调房里也要防着凉吗？', summary: '温差过大和冷风直吹，都可能让狗狗不舒服。', detail: ['让休息区域避开空调出风口。', '从室外回家后先擦干汗水和雨水，再进入低温环境。', '室内外温差不宜过大，老年犬和幼犬更要留意。'] }
+    ],
+    autumn: [
+      { icon: '🍂', title: '换毛季应该多久梳一次毛？', summary: '规律梳毛能减少浮毛，也方便及时发现皮肤问题。', detail: ['根据毛发长度和掉毛量安排频率，换毛明显时可每天短时梳理。', '从毛尖开始轻柔梳开，不要反复拉扯打结区域。', '梳毛时同步观察皮屑、红肿、结痂和异常掉毛。'] },
+      { icon: '🪮', title: '毛发打结该怎么处理？', summary: '耐心拆结能避免拉扯皮肤和毛发断裂。', detail: ['先用手指轻轻分开结团边缘。', '从毛尖向毛根慢慢梳理，不要硬拉。', '结团贴近皮肤或范围较大时，可请专业美容师处理。'] },
+      { icon: '🍽️', title: '换季食欲变好要加餐吗？', summary: '食欲变化要结合体重和活动量一起判断。', detail: ['先保持原有主粮比例，连续观察一周。', '每周记录体重，避免因加餐造成体重快速上升。', '食欲突然大增或下降并伴随精神异常时，应咨询兽医。'] }
+    ],
+    winter: [
+      { icon: '❄️', title: '冬天遛狗需要给脚垫保暖吗？', summary: '低温、融雪剂和干燥环境都可能刺激脚垫。', detail: ['缩短严寒时段的户外停留时间，回家后擦净并检查脚垫。', '接触融雪剂后及时用清水清洁，避免舔食残留。', '出现干裂、出血或持续舔脚时，应减少刺激并咨询兽医。'] },
+      { icon: '🧥', title: '哪些狗狗更需要保暖？', summary: '幼犬、老年犬和短毛犬对低温更敏感。', detail: ['出门前观察体感，发抖或蜷缩说明可能觉得冷。', '选择合身、活动方便的衣物，保持干燥。', '雨雪天回家后及时擦干腹部、脚垫和毛发。'] },
+      { icon: '🏡', title: '冬天在家也要活动吗？', summary: '室外时间变短时，室内互动可以补足运动和消耗。', detail: ['用嗅闻游戏或藏零食增加脑力活动。', '根据年龄和体力安排短时、多次互动。', '避免在光滑地板上追逐急停，减少打滑风险。'] }
+    ]
   }
-  if ([3, 4, 5].includes(month)) {
-    return {
-      icon: '🌿',
-      title: '春天散步后为什么要检查毛发？',
-      summary: '花粉、蜱虫和草籽容易藏进毛发、耳朵与脚趾间。',
-      detail: ['回家后依次检查耳朵、腋下、腹部、趾间和尾巴根部。', '发现蜱虫不要直接硬拽，可联系兽医或使用合适工具处理。', '花粉较多时可用湿毛巾轻擦身体和脚垫，并保持皮肤干燥。']
-    }
+  const season = [6, 7, 8].includes(month) ? 'summer' : [3, 4, 5].includes(month) ? 'spring' : [9, 10, 11].includes(month) ? 'autumn' : 'winter'
+  const yearStart = new Date(date.getFullYear(), 0, 1)
+  const dayIndex = Math.floor((new Date(date.getFullYear(), date.getMonth(), date.getDate()) - yearStart) / 86400000)
+  const tips = seasonalKnowledge[season]
+  return tips[dayIndex % tips.length]
+}
+
+function getPersonalizedKnowledge({ now, pet, weather, healthScore, todayStools, waterRatio }) {
+  const dayStart = new Date(now.getFullYear(), 0, 1)
+  const dayIndex = Math.floor((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - dayStart) / 86400000)
+  const birthday = pet && pet.birthday ? new Date(`${pet.birthday}T00:00:00`) : null
+  const ageMonths = birthday && !Number.isNaN(birthday.getTime())
+    ? Math.max(1, Math.floor((now - birthday) / 2629800000))
+    : null
+  const ageLabel = ageMonths ? (ageMonths >= 12 ? `${Math.floor(ageMonths / 12)}岁${ageMonths % 12 ? `${ageMonths % 12}个月` : ''}` : `${ageMonths}个月`) : '年龄待完善'
+  const lifeStage = !ageMonths ? '宠物' : ageMonths < 12 ? '幼年宠物' : ageMonths >= 84 ? '老年宠物' : '成年宠物'
+  const isPuppy = ageMonths !== null && ageMonths < 12
+  const isSenior = ageMonths !== null && ageMonths >= 84
+  const apparent = Number(weather && (weather.apparent || weather.temperature))
+  const hasRain = Boolean(weather && weather.rainTime)
+  const abnormalStools = (todayStools || []).filter(item => item.abnormal).length
+  const needsWater = Number.isFinite(waterRatio) && waterRatio < 0.7 && now.getHours() >= 14
+  const healthText = abnormalStools
+    ? `今天已记录 ${abnormalStools} 次异常排便，需要重点观察肠胃`
+    : needsWater
+      ? '今天饮水尚未达到建议量，补水需要优先安排'
+      : healthScore < 90
+        ? `今日健康评分 ${healthScore} 分，建议补齐待办并继续观察`
+        : '今日记录暂未发现明显健康异常'
+
+  let weatherTitle = '天气平稳，按日常节奏活动'
+  let weatherSummary = '适合把散步、饮水和休息安排得更均衡。'
+  let weatherAction = '按平时节奏出门，随身带水，并在活动后检查脚垫和毛发。'
+  if (hasRain) {
+    weatherTitle = '有降雨提醒，散步要避开潮湿时段'
+    weatherSummary = '雨天湿毛和湿脚垫更容易带来皮肤不适。'
+    weatherAction = `建议避开 ${weather.rainTime} 前后的降雨；回家后擦干脚垫、腹部和趾间。`
+  } else if (Number.isFinite(apparent) && apparent >= 30) {
+    weatherTitle = '体感偏热，今天优先防暑和补水'
+    weatherSummary = `当前体感约 ${apparent}℃，高温会增加中暑和脚垫烫伤风险。`
+    weatherAction = '避开中午外出，优先在清晨或日落后短时散步，并少量多次补水。'
+  } else if (Number.isFinite(apparent) && apparent <= 5) {
+    weatherTitle = '体感偏冷，今天注意保暖和脚垫护理'
+    weatherSummary = `当前体感约 ${apparent}℃，低温会让关节和脚垫更不舒服。`
+    weatherAction = '缩短户外停留，回家后擦干脚垫；怕冷的宠物可穿合身衣物。'
   }
-  if ([9, 10, 11].includes(month)) {
-    return {
-      icon: '🍂',
-      title: '换毛季应该多久梳一次毛？',
-      summary: '规律梳毛能减少浮毛，也方便及时发现皮肤问题。',
-      detail: ['根据毛发长度和掉毛量安排频率，换毛明显时可每天短时梳理。', '从毛尖开始轻柔梳开，不要反复拉扯打结区域。', '梳毛时同步观察皮屑、红肿、结痂和异常掉毛。']
-    }
+
+  const ageAction = isPuppy
+    ? '幼年阶段精力旺盛，但活动应分成多次短时进行，避免一次过度消耗。'
+    : isSenior
+      ? '老年阶段更要避免突然加量运动，留意起身、上下楼和散步后的关节反应。'
+      : '成年阶段可保持规律散步和互动，并用每周体重变化校准食量。'
+  const healthAction = abnormalStools
+    ? '今天先保持饮食简单稳定，记录排便次数、形态和精神状态；持续异常或伴随呕吐、无力时尽快咨询兽医。'
+    : needsWater
+      ? '把水碗放在常活动的位置，分时补充干净饮水；若持续明显少喝水，建议结合精神和排尿情况观察。'
+      : '继续记录饮水、排便和活动；连续数据比单次状态更能反映健康变化。'
+
+  const weatherKnowledge = {
+    icon: hasRain ? '🌧️' : Number.isFinite(apparent) && apparent >= 30 ? '☀️' : Number.isFinite(apparent) && apparent <= 5 ? '❄️' : '🌤️',
+    title: weatherTitle,
+    summary: `${weatherSummary} ${ageLabel}的${lifeStage}，${healthText}。`,
+    detail: [weatherAction, `健康记录：${healthText}。`, `年龄建议：${ageAction}`]
   }
-  return {
-    icon: '❄️',
-    title: '冬天遛狗需要给脚垫保暖吗？',
-    summary: '低温、融雪剂和干燥环境都可能刺激脚垫。',
-    detail: ['缩短严寒时段的户外停留时间，回家后擦净并检查脚垫。', '接触融雪剂后及时用清水清洁，避免舔食残留。', '出现干裂、出血或持续舔脚时，应减少刺激并咨询兽医。']
+  const ageKnowledge = {
+    icon: isPuppy ? '🐶' : isSenior ? '🦮' : '🐾',
+    title: `${ageLabel}${lifeStage}的今日护理重点`,
+    summary: `${ageAction} 同时，${weatherSummary}`,
+    detail: [`年龄建议：${ageAction}`, `天气安排：${weatherAction}`, `健康观察：${healthText}。`]
   }
+  const healthKnowledge = {
+    icon: abnormalStools ? '🩺' : needsWater ? '💧' : '💚',
+    title: abnormalStools ? '今天肠胃有波动，先这样观察' : needsWater ? '今天的补水需要优先完成' : '今天健康记录怎样看？',
+    summary: `${healthText}；结合${ageLabel}和当前天气，安排要适度。`,
+    detail: [healthAction, `天气安排：${weatherAction}`, `年龄建议：${ageAction}`]
+  }
+  return [weatherKnowledge, ageKnowledge, healthKnowledge][dayIndex % 3]
 }
 
 function buildCareFindings(careSchedule) {
@@ -554,7 +619,14 @@ function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, c
       { icon: '🐾', label: '活力', action: 'walk', ...activityStatus }
     ],
     findings: aiPredictions,
-    knowledge: getTodayKnowledge(now.getMonth() + 1)
+    knowledge: getPersonalizedKnowledge({
+      now,
+      pet,
+      weather,
+      healthScore,
+      todayStools,
+      waterRatio
+    })
   }
 }
 

@@ -157,7 +157,7 @@
         <text class="weight-history-arrow">{{item.hasPhoto ? '›' : ''}}</text>
       </view>
     </scroll-view>
-    <view class="weight-note">在“我的 → 设置”记录体重时可拍照或上传照片；点击带照片的历史记录即可查看成长影像。</view>
+    <view class="weight-note">成长照片请在“我的”资料卡中的“成长相册”上传和查看；旧的体重照片也会保留在相册中。</view>
   </view>
 </view>
 
