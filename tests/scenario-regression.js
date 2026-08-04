@@ -53,6 +53,8 @@ function makeState(overrides = {}) {
     stools: [],
     waters: [],
     walks: [],
+    feedGoal: 260,
+    waterGoal: 616,
     chats: [],
     diaries: [],
     care: defaultCare(),
@@ -230,6 +232,8 @@ async function main() {
     assert.ok(storage.paw_supply_records.dogFood.openedDate)
     assert.ok(storage.paw_supply_records.snack.openedDate)
     assert.ok(storage.paw_care_schedule.dentalCycle > 0)
+    assert.strictEqual(storage.paw_feed_goal, 260)
+    assert.strictEqual(storage.paw_water_goal, 616)
   })
 
   await scenario('旧版和损坏的本地数据会被安全修复', () => {
@@ -385,6 +389,72 @@ async function main() {
     context.data.draft = { condition: '稀便', color: '红色', note: '观察', time: '19:00' }
     page.saveStool.call(context)
     assert.strictEqual(state.stools[0].abnormal, true)
+  })
+
+  await scenario('每日喂食目标可修改、校验并立即更新统计', () => {
+    const state = makeState({
+      feedGoal: 260,
+      feeds: [
+        { id: 1, dayKey: TODAY, date: '今天', time: '08:00', type: '早餐', food: '犬粮', amount: '108g', icon: '🥣' },
+        { id: 2, dayKey: TODAY, date: '今天', time: '18:00', type: '晚餐', food: '犬粮', amount: '95g', icon: '🥣' }
+      ]
+    })
+    const { wx, calls } = makeWx()
+    const page = loadPage('pages/feed/feed.js', makeStore(state), wx)
+    const context = pageContext(page)
+    page.onLoad.call(context, { type: 'feed' })
+    page.onShow.call(context)
+    assert.strictEqual(context.data.summary.goalText, '目标 260g')
+    page.openFeedGoalEditor.call(context)
+    assert.strictEqual(context.data.editingFeedGoal, true)
+    assert.strictEqual(context.data.feedGoalDraft, '260')
+    page.onFeedGoalInput.call(context, { detail: { value: '300' } })
+    page.saveFeedGoal.call(context)
+    assert.strictEqual(state.feedGoal, 300)
+    assert.strictEqual(context.data.editingFeedGoal, false)
+    assert.strictEqual(context.data.summary.goalText, '目标 300g')
+    assert.strictEqual(context.data.summary.progress, 68)
+    assert.strictEqual(context.data.summary.footRight, '还差 97g')
+    assert.strictEqual(context.data.feedTrend.goalText, '目标线 300g')
+    page.openFeedGoalEditor.call(context)
+    page.onFeedGoalInput.call(context, { detail: { value: '0' } })
+    page.saveFeedGoal.call(context)
+    assert.strictEqual(state.feedGoal, 300)
+    assert.strictEqual(context.data.editingFeedGoal, true)
+    assert.ok(calls.toasts.some(item => item.title.includes('1～5000')))
+  })
+
+  await scenario('每日饮水目标可修改、校验并立即更新统计', () => {
+    const state = makeState({
+      waterGoal: 616,
+      waters: [
+        { id: 1, dayKey: TODAY, date: '今天', time: '09:00', amount: '180ml', icon: '💧' },
+        { id: 2, dayKey: TODAY, date: '今天', time: '15:00', amount: '160ml', icon: '💧' }
+      ]
+    })
+    const { wx, calls } = makeWx()
+    const page = loadPage('pages/feed/feed.js', makeStore(state), wx)
+    const context = pageContext(page)
+    page.onLoad.call(context, { type: 'water' })
+    page.onShow.call(context)
+    assert.strictEqual(context.data.summary.goalText, '目标 616ml')
+    page.openWaterGoalEditor.call(context)
+    assert.strictEqual(context.data.editingWaterGoal, true)
+    assert.strictEqual(context.data.waterGoalDraft, '616')
+    page.onWaterGoalInput.call(context, { detail: { value: '700' } })
+    page.saveWaterGoal.call(context)
+    assert.strictEqual(state.waterGoal, 700)
+    assert.strictEqual(context.data.editingWaterGoal, false)
+    assert.strictEqual(context.data.summary.goalText, '目标 700ml')
+    assert.strictEqual(context.data.summary.progress, 49)
+    assert.strictEqual(context.data.summary.footRight, '还差 360ml')
+    assert.strictEqual(context.data.feedTrend.goalText, '目标线 700ml')
+    page.openWaterGoalEditor.call(context)
+    page.onWaterGoalInput.call(context, { detail: { value: '10001' } })
+    page.saveWaterGoal.call(context)
+    assert.strictEqual(state.waterGoal, 700)
+    assert.strictEqual(context.data.editingWaterGoal, true)
+    assert.ok(calls.toasts.some(item => item.title.includes('1～10000')))
   })
 
   await scenario('我的页全屏入口和所有生命周期都会正确恢复 Tab', () => {
@@ -736,6 +806,32 @@ async function main() {
     })
   })
 
+  await scenario('AI聊聊和Q版头像在同一页面以页签切换', () => {
+    const state = makeState()
+    const { wx, calls } = makeWx()
+    const chat = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(chat)
+    chat.switchHubTab.call(context, { currentTarget: { dataset: { tab: 'avatar' } } })
+    assert.strictEqual(context.data.hubTab, 'avatar')
+    chat.switchHubTab.call(context, { currentTarget: { dataset: { tab: 'chat' } } })
+    assert.strictEqual(context.data.hubTab, 'chat')
+    assert.deepStrictEqual(calls.navigations, [])
+    const chatWxml = fs.readFileSync(path.join(ROOT, 'pages/chat/chat.wxml'), 'utf8')
+    assert.ok(chatWxml.includes('data-tab="avatar" bindtap="switchHubTab"'))
+    assert.ok(chatWxml.includes('wx:if="{{hubTab === \'chat\'}}"'))
+    assert.ok(chatWxml.includes('class="avatar-tab-panel" wx:else'))
+    assert.ok(chatWxml.includes('bindtap="choosePhoto"'))
+    assert.ok(chatWxml.includes('bindtap="generate"'))
+    assert.ok(chatWxml.includes('class="ai-tool-icon"'))
+    assert.ok(chatWxml.includes('class="head-title"'))
+    assert.ok(chatWxml.indexOf('class="ai-tool-switch"') < chatWxml.indexOf('class="chat-head"'))
+    const chatBlockStart = chatWxml.indexOf('<block wx:if="{{hubTab === \'chat\'}}">')
+    assert.ok(chatWxml.indexOf('class="chat-head"') > chatBlockStart)
+    const appConfig = JSON.parse(fs.readFileSync(path.join(ROOT, 'app.json'), 'utf8'))
+    assert.ok(!appConfig.tabBar.list.some(item => item.pagePath === 'pages/avatar/avatar'))
+    assert.ok(appConfig.pages.includes('pages/avatar/avatar'))
+  })
+
   await scenario('首页在所有记录为空时仍能生成完整状态和 AI 预测', () => {
     const state = makeState({
       feeds: [], stools: [], waters: [], walks: [], careRecords: [], weightRecords: []
@@ -766,16 +862,17 @@ async function main() {
     assert.ok(weather.rainText.includes('暂未取得实时天气'))
   })
 
-  await scenario('页面清单和四个 Tab 路由都指向真实文件', () => {
+  await scenario('页面清单和三个 Tab 路由都指向真实文件', () => {
     const appConfig = JSON.parse(fs.readFileSync(path.join(ROOT, 'app.json'), 'utf8'))
-    assert.strictEqual(appConfig.tabBar.list.length, 4)
+    assert.strictEqual(appConfig.tabBar.list.length, 3)
     const routes = [...appConfig.pages, ...appConfig.tabBar.list.map(item => item.pagePath)]
     routes.forEach(route => {
       assert.ok(fs.existsSync(path.join(ROOT, `${route}.js`)), `${route}.js is missing`)
       assert.ok(fs.existsSync(path.join(ROOT, `${route}.wxml`)), `${route}.wxml is missing`)
       assert.ok(fs.existsSync(path.join(ROOT, `${route}.wxss`)), `${route}.wxss is missing`)
     })
-    assert.strictEqual(new Set(appConfig.tabBar.list.map(item => item.pagePath)).size, 4)
+    assert.strictEqual(new Set(appConfig.tabBar.list.map(item => item.pagePath)).size, 3)
+    assert.strictEqual(appConfig.tabBar.list.find(item => item.pagePath === 'pages/chat/chat').text, 'AI宠物顾问')
   })
 
   await scenario('DeepSeek 密钥不会进入小程序前端包', () => {
@@ -794,6 +891,50 @@ async function main() {
     frontendFiles.forEach(relativePath => {
       const content = fs.readFileSync(path.join(ROOT, relativePath), 'utf8')
       assert.ok(!/sk-[A-Za-z0-9_-]{20,}/.test(content), `${relativePath} must not contain an API key`)
+    })
+  })
+
+  await scenario('Responsive layouts hide scrollbars and keep small screens usable', () => {
+    const appStyles = fs.readFileSync(path.join(ROOT, 'app.wxss'), 'utf8')
+    const avatarStyles = fs.readFileSync(path.join(ROOT, 'pages/avatar/avatar.wxss'), 'utf8')
+    const chatStyles = fs.readFileSync(path.join(ROOT, 'pages/chat/chat.wxss'), 'utf8')
+    const profileStyles = fs.readFileSync(path.join(ROOT, 'pages/profile/profile.wxss'), 'utf8')
+    const accountStyles = fs.readFileSync(path.join(ROOT, 'pages/account/account.wxss'), 'utf8')
+
+    assert.ok(/::-webkit-scrollbar\s*\{[^}]*display\s*:\s*none/s.test(appStyles))
+
+    const wxmlFiles = ['profile', 'feed', 'chat', 'avatar', 'account', 'diary']
+      .map(name => path.join(ROOT, `pages/${name}/${name}.wxml`))
+    wxmlFiles.forEach(file => {
+      const wxml = fs.readFileSync(file, 'utf8')
+      const scrollViews = [...wxml.matchAll(/<scroll-view\b[^>]*>/g)].map(match => match[0])
+      scrollViews.forEach(tag => {
+        assert.ok(/show-scrollbar="false"/.test(tag), `${path.relative(ROOT, file)} exposes a scrollbar`)
+      })
+    })
+
+    const chatWxml = fs.readFileSync(path.join(ROOT, 'pages/chat/chat.wxml'), 'utf8')
+    assert.ok(/<scroll-view class="avatar-tab-panel"[^>]*scroll-y[^>]*show-scrollbar="false"/.test(chatWxml))
+    assert.ok(/@media[^\{]*max-height\s*:\s*620px/.test(avatarStyles))
+    assert.ok(/@media[^\{]*max-height\s*:\s*620px/.test(chatStyles))
+    assert.ok(/@media[^\{]*max-height\s*:\s*620px/.test(profileStyles))
+    assert.ok(/@media[^\{]*max-width\s*:\s*360px/.test(avatarStyles))
+    assert.ok(/@media[^\{]*max-width\s*:\s*360px/.test(chatStyles))
+    assert.ok(/@media[^\{]*max-width\s*:\s*360px/.test(profileStyles))
+    assert.ok(/@media[^\{]*max-width\s*:\s*360px/.test(accountStyles))
+    assert.ok(/\.profile-edit-page[\s\S]*safe-area-inset-bottom/.test(accountStyles))
+
+    const deviceMatrix = [
+      { name: 'iPhone SE', width: 320, height: 568 },
+      { name: 'iPhone 8', width: 375, height: 667 },
+      { name: 'iPhone 14', width: 390, height: 844 },
+      { name: 'iPhone 15 Pro Max', width: 430, height: 932 },
+      { name: 'Android compact', width: 360, height: 800 },
+      { name: 'Android large', width: 412, height: 915 }
+    ]
+    deviceMatrix.forEach(device => {
+      assert.ok(device.width >= 320 && device.width <= 430, `${device.name} width is outside the test matrix`)
+      assert.ok(device.height >= 568 && device.height <= 932, `${device.name} height is outside the test matrix`)
     })
   })
 

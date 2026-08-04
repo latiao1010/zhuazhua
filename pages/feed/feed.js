@@ -28,12 +28,12 @@ function recordDateLabel(item, today, yesterday) {
   return item.date || '历史记录'
 }
 
-function getTrendConfig(type, pet) {
-  const waterGoal = Math.round((Number(pet && pet.weight) || 0) * 55) || 600
+function getTrendConfig(type, pet, feedGoal = FEED_GOAL, savedWaterGoal) {
+  const waterGoal = Number(savedWaterGoal) || Math.round((Number(pet && pet.weight) || 0) * 55) || 600
   return {
     feed: {
-      title: '近 30 天喂食趋势', unit: 'g', eventUnit: '餐', goal: FEED_GOAL,
-      goalText: `目标线 ${FEED_GOAL}g`, mergeText: '单日多餐已合并', threshold: 5,
+      title: '近 30 天喂食趋势', unit: 'g', eventUnit: '餐', goal: feedGoal,
+      goalText: `目标线 ${feedGoal}g`, mergeText: '单日多餐已合并', threshold: 5,
       metricLabels: ['记录日均 / g', '近 7 天日均 / g', '30 天总餐次']
     },
     water: {
@@ -60,8 +60,8 @@ function getTrendDayValue(type, dayRecords) {
   return Math.round(dayRecords.reduce((sum, item) => sum + parseNumber(item[valueKey]), 0))
 }
 
-function buildTrend(type, records, endDate, selectedDate, pet) {
-  const config = getTrendConfig(type, pet)
+function buildTrend(type, records, endDate, selectedDate, pet, feedGoal, waterGoal) {
+  const config = getTrendConfig(type, pet, feedGoal, waterGoal)
   const days = Array.from({ length: 30 }, (_, index) => {
     const dayKey = offsetDateKey(endDate, index - 29)
     const dayRecords = (records || []).filter(item => item && item.dayKey === dayKey)
@@ -164,19 +164,19 @@ function toRow(type, item) {
   return { ...base, icon: '🐾', iconClass: 'walk-icon', dotClass: 'walk-dot', title: '散步', meta: `${item.duration} 分钟`, metaClass: 'amount', sub: detail }
 }
 
-function buildSummary(type, records, pet, isToday) {
+function buildSummary(type, records, pet, isToday, feedGoal = FEED_GOAL, savedWaterGoal) {
   const dayText = isToday ? '今日' : '当日'
   const naturalDayText = isToday ? '今天' : '当日'
   if (type === 'feed') {
     const total = records.reduce((sum, item) => sum + parseNumber(item.amount), 0)
     return {
-      kind: 'progress', label: `${dayText}已摄入`, value: total, unit: 'g', goalText: `目标 ${FEED_GOAL}g`,
-      progress: Math.min(100, Math.round(total / FEED_GOAL * 100)),
-      footLeft: `${dayText} ${records.length} 餐`, footRight: total >= FEED_GOAL ? '已达标' : `还差 ${FEED_GOAL - total}g`
+      kind: 'progress', label: `${dayText}已摄入`, value: total, unit: 'g', goalText: `目标 ${feedGoal}g`,
+      progress: Math.min(100, Math.round(total / feedGoal * 100)),
+      footLeft: `${dayText} ${records.length} 餐`, footRight: total >= feedGoal ? '已达标' : `还差 ${feedGoal - total}g`
     }
   }
   if (type === 'water') {
-    const goal = Math.round((Number(pet.weight) || 0) * 55) || FEED_GOAL
+    const goal = Number(savedWaterGoal) || Math.round((Number(pet.weight) || 0) * 55) || FEED_GOAL
     const total = records.reduce((sum, item) => sum + parseNumber(item.amount), 0)
     return {
       kind: 'progress', label: `${dayText}已饮水`, value: total, unit: 'ml', goalText: `目标 ${goal}ml`,
@@ -207,7 +207,10 @@ Page({
     pet: {}, day: '', month: '', today: '', selectedDate: '', trendEndDate: '', dateFilterText: '今天', emptyText: '', currentType: 'feed', singleMode: true, detailTitle: '喂食详情', detailEyebrow: 'FEEDING DETAIL',
     tabs: Object.keys(TYPES).map(key => ({ key, tab: TYPES[key].tab, icon: TYPES[key].icon })),
     rows: [], summary: {}, typeMeta: {}, feedTrend: { days: [], scrollLeft: 0, activeDays: 0, totalMeals: 0, average: 0, latest7Average: 0 },
-    adding: false, mealTypes: ['早餐', '午餐', '晚餐', '零食'],
+    adding: false,
+    editingFeedGoal: false, feedGoal: FEED_GOAL, feedGoalDraft: String(FEED_GOAL),
+    editingWaterGoal: false, waterGoal: 600, waterGoalDraft: '600',
+    mealTypes: ['早餐', '午餐', '晚餐', '零食'],
     stoolConditions: ['正常成形', '偏软', '稀便', '便秘/干硬'], stoolColors: ['棕色', '黄色', '黑色', '红色'], draft: {}
   },
   onLoad(options) {
@@ -235,6 +238,8 @@ Page({
     const yesterdayKey = offsetDateKey(today, -1)
     const dateFilterText = recordDateLabel({ dayKey: selectedDate }, today, yesterdayKey)
     const pet = store.get('pet')
+    const feedGoal = Number(store.get('feedGoal')) || FEED_GOAL
+    const waterGoal = Number(store.get('waterGoal')) || Math.round((Number(pet.weight) || 0) * 55) || 600
     const typeRecords = store.get(TYPES[type].storeKey)
     const records = typeRecords
       .filter(item => item && item.dayKey === selectedDate)
@@ -252,8 +257,9 @@ Page({
       detailTitle: `${pet.name}的${TYPES[type].tab}`,
       detailEyebrow: { feed: 'FEEDING DETAIL', stool: 'STOOL DETAIL', water: 'WATER DETAIL', walk: 'WALK DETAIL' }[type],
       rows,
-      summary: buildSummary(type, records, pet, isToday),
-      feedTrend: buildTrend(type, typeRecords, trendEndDate, selectedDate, pet)
+      feedGoal, waterGoal,
+      summary: buildSummary(type, records, pet, isToday, feedGoal, waterGoal),
+      feedTrend: buildTrend(type, typeRecords, trendEndDate, selectedDate, pet, feedGoal, waterGoal)
     })
   },
   onRecordDate(e) {
@@ -282,6 +288,38 @@ Page({
     this.setData({ adding: true, draft: drafts[this.data.currentType] })
   },
   closeAdd() { this.setData({ adding: false }) },
+  openFeedGoalEditor() {
+    if (this.data.currentType !== 'feed') return
+    this.setData({ editingFeedGoal: true, feedGoalDraft: String(this.data.feedGoal || FEED_GOAL) })
+  },
+  closeFeedGoalEditor() { this.setData({ editingFeedGoal: false }) },
+  onFeedGoalInput(e) { this.setData({ feedGoalDraft: e.detail.value }) },
+  saveFeedGoal() {
+    const goal = Math.round(Number(this.data.feedGoalDraft))
+    if (!Number.isFinite(goal) || goal <= 0 || goal > 5000) {
+      return wx.showToast({ title: '请输入 1～5000 克的目标值', icon: 'none' })
+    }
+    store.set('feedGoal', goal)
+    this.setData({ editingFeedGoal: false, feedGoal: goal, feedGoalDraft: String(goal) })
+    this.refresh()
+    wx.showToast({ title: '喂食目标已更新', icon: 'success' })
+  },
+  openWaterGoalEditor() {
+    if (this.data.currentType !== 'water') return
+    this.setData({ editingWaterGoal: true, waterGoalDraft: String(this.data.waterGoal || 600) })
+  },
+  closeWaterGoalEditor() { this.setData({ editingWaterGoal: false }) },
+  onWaterGoalInput(e) { this.setData({ waterGoalDraft: e.detail.value }) },
+  saveWaterGoal() {
+    const goal = Math.round(Number(this.data.waterGoalDraft))
+    if (!Number.isFinite(goal) || goal <= 0 || goal > 10000) {
+      return wx.showToast({ title: '请输入 1～10000 毫升的目标值', icon: 'none' })
+    }
+    store.set('waterGoal', goal)
+    this.setData({ editingWaterGoal: false, waterGoal: goal, waterGoalDraft: String(goal) })
+    this.refresh()
+    wx.showToast({ title: '饮水目标已更新', icon: 'success' })
+  },
   noop() {},
   chooseType(e) { this.setData({ 'draft.type': e.currentTarget.dataset.value }) },
   chooseCondition(e) { this.setData({ 'draft.condition': e.currentTarget.dataset.value }) },

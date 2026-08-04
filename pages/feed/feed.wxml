@@ -13,7 +13,9 @@
   <view class="summary card" wx:if="{{summary.kind === 'progress'}}">
     <view class="summary-top">
       <view><view class="summary-label">{{summary.label}}</view><view><text class="summary-num">{{summary.value}}</text><text class="summary-unit"> {{summary.unit}}</text></view></view>
-      <view class="goal">{{summary.goalText}}</view>
+      <view class="goal editable" wx:if="{{currentType === 'feed'}}" bindtap="openFeedGoalEditor">{{summary.goalText}}<text> ✎</text></view>
+      <view class="goal editable" wx:elif="{{currentType === 'water'}}" bindtap="openWaterGoalEditor">{{summary.goalText}}<text> ✎</text></view>
+      <view class="goal" wx:else>{{summary.goalText}}</view>
     </view>
     <view class="progress"><view class="progress-inner" style="width: {{summary.progress}}%"></view></view>
     <view class="summary-foot"><text>{{summary.footLeft}}</text><text>{{summary.footRight}}</text></view>
@@ -64,6 +66,32 @@
   <view class="empty card" wx:else>{{emptyText}}</view>
 
   <button class="add-btn" bindtap="openAdd"><text>＋</text> {{typeMeta.addText}}</button>
+</view>
+
+<view class="overlay" wx:if="{{editingWaterGoal}}" catchtap="closeWaterGoalEditor">
+  <view class="sheet goal-sheet" catchtap="noop">
+    <view class="sheet-head"><text>修改每日饮水目标</text><text class="close" bindtap="closeWaterGoalEditor">×</text></view>
+    <view class="goal-editor-copy">设置后，今日剩余饮水量、完成进度和近 30 天目标线会立即更新。</view>
+    <view class="goal-editor-field">
+      <input type="number" focus maxlength="5" value="{{waterGoalDraft}}" bindinput="onWaterGoalInput" bindconfirm="saveWaterGoal" />
+      <text>毫升 / 天</text>
+    </view>
+    <view class="goal-editor-tip">当前建议值根据体重估算；可结合食物含水量、天气、活动量及兽医建议调整。</view>
+    <button class="primary-btn" bindtap="saveWaterGoal">保存目标</button>
+  </view>
+</view>
+
+<view class="overlay" wx:if="{{editingFeedGoal}}" catchtap="closeFeedGoalEditor">
+  <view class="sheet goal-sheet" catchtap="noop">
+    <view class="sheet-head"><text>修改每日喂食目标</text><text class="close" bindtap="closeFeedGoalEditor">×</text></view>
+    <view class="goal-editor-copy">设置后，今日剩余克数、完成进度和近 30 天目标线会立即更新。</view>
+    <view class="goal-editor-field">
+      <input type="number" focus maxlength="4" value="{{feedGoalDraft}}" bindinput="onFeedGoalInput" bindconfirm="saveFeedGoal" />
+      <text>克 / 天</text>
+    </view>
+    <view class="goal-editor-tip">请根据宠物体重、年龄、活动量和所用粮食说明合理设置。</view>
+    <button class="primary-btn" bindtap="saveFeedGoal">保存目标</button>
+  </view>
 </view>
 
 <view class="overlay" wx:if="{{adding}}" catchtap="closeAdd">

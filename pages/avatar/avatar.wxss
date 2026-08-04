@@ -419,3 +419,19 @@ page{
   .generate-btn{height:78rpx}
   .result-actions button{height:62rpx}
 }
+
+@media (max-height:620px){
+  page{overflow-y:auto}
+  .avatar-page{height:auto;min-height:100%;overflow:visible}
+  .preview{flex:none;height:280rpx;min-height:280rpx}
+  .controls-panel{flex:none}
+}
+
+@media (max-width:360px){
+  .avatar-page{padding-left:16rpx;padding-right:16rpx}
+  .step-card{padding-left:14rpx;padding-right:14rpx}
+  .photo-guides{gap:6rpx}
+  .photo-guides>view{font-size:15rpx}
+  .style-list{gap:6rpx}
+  .style{font-size:15rpx}
+}

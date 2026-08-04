@@ -78,6 +78,14 @@ page {
 
 button::after{ border: 0; }
 
+/* Keep touch scrolling available without exposing platform scroll tracks. */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+  color: transparent;
+}
+
 .muted{ color: var(--muted); }
 
 .empty {

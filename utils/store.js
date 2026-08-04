@@ -13,11 +13,16 @@ const KEYS = {
   growthPhotos: 'paw_growth_photos',
   generatedAvatar: 'paw_generated_avatar',
   avatarGenerationStatus: 'paw_avatar_generation_status',
+  feedGoal: 'paw_feed_goal',
+  waterGoal: 'paw_water_goal',
   feedTrendDemo: 'paw_feed_trend_demo_v1',
   dailyTrendDemo: 'paw_daily_trend_demo_v1',
   growthPhotoDemo: 'paw_growth_photo_demo_v1',
   twoMonthDemo: 'paw_two_month_demo_v1'
 }
+
+const DEFAULT_FEED_GOAL = 260
+const DEFAULT_WATER_GOAL = 600
 
 const seedPet = {
   name: '糯米',
@@ -362,6 +367,19 @@ function ensureSeedData() {
   const normalizedCare = normalizeCareSchedule(care)
   wx.setStorageSync(KEYS.care, normalizedCare)
 
+  const storedFeedGoal = Number(wx.getStorageSync(KEYS.feedGoal))
+  const feedGoal = Number.isFinite(storedFeedGoal) && storedFeedGoal > 0 && storedFeedGoal <= 5000
+    ? Math.round(storedFeedGoal)
+    : DEFAULT_FEED_GOAL
+  wx.setStorageSync(KEYS.feedGoal, feedGoal)
+
+  const storedWaterGoal = Number(wx.getStorageSync(KEYS.waterGoal))
+  const suggestedWaterGoal = Math.round((Number(pet.weight) || 0) * 55) || DEFAULT_WATER_GOAL
+  const waterGoal = Number.isFinite(storedWaterGoal) && storedWaterGoal > 0 && storedWaterGoal <= 10000
+    ? Math.round(storedWaterGoal)
+    : suggestedWaterGoal
+  wx.setStorageSync(KEYS.waterGoal, waterGoal)
+
   ;['feeds', 'stools', 'waters', 'walks'].forEach(key => {
     const records = wx.getStorageSync(KEYS[key])
     if (records.some(item => !item.dayKey)) {
@@ -436,6 +454,16 @@ const get = key => {
   if (key === 'pet') return normalizePet(value)
   if (key === 'care') return normalizeCareSchedule(value)
   if (key === 'supplies') return normalizeSupplies(value)
+  if (key === 'feedGoal') {
+    const goal = Number(value)
+    return Number.isFinite(goal) && goal > 0 && goal <= 5000 ? Math.round(goal) : DEFAULT_FEED_GOAL
+  }
+  if (key === 'waterGoal') {
+    const goal = Number(value)
+    if (Number.isFinite(goal) && goal > 0 && goal <= 10000) return Math.round(goal)
+    const pet = normalizePet(wx.getStorageSync(KEYS.pet))
+    return Math.round((Number(pet.weight) || 0) * 55) || DEFAULT_WATER_GOAL
+  }
   if (key === 'generatedAvatar') {
     if (!value || typeof value !== 'object' || typeof value.path !== 'string' || !value.path) return null
     return {

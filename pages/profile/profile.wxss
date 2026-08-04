@@ -163,3 +163,16 @@
 }
 
 .knowledge-sheet{max-height:82vh;overflow-y:auto}.knowledge-hero{display:flex;align-items:center;padding:23rpx;border-radius:25rpx;background:linear-gradient(135deg,#fff4dc,#fffaf2)}.knowledge-hero>text{display:flex;align-items:center;justify-content:center;flex:none;width:76rpx;height:76rpx;margin-right:17rpx;border-radius:23rpx;background:#ffe7b7;font-size:36rpx}.knowledge-hero>view>view{font-size:27rpx;font-weight:900}.knowledge-hero>view>text{display:block;margin-top:7rpx;color:#8e7c6c;font-size:19rpx;line-height:1.45}.knowledge-points{margin:18rpx 0}.knowledge-points>view{display:flex;align-items:flex-start;padding:15rpx 4rpx;border-bottom:1rpx solid #f0e8e1;color:#625952;font-size:21rpx;line-height:1.55}.knowledge-points>view>text{display:flex;align-items:center;justify-content:center;flex:none;width:31rpx;height:31rpx;margin:1rpx 12rpx 0 0;border-radius:50%;color:#fff;background:#ef8a64;font-size:16rpx;font-weight:900}
+
+@media screen and (max-height:620px){
+  .home-page{height:auto;min-height:100vh;overflow:visible}
+  .home-page>.status-block,
+  .home-page>.finding-block,
+  .home-page>.insight-block{flex:none}
+}
+
+@media screen and (max-width:360px){
+  .home-page{padding-left:14rpx;padding-right:14rpx}
+  .home-head{padding-left:14rpx;padding-right:14rpx}
+  .home-page .pet-chip{max-width:210rpx;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
