@@ -1,5 +1,6 @@
 const DEFAULT_BASE_URL = 'http://127.0.0.1:8789'
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024
+const cloud = require('./cloud')
 
 function getBaseUrl() {
   try {
@@ -12,9 +13,19 @@ function getBaseUrl() {
 }
 
 function isAvailable() {
-  return typeof wx !== 'undefined' &&
+  return cloud.isAvailable() || (typeof wx !== 'undefined' &&
     typeof wx.request === 'function' &&
-    typeof wx.getFileSystemManager === 'function'
+    typeof wx.getFileSystemManager === 'function')
+}
+
+function imageMimeType(filePath) {
+  return /\.png$/i.test(filePath) ? 'image/png' : /\.webp$/i.test(filePath) ? 'image/webp' : 'image/jpeg'
+}
+
+function imageExtension(filePath) {
+  if (/\.png$/i.test(filePath)) return 'png'
+  if (/\.webp$/i.test(filePath)) return 'webp'
+  return 'jpg'
 }
 
 function readImage(filePath) {
@@ -63,6 +74,30 @@ function request(options) {
 }
 
 function createAvatarTask({ filePath, styleId, style, pet }) {
+  if (cloud.isAvailable()) {
+    let aborted = false
+    const cloudPath = `avatar-inputs/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${imageExtension(filePath)}`
+    const promise = cloud.uploadFile(cloudPath, filePath)
+      .then(sourceFileID => cloud.callFunction('pet-ai', {
+        action: 'avatar',
+        sourceFileID,
+        mimeType: imageMimeType(filePath),
+        styleId,
+        style,
+        petName: pet && pet.name
+      }))
+      .then(result => {
+        if (aborted) throw new Error('request_aborted')
+        const imageUrl = result.imageFileID || result.imageUrl
+        if (!imageUrl) throw new Error('empty_avatar_result')
+        return { status: 'success', imageUrl, imageFileID: result.imageFileID || '' }
+      })
+    return {
+      promise,
+      abort() { aborted = true }
+    }
+  }
+
   let activeRequest
   const promise = readImage(filePath).then(imageBase64 => {
     activeRequest = request({
@@ -70,7 +105,7 @@ function createAvatarTask({ filePath, styleId, style, pet }) {
       method: 'POST',
       data: {
         imageBase64,
-        mimeType: /\.png$/i.test(filePath) ? 'image/png' : /\.webp$/i.test(filePath) ? 'image/webp' : 'image/jpeg',
+        mimeType: imageMimeType(filePath),
         styleId,
         style,
         petName: pet && pet.name
@@ -92,6 +127,7 @@ function queryAvatarTask(submitId) {
 }
 
 function downloadImage(imageUrl) {
+  if (/^cloud:\/\//.test(String(imageUrl || ''))) return Promise.resolve(imageUrl)
   return new Promise((resolve, reject) => {
     wx.downloadFile({
       url: imageUrl,

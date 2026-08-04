@@ -31,11 +31,11 @@ const seedPet = {
 }
 
 const seedGrowthPhotos = [
-  { id: 'demo-growth-20260722-1', path: '/assets/growth-demo-home.png', dayKey: '2026-07-22', time: '09:12', createdAt: new Date('2026-07-22T09:12:00').getTime() },
-  { id: 'demo-growth-20260727-1', path: '/assets/growth-demo-lawn.png', dayKey: '2026-07-27', time: '10:05', createdAt: new Date('2026-07-27T10:05:00').getTime() },
-  { id: 'demo-growth-20260727-2', path: '/assets/growth-demo-rain.png', dayKey: '2026-07-27', time: '18:36', createdAt: new Date('2026-07-27T18:36:00').getTime() },
-  { id: 'demo-growth-20260731-1', path: '/assets/growth-demo-home.png', dayKey: '2026-07-31', time: '20:18', createdAt: new Date('2026-07-31T20:18:00').getTime() },
-  { id: 'demo-growth-20260802-1', path: '/assets/growth-demo-lawn.png', dayKey: '2026-08-02', time: '08:46', createdAt: new Date('2026-08-02T08:46:00').getTime() }
+  { id: 'demo-growth-20260722-1', path: '/assets/growth-demo-home.jpg', dayKey: '2026-07-22', time: '09:12', createdAt: new Date('2026-07-22T09:12:00').getTime() },
+  { id: 'demo-growth-20260727-1', path: '/assets/growth-demo-lawn.jpg', dayKey: '2026-07-27', time: '10:05', createdAt: new Date('2026-07-27T10:05:00').getTime() },
+  { id: 'demo-growth-20260727-2', path: '/assets/growth-demo-rain.jpg', dayKey: '2026-07-27', time: '18:36', createdAt: new Date('2026-07-27T18:36:00').getTime() },
+  { id: 'demo-growth-20260731-1', path: '/assets/growth-demo-home.jpg', dayKey: '2026-07-31', time: '20:18', createdAt: new Date('2026-07-31T20:18:00').getTime() },
+  { id: 'demo-growth-20260802-1', path: '/assets/growth-demo-lawn.jpg', dayKey: '2026-08-02', time: '08:46', createdAt: new Date('2026-08-02T08:46:00').getTime() }
 ]
 
 function todayKey() {
@@ -307,7 +307,7 @@ function storeNextDemoDate(date, key) {
 
 function buildSeedGrowthPhotoHistory() {
   const records = []
-  const paths = ['/assets/growth-demo-home.png', '/assets/growth-demo-lawn.png', '/assets/growth-demo-rain.png']
+  const paths = ['/assets/growth-demo-home.jpg', '/assets/growth-demo-lawn.jpg', '/assets/growth-demo-rain.jpg']
   ;[58, 50, 42, 34, 26, 18, 10, 3].forEach((daysBack, index) => {
     const dayKey = offsetDateKey(-daysBack)
     const time = `${String(8 + index % 4 * 3).padStart(2, '0')}:20`

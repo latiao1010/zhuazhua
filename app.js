@@ -1,7 +1,9 @@
 const { ensureSeedData } = require('./utils/store')
+const cloud = require('./utils/cloud')
 
 App({
   onLaunch() {
+    cloud.init()
     ensureSeedData()
   },
   globalData: {

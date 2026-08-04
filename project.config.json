@@ -11,6 +11,22 @@
         "value": "tests"
       },
       {
+        "type": "folder",
+        "value": "cloudfunctions"
+      },
+      {
+        "type": "file",
+        "value": "assets/growth-demo-home.png"
+      },
+      {
+        "type": "file",
+        "value": "assets/growth-demo-lawn.png"
+      },
+      {
+        "type": "file",
+        "value": "assets/growth-demo-rain.png"
+      },
+      {
         "type": "file",
         "value": "Start-AI-Proxy.ps1"
       },
@@ -54,6 +70,7 @@
   "appid": "wx18a26ecfd5eee97d",
   "projectname": "pet-paw-miniprogram",
   "miniprogramRoot": "./",
+  "cloudfunctionRoot": "cloudfunctions/",
   "simulatorPluginLibVersion": {},
   "editorSetting": {},
   "libVersion": "3.17.0"

@@ -1,4 +1,5 @@
 const store = require('../../utils/store')
+const cloudAlbum = require('../../utils/cloud-album')
 
 function showNativeTabBar() {
   if (!wx.showTabBar) return
@@ -258,7 +259,12 @@ Page({
   },
   openGrowthAlbum() {
     hideNativeTabBar()
-    this.setData({ growthAlbumOpen: true, growthPhotos: getGrowthPhotos() })
+    const localPhotos = getGrowthPhotos()
+    this.setData({ growthAlbumOpen: true, growthPhotos: localPhotos })
+    cloudAlbum.loadGrowthPhotos(localPhotos).then(growthPhotos => {
+      store.set('growthPhotos', growthPhotos)
+      if (this.data.growthAlbumOpen) this.setData({ growthPhotos })
+    }).catch(() => {})
   },
   closeGrowthAlbum() {
     this.setData({ growthAlbumOpen: false, uploadingGrowthPhotos: false })
@@ -278,31 +284,17 @@ Page({
         const createdAt = Date.now()
         const captured = new Date(createdAt)
         const dayKey = store.todayKey()
-        const savedPhotos = []
-        const saveNext = index => {
-          if (index >= tempPaths.length) {
+        cloudAlbum.saveGrowthPhotos(tempPaths, { createdAt, dayKey, time: timeText(captured) })
+          .then(savedPhotos => {
             const growthPhotos = [...savedPhotos, ...getGrowthPhotos()].sort((a, b) => b.createdAt - a.createdAt)
             store.set('growthPhotos', growthPhotos)
             this.setData({ growthPhotos, uploadingGrowthPhotos: false })
             wx.showToast({ title: savedPhotos.length ? `已添加 ${savedPhotos.length} 张成长照片` : '成长照片保存失败', icon: 'none' })
-            return
-          }
-          wx.saveFile({
-            tempFilePath: tempPaths[index],
-            success: result => {
-              savedPhotos.push({
-                id: `growth-${createdAt}-${index}`,
-                path: result.savedFilePath,
-                dayKey,
-                time: timeText(captured),
-                createdAt: createdAt + index
-              })
-              saveNext(index + 1)
-            },
-            fail: () => saveNext(index + 1)
           })
-        }
-        saveNext(0)
+          .catch(() => {
+            this.setData({ uploadingGrowthPhotos: false })
+            wx.showToast({ title: '云端保存失败，请稍后重试', icon: 'none' })
+          })
       }
     })
   },

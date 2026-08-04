@@ -2,3 +2,4 @@ server/.env.local
 server/*.log
 server/generated/
 project.private.config.json
+cloudfunctions/**/node_modules/

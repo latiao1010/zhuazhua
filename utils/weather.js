@@ -1,4 +1,5 @@
 const DEFAULT_LOCATION = { latitude: 31.2304, longitude: 121.4737, label: '上海（默认）' }
+const cloud = require('./cloud')
 
 const weatherMap = {
   0: ['晴', '☀️'], 1: ['晴间多云', '🌤️'], 2: ['多云', '⛅'], 3: ['阴', '☁️'],
@@ -40,6 +41,18 @@ function parseForecast(data, label) {
 }
 
 function requestForecast(location) {
+  if (cloud.isAvailable()) {
+    return cloud.callFunction('pet-ai', {
+      action: 'weather',
+      location: {
+        latitude: Number(location.latitude),
+        longitude: Number(location.longitude)
+      }
+    }).then(result => {
+      if (!result.data || !result.data.current) throw new Error('weather response error')
+      return parseForecast(result.data, location.label)
+    })
+  }
   return new Promise((resolve, reject) => {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,apparent_temperature,weather_code&hourly=precipitation_probability,precipitation&forecast_hours=24&timezone=auto`
     wx.request({ url, timeout: 8000, success: res => {

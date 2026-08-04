@@ -12,7 +12,7 @@
     </view>
     <view class="result" wx:else bindtap="previewGenerated">
       <image src="{{generatedImage}}" mode="aspectFill"></image>
-      <view class="ai-badge">即梦生成 · {{generatedStyle || style}}</view>
+      <view class="ai-badge">云端 AI 生成 · {{generatedStyle || style}}</view>
       <view class="result-hint" wx:if="{{!generationError}}">已生成，点击查看大图</view>
       <view class="float-star one">✦</view><view class="float-star two">✦</view>
     </view>
@@ -42,7 +42,7 @@
       </view>
 
       <view class="step-card style-block">
-        <view class="step style-step"><text>02</text><view><view class="bold">选择喜欢的画风</view><text class="small">即梦图片 5.0 · 提示词画风</text></view></view>
+        <view class="step style-step"><text>02</text><view><view class="bold">选择喜欢的画风</view><text class="small">云端图片模型 · 提示词画风</text></view></view>
         <view class="styles">
           <view class="style-list">
             <view class="style {{styleId === item.id ? 'selected' : ''}}" wx:for="{{styles}}" wx:key="id" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="chooseStyle">
@@ -56,7 +56,7 @@
     <view class="action-zone">
       <button class="generate-btn" disabled="{{generating}}" bindtap="generate"><text>✦</text>{{generated ? ' 再生成一张' : ' 生成 Q 版头像'}}</button>
       <view class="result-actions" wx:if="{{generated}}"><button class="ghost-btn" open-type="share">分享</button><button class="primary-btn" bindtap="saveAvatar">设为档案头像</button></view>
-      <view class="privacy">🔒 照片会发送至即梦完成生成，本机临时原图在提交后删除</view>
+      <view class="privacy">🔒 照片会临时上传至微信云存储，完成生成后删除临时原图</view>
     </view>
   </view>
 </view>
