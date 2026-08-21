@@ -1,5 +1,7 @@
 server/.env.local
+server/cloudbaserc.local.json
 server/*.log
 server/generated/
 project.private.config.json
 cloudfunctions/**/node_modules/
+.codex-temp/

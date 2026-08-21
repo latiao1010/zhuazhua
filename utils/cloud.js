@@ -37,4 +37,15 @@ function uploadFile(cloudPath, filePath) {
   })
 }
 
-module.exports = { CLOUD_ENV_ID, init, isAvailable, callFunction, uploadFile }
+function downloadFile(fileID) {
+  init()
+  if (!isAvailable() || typeof wx.cloud.downloadFile !== 'function') {
+    return Promise.reject(new Error('cloud_download_unavailable'))
+  }
+  return wx.cloud.downloadFile({ fileID }).then(result => {
+    if (!result || !result.tempFilePath) throw new Error('cloud_download_failed')
+    return result.tempFilePath
+  })
+}
+
+module.exports = { CLOUD_ENV_ID, init, isAvailable, callFunction, downloadFile, uploadFile }

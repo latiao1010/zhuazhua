@@ -1,0 +1,99 @@
+{
+  "version": "1.0.0",
+  "rules": [
+    {
+      "id": "red_flag_any",
+      "priority": 1000,
+      "when": {
+        "red_flags_any_of": [
+          "breathing",
+          "urinary_block",
+          "bleeding",
+          "neuro",
+          "severe_pain"
+        ]
+      },
+      "set_risk": 3,
+      "reason": "出现急症危险信号"
+    },
+    {
+      "id": "urine_none",
+      "priority": 990,
+      "when": {
+        "urine_output": "none"
+      },
+      "set_risk": 3,
+      "reason": "几乎或完全无法排尿"
+    },
+    {
+      "id": "vomit_blood",
+      "priority": 980,
+      "when": {
+        "vomit_content": "blood"
+      },
+      "set_risk": 3,
+      "reason": "呕吐物带血"
+    },
+    {
+      "id": "poor_mental_state",
+      "priority": 700,
+      "when": {
+        "mental_state": "poor"
+      },
+      "set_risk": 2,
+      "reason": "精神状态明显变差"
+    },
+    {
+      "id": "cannot_eat_drink",
+      "priority": 690,
+      "when": {
+        "eating_drinking": "none"
+      },
+      "set_risk": 2,
+      "reason": "几乎不能正常进食饮水"
+    },
+    {
+      "id": "vomit_4_plus",
+      "priority": 680,
+      "when": {
+        "vomit_frequency": "4_plus"
+      },
+      "set_risk": 2,
+      "reason": "24小时内反复呕吐"
+    },
+    {
+      "id": "vomit_2_3_plus_reduced_mental",
+      "priority": 670,
+      "when": {
+        "vomit_frequency": "2_3",
+        "mental_state": [
+          "reduced",
+          "poor"
+        ]
+      },
+      "set_risk": 2,
+      "reason": "反复呕吐并伴随精神下降"
+    },
+    {
+      "id": "diarrhea_black",
+      "priority": 660,
+      "when": {
+        "stool_blood": "black"
+      },
+      "set_risk": 2,
+      "reason": "出现黑色/柏油样便"
+    },
+    {
+      "id": "duration_gt_24h",
+      "priority": 400,
+      "when": {
+        "duration": [
+          "gt_24h",
+          "recurrent"
+        ]
+      },
+      "set_risk": 1,
+      "reason": "症状持续或反复时间较长"
+    }
+  ]
+}

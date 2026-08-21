@@ -1,0 +1,201 @@
+{
+  "version": "1.0.0",
+  "flows": {
+    "symptom_common": [
+      {
+        "id": "duration",
+        "field": "duration",
+        "question": "这种情况持续多久了？",
+        "type": "single",
+        "options": [
+          {
+            "label": "刚刚/不到6小时",
+            "value": "lt_6h"
+          },
+          {
+            "label": "6～24小时",
+            "value": "6_24h"
+          },
+          {
+            "label": "超过24小时",
+            "value": "gt_24h"
+          },
+          {
+            "label": "反复好几天",
+            "value": "recurrent"
+          }
+        ]
+      },
+      {
+        "id": "mental_state",
+        "field": "mental_state",
+        "question": "精神状态怎么样？",
+        "type": "single",
+        "options": [
+          {
+            "label": "和平时差不多",
+            "value": "normal"
+          },
+          {
+            "label": "有点没精神",
+            "value": "reduced"
+          },
+          {
+            "label": "明显萎靡/站不稳",
+            "value": "poor"
+          }
+        ]
+      },
+      {
+        "id": "eating_drinking",
+        "field": "eating_drinking",
+        "question": "还能正常吃东西和喝水吗？",
+        "type": "single",
+        "options": [
+          {
+            "label": "基本正常",
+            "value": "normal"
+          },
+          {
+            "label": "吃喝变少",
+            "value": "reduced"
+          },
+          {
+            "label": "几乎不能吃喝",
+            "value": "none"
+          }
+        ]
+      },
+      {
+        "id": "red_flags",
+        "field": "red_flags",
+        "question": "有没有下面这些情况？",
+        "type": "multi",
+        "options": [
+          {
+            "label": "呼吸困难/张嘴呼吸",
+            "value": "breathing"
+          },
+          {
+            "label": "无法排尿/频繁蹲厕所无尿",
+            "value": "urinary_block"
+          },
+          {
+            "label": "大量出血/吐血",
+            "value": "bleeding"
+          },
+          {
+            "label": "抽搐/意识异常",
+            "value": "neuro"
+          },
+          {
+            "label": "明显腹胀或剧烈疼痛",
+            "value": "severe_pain"
+          },
+          {
+            "label": "都没有",
+            "value": "none"
+          }
+        ]
+      }
+    ],
+    "vomiting": [
+      {
+        "id": "vomit_frequency",
+        "field": "vomit_frequency",
+        "question": "过去24小时大概吐了几次？",
+        "type": "single",
+        "options": [
+          {
+            "label": "1次",
+            "value": "1"
+          },
+          {
+            "label": "2～3次",
+            "value": "2_3"
+          },
+          {
+            "label": "4次以上",
+            "value": "4_plus"
+          },
+          {
+            "label": "记不清",
+            "value": "unknown"
+          }
+        ]
+      },
+      {
+        "id": "vomit_content",
+        "field": "vomit_content",
+        "question": "呕吐物里有没有血、异物，或反复只吐黄水/白沫？",
+        "type": "single",
+        "options": [
+          {
+            "label": "没有明显异常",
+            "value": "normal"
+          },
+          {
+            "label": "有血",
+            "value": "blood"
+          },
+          {
+            "label": "可能有异物",
+            "value": "foreign_body"
+          },
+          {
+            "label": "反复黄水/白沫",
+            "value": "bile_foam"
+          }
+        ]
+      }
+    ],
+    "urinary": [
+      {
+        "id": "urine_output",
+        "field": "urine_output",
+        "question": "现在能不能排出正常量的尿？",
+        "type": "single",
+        "options": [
+          {
+            "label": "能正常排尿",
+            "value": "normal"
+          },
+          {
+            "label": "只能尿一点点",
+            "value": "small"
+          },
+          {
+            "label": "几乎/完全尿不出来",
+            "value": "none"
+          },
+          {
+            "label": "不确定",
+            "value": "unknown"
+          }
+        ]
+      }
+    ],
+    "diarrhea": [
+      {
+        "id": "stool_blood",
+        "field": "stool_blood",
+        "question": "便便里有没有明显鲜血，或者颜色发黑像柏油？",
+        "type": "single",
+        "options": [
+          {
+            "label": "没有",
+            "value": "none"
+          },
+          {
+            "label": "有鲜血",
+            "value": "fresh_blood"
+          },
+          {
+            "label": "黑色/柏油样",
+            "value": "black"
+          }
+        ]
+      }
+    ]
+  }
+}

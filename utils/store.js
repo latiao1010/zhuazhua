@@ -11,18 +11,33 @@ const KEYS = {
   walks: 'paw_walk_records',
   weightRecords: 'paw_weight_records',
   growthPhotos: 'paw_growth_photos',
+  familyMembers: 'paw_family_members',
   generatedAvatar: 'paw_generated_avatar',
   avatarGenerationStatus: 'paw_avatar_generation_status',
   feedGoal: 'paw_feed_goal',
   waterGoal: 'paw_water_goal',
+  externalBreedKnowledge: 'paw_external_breed_knowledge',
+  externalBreedKnowledgeCheckedAt: 'paw_external_breed_checked_at',
   feedTrendDemo: 'paw_feed_trend_demo_v1',
   dailyTrendDemo: 'paw_daily_trend_demo_v1',
   growthPhotoDemo: 'paw_growth_photo_demo_v1',
-  twoMonthDemo: 'paw_two_month_demo_v1'
+  twoMonthDemo: 'paw_two_month_demo_v1',
+  sixMonthDemo: 'paw_six_month_demo_v1'
 }
 
 const DEFAULT_FEED_GOAL = 260
 const DEFAULT_WATER_GOAL = 600
+const READ_ONLY_PROTECTED_KEYS = new Set([
+  'pet', 'feeds', 'diaries', 'chats', 'stools', 'care', 'careRecords', 'supplies',
+  'waters', 'walks', 'weightRecords', 'growthPhotos', 'familyMembers',
+  'generatedAvatar', 'avatarGenerationStatus', 'feedGoal', 'waterGoal'
+])
+
+const ROLE_LABELS = {
+  owner: '主人',
+  admin: '共同照护',
+  viewer: '只读查看'
+}
 
 const seedPet = {
   name: '糯米',
@@ -41,6 +56,19 @@ const seedGrowthPhotos = [
   { id: 'demo-growth-20260727-2', path: '/assets/growth-demo-rain.jpg', dayKey: '2026-07-27', time: '18:36', createdAt: new Date('2026-07-27T18:36:00').getTime() },
   { id: 'demo-growth-20260731-1', path: '/assets/growth-demo-home.jpg', dayKey: '2026-07-31', time: '20:18', createdAt: new Date('2026-07-31T20:18:00').getTime() },
   { id: 'demo-growth-20260802-1', path: '/assets/growth-demo-lawn.jpg', dayKey: '2026-08-02', time: '08:46', createdAt: new Date('2026-08-02T08:46:00').getTime() }
+]
+
+const seedFamilyMembers = [
+  {
+    id: 'owner',
+    name: '我',
+    relation: '主人',
+    role: 'owner',
+    roleLabel: ROLE_LABELS.owner,
+    status: '已加入',
+    joinedAt: '2026-01-01',
+    lastActive: todayKey()
+  }
 ]
 
 function todayKey() {
@@ -78,6 +106,30 @@ function normalizePet(value) {
     avatar: typeof pet.avatar === 'string' && pet.avatar ? pet.avatar : seedPet.avatar,
     tags: Array.isArray(pet.tags) ? pet.tags : seedPet.tags
   }
+}
+
+function normalizeFamilyMembers(value) {
+  const records = Array.isArray(value) ? value : []
+  const normalized = records
+    .filter(item => item && typeof item === 'object')
+    .map((item, index) => {
+      const role = ROLE_LABELS[item.role] ? item.role : index === 0 ? 'owner' : 'admin'
+      const name = typeof item.name === 'string' && item.name.trim() ? item.name.trim().slice(0, 16) : index === 0 ? '我' : '家庭成员'
+      const relation = typeof item.relation === 'string' && item.relation.trim() ? item.relation.trim().slice(0, 12) : role === 'owner' ? '主人' : '家人'
+      return {
+        id: item.id || `member-${Date.now()}-${index}`,
+        name,
+        relation,
+        role,
+        roleLabel: ROLE_LABELS[role],
+        status: typeof item.status === 'string' && item.status ? item.status : '已加入',
+        joinedAt: isValidDateKey(item.joinedAt) ? item.joinedAt : todayKey(),
+        lastActive: isValidDateKey(item.lastActive) ? item.lastActive : ''
+      }
+    })
+  const members = normalized.length ? normalized : seedFamilyMembers
+  if (!members.some(item => item.role === 'owner')) return [...seedFamilyMembers, ...members]
+  return members.map((item, index) => index === 0 && item.role !== 'owner' ? { ...item, role: 'owner', roleLabel: ROLE_LABELS.owner, relation: item.relation || '主人' } : item)
 }
 
 function getDefaultCareSchedule() {
@@ -148,14 +200,14 @@ function normalizeSupplies(supplies) {
 }
 
 const seedTodayFeeds = [
-  { id: 3, date: '今天', time: '18:30', type: '晚餐', food: '低敏犬粮', amount: '95g', icon: '🥣' },
-  { id: 2, date: '今天', time: '12:15', type: '零食', food: '鸡胸肉干', amount: '18g', icon: '🦴' },
-  { id: 1, date: '今天', time: '07:40', type: '早餐', food: '低敏犬粮', amount: '90g', icon: '🥣' }
+  { id: 3, dayKey: todayKey(), date: '今天', time: '18:30', type: '晚餐', food: '低敏犬粮', amount: '95g', icon: '🥣' },
+  { id: 2, dayKey: todayKey(), date: '今天', time: '12:15', type: '零食', food: '鸡胸肉干', amount: '18g', icon: '🦴' },
+  { id: 1, dayKey: todayKey(), date: '今天', time: '07:40', type: '早餐', food: '低敏犬粮', amount: '90g', icon: '🥣' }
 ]
 
 function buildSeedFeedHistory() {
   const records = []
-  for (let daysBack = 1; daysBack <= 60; daysBack += 1) {
+  for (let daysBack = 1; daysBack <= 182; daysBack += 1) {
     const dayKey = offsetDateKey(-daysBack)
     const [, month, day] = dayKey.split('-').map(Number)
     const daily = [
@@ -184,33 +236,45 @@ function buildSeedFeedHistory() {
 const seedFeedHistory = buildSeedFeedHistory()
 const seedFeeds = [...seedTodayFeeds, ...seedFeedHistory]
 
-const seedDiaries = [{
-  id: 1,
-  date: '7月20日 · 星期一',
-  title: '今天也是元气满满的一天',
-  weather: '☀️ 28℃',
-  mood: '开心',
-  content: '早上我一听见饭碗的声音，就飞快地跑到了厨房。今天的鸡胸肉干特别香！傍晚还和最喜欢的人散了步，路边的风闻起来都是甜甜的。',
-  highlight: '今日高光：准时吃完三餐，还多走了 1,200 步！'
-}]
+function buildSeedDiaries() {
+  const templates = [
+    { mood: '开心', weather: '☀️ 28℃', title: '今天也是元气满满的一天', content: '早上听见饭碗的声音就跑到厨房，傍晚散步也很配合，回家以后主动喝了水。', highlight: '今日高光：准时吃完三餐，还多走了 1,200 步。' },
+    { mood: '平静', weather: '🌤️ 26℃', title: '慢慢悠悠的小日子', content: '今天精神状态稳定，白天大多在垫子上休息，晚间散步闻了很久草坪，没有明显不舒服。', highlight: '今日高光：排便状态正常，喝水比前几天更主动。' },
+    { mood: '开心', weather: '🌦️ 24℃', title: '雨停后的散步很好闻', content: '午后雨停了，路面还湿湿的，所以只走了短路线。回家后胃口不错，零食奖励也控制住了。', highlight: '今日高光：没有乱冲，牵引训练进步明显。' },
+    { mood: '委屈', weather: '🔥 31℃', title: '热天需要温柔一点', content: '今天气温偏高，散步改到清晨和傍晚，中午主要在家休息。食欲略慢，但最后还是把主粮吃完了。', highlight: '今日高光：高温天没有硬走，精神恢复得不错。' }
+  ]
+  return [176, 162, 148, 134, 120, 106, 92, 78, 64, 50, 36, 22, 12, 5].map((daysBack, index) => {
+    const dayKey = offsetDateKey(-daysBack)
+    const [, month, day] = dayKey.split('-').map(Number)
+    const template = templates[index % templates.length]
+    return {
+      id: `demo-diary-${dayKey}`,
+      dayKey,
+      date: `${month}月${day}日 · 记录`,
+      ...template
+    }
+  })
+}
+
+const seedDiaries = buildSeedDiaries()
 
 const seedStools = [
-  { id: 2, date: '今天', time: '16:40', condition: '正常成形', color: '棕色', note: '状态很好', icon: '💩', abnormal: false },
-  { id: 1, date: '今天', time: '08:05', condition: '正常成形', color: '棕色', note: '', icon: '💩', abnormal: false }
+  { id: 2, dayKey: todayKey(), date: '今天', time: '16:40', condition: '正常成形', color: '棕色', note: '状态很好', icon: '💩', abnormal: false },
+  { id: 1, dayKey: todayKey(), date: '今天', time: '08:05', condition: '正常成形', color: '棕色', note: '', icon: '💩', abnormal: false }
 ]
 
 const seedWaters = [
-  { id: 2, date: '今天', time: '15:20', amount: '160ml', note: '', icon: '💧' },
-  { id: 1, date: '今天', time: '09:10', amount: '180ml', note: '散步回来喝的', icon: '💧' }
+  { id: 2, dayKey: todayKey(), date: '今天', time: '15:20', amount: '160ml', note: '', icon: '💧' },
+  { id: 1, dayKey: todayKey(), date: '今天', time: '09:10', amount: '180ml', note: '散步回来喝的', icon: '💧' }
 ]
 
 const seedWalks = [
-  { id: 1, date: '今天', time: '08:20', duration: 35, distance: '1.6', note: '小区一圈', icon: '🐾' }
+  { id: 1, dayKey: todayKey(), date: '今天', time: '08:20', duration: 35, distance: '1.6', note: '小区一圈', icon: '🐾' }
 ]
 
 function buildSeedDailyTrendHistory() {
   const histories = { stools: [], waters: [], walks: [] }
-  for (let daysBack = 1; daysBack <= 60; daysBack += 1) {
+  for (let daysBack = 1; daysBack <= 182; daysBack += 1) {
     const dayKey = offsetDateKey(-daysBack)
     const [, month, day] = dayKey.split('-').map(Number)
     const date = `${month}月${day}日`
@@ -271,7 +335,7 @@ const seedDailyTrendHistory = buildSeedDailyTrendHistory()
 
 function buildSeedWeightHistory() {
   const records = []
-  for (let daysBack = 7; daysBack <= 56; daysBack += 7) {
+  for (let daysBack = 0; daysBack <= 182; daysBack += 7) {
     const dayKey = offsetDateKey(-daysBack)
     const createdAt = new Date(`${dayKey}T08:30:00`).getTime()
     records.push({
@@ -279,7 +343,7 @@ function buildSeedWeightHistory() {
       createdAt,
       dayKey,
       time: '08:30',
-      weight: Number((10.8 + (56 - daysBack) / 56 * 0.4 + (daysBack % 3) * 0.06).toFixed(1)),
+      weight: Number((10.8 + (182 - daysBack) / 182 * 0.4 + (daysBack % 3) * 0.06).toFixed(1)),
       photoPath: ''
     })
   }
@@ -289,12 +353,12 @@ function buildSeedWeightHistory() {
 function buildSeedCareRecords() {
   const records = []
   const configs = [
-    { key: 'deworming', label: '体内外驱虫', icon: '🪱', days: [54, 24] },
-    { key: 'medicine', label: '宠物用药', icon: '💊', days: [41, 12] },
-    { key: 'vaccine', label: '疫苗接种', icon: '💉', days: [49] },
-    { key: 'bath', label: '洗澡护理', icon: '🛁', days: [46, 31, 16, 2] },
-    { key: 'dental', label: '刷牙护理', icon: '🦷', days: [56, 42, 28, 14, 7, 1] },
-    { key: 'nail', label: '修剪指甲', icon: '✂️', days: [52, 22] }
+    { key: 'deworming', label: '体内外驱虫', icon: '🪱', days: [180, 90, 2] },
+    { key: 'medicine', label: '宠物用药', icon: '💊', days: [168, 140, 112, 84, 56, 28, 7] },
+    { key: 'vaccine', label: '疫苗接种', icon: '💉', days: [165] },
+    { key: 'bath', label: '洗澡护理', icon: '🛁', days: [182, 168, 154, 140, 126, 112, 98, 84, 70, 56, 42, 28, 14, 2] },
+    { key: 'dental', label: '刷牙护理', icon: '🦷', days: [175, 161, 147, 133, 119, 105, 91, 77, 63, 49, 35, 21, 14, 7, 1] },
+    { key: 'nail', label: '修剪指甲', icon: '✂️', days: [170, 140, 110, 80, 50, 20] }
   ]
   configs.forEach(config => config.days.forEach(daysBack => {
     const date = offsetDateKey(-daysBack)
@@ -313,11 +377,11 @@ function storeNextDemoDate(date, key) {
 function buildSeedGrowthPhotoHistory() {
   const records = []
   const paths = ['/assets/growth-demo-home.jpg', '/assets/growth-demo-lawn.jpg', '/assets/growth-demo-rain.jpg']
-  ;[58, 50, 42, 34, 26, 18, 10, 3].forEach((daysBack, index) => {
+  ;[180, 165, 150, 135, 120, 105, 90, 75, 60, 45, 30, 15, 7, 3].forEach((daysBack, index) => {
     const dayKey = offsetDateKey(-daysBack)
     const time = `${String(8 + index % 4 * 3).padStart(2, '0')}:20`
     records.push({ id: `demo-growth-history-${dayKey}-1`, path: paths[index % paths.length], dayKey, time, createdAt: new Date(`${dayKey}T${time}:00`).getTime() })
-    if (daysBack === 26 || daysBack === 10) {
+    if (daysBack === 120 || daysBack === 60 || daysBack === 15) {
       const secondTime = '18:40'
       records.push({ id: `demo-growth-history-${dayKey}-2`, path: paths[(index + 1) % paths.length], dayKey, time: secondTime, createdAt: new Date(`${dayKey}T${secondTime}:00`).getTime() })
     }
@@ -325,9 +389,129 @@ function buildSeedGrowthPhotoHistory() {
   return records
 }
 
+function buildSeedChats() {
+  const conversations = [
+    { daysBack: 150, user: '糯米最近有点挑食怎么办？', ai: '糯米已经是成年犬，先保持主粮稳定，零食不要替代正餐。可以把当天喂食记录、排便和精神状态一起看：如果连续 24 小时明显拒食，或伴随呕吐、腹泻、精神差，需要及时咨询兽医。' },
+    { daysBack: 118, user: '今天下雨，还要出去散步吗？', ai: '结合糯米的年龄和柯基体型，雨天可以改成短时多次，优先选地面不滑的路线。回家后擦干脚垫和腹部，今天如果运动不足，可以在家做 5 到 10 分钟嗅闻游戏。' },
+    { daysBack: 86, user: '糯米每天喝多少水合适？', ai: '按 11.2kg 体重大致可参考每天 560 到 672ml。天气热、吃干粮、散步后会增加需求，建议少量多次补水，并观察尿量、精神和口腔湿润程度。' },
+    { daysBack: 54, user: '便便有点偏软，是不是吃多了？', ai: '可以先看今天零食和新食物是否增加。若只是一次偏软、精神和食欲正常，可以记录并观察；如果连续偏软、带血、呕吐或明显没精神，就要尽快联系兽医。' },
+    { daysBack: 23, user: '最近天气很热，散步多久合适？', ai: '高温天建议避开中午，安排清晨和傍晚，每次 15 到 25 分钟更稳妥。糯米是柯基，注意减少爬楼和高处跳跃，散步后优先补水和降温休息。' },
+    { daysBack: 3, user: '糯米今天应该喝多少水？', ai: '结合糯米 11.2kg 体重，今天目标可以按 616ml 左右观察。如果当前已喝水偏少，就把水碗放在活动区附近，散步后分几次补，不要一次灌太多。' }
+  ]
+  return conversations.flatMap((item, index) => {
+    const dayKey = offsetDateKey(-item.daysBack)
+    const baseTime = new Date(`${dayKey}T${String(9 + index).padStart(2, '0')}:20:00`).getTime()
+    return [
+      { id: `demo-chat-user-${dayKey}`, role: 'user', text: item.user, time: `${String(9 + index).padStart(2, '0')}:20`, createdAt: baseTime },
+      { id: `demo-chat-ai-${dayKey}`, role: 'ai', text: item.ai, time: `${String(9 + index).padStart(2, '0')}:21`, createdAt: baseTime + 60000, source: 'local-knowledge' }
+    ]
+  })
+}
+
+function buildSeedSupplies() {
+  const dogFoodHistory = [14, 52, 110, 170].map((daysBack, index) => ({
+    id: `demo-supply-dogFood-${offsetDateKey(-daysBack)}`,
+    productName: index % 2 ? '低敏成犬粮 鸡肉配方' : '低敏成犬粮 三文鱼配方',
+    packageAmount: index % 2 ? 2500 : 3000,
+    openedDate: offsetDateKey(-daysBack)
+  }))
+  const snackHistory = [9, 43, 97, 156].map((daysBack, index) => ({
+    id: `demo-supply-snack-${offsetDateKey(-daysBack)}`,
+    productName: index % 2 ? '冻干鸡胸肉粒' : '南瓜磨牙棒',
+    packageAmount: index % 2 ? 500 : 420,
+    openedDate: offsetDateKey(-daysBack)
+  }))
+  return {
+    dogFood: { ...dogFoodHistory[0], history: dogFoodHistory },
+    snack: { ...snackHistory[0], history: snackHistory }
+  }
+}
+
+function buildSeedCareSchedule() {
+  const lastDates = { deworming: 2, medicine: 7, vaccine: 165, bath: 2, dental: 1, nail: 20 }
+  const care = getDefaultCareSchedule()
+  Object.keys(lastDates).forEach(key => {
+    const last = offsetDateKey(-lastDates[key])
+    care[`${key}Last`] = last
+    care[key] = storeNextDemoDate(last, key)
+  })
+  return care
+}
+
 const seedWeightHistory = buildSeedWeightHistory()
 const seedCareHistory = buildSeedCareRecords()
 const seedGrowthPhotoHistory = buildSeedGrowthPhotoHistory()
+const seedChats = buildSeedChats()
+const seedSupplies = buildSeedSupplies()
+const seedCareSchedule = buildSeedCareSchedule()
+const SIX_MONTH_DEMO_VERSION = 'six-month-v1'
+
+function isDemoRecord(item, key) {
+  if (!item || typeof item !== 'object') return true
+  const id = item.id
+  if (typeof id === 'string' && id.startsWith('demo-')) return true
+  if (key === 'feeds') return [1, 2, 3].includes(id) && item.date === '今天'
+  if (key === 'stools' || key === 'waters') return [1, 2].includes(id) && item.date === '今天'
+  if (key === 'walks') return id === 1 && item.date === '今天'
+  if (key === 'diaries') return id === 1 && typeof item.title === 'string' && item.title.includes('元气满满')
+  if (key === 'weightRecords') return id === 1 && item.dayKey === '2026-07-01'
+  return false
+}
+
+function applySixMonthDemoData() {
+  const replaceArray = (key, records) => {
+    const existing = wx.getStorageSync(KEYS[key])
+    const kept = Array.isArray(existing) ? existing.filter(item => !isDemoRecord(item, key)) : []
+    const demoIds = new Set(records.map(item => item.id))
+    wx.setStorageSync(KEYS[key], [...records, ...kept.filter(item => !demoIds.has(item.id))])
+  }
+
+  replaceArray('feeds', seedFeeds)
+  replaceArray('stools', [...seedStools, ...seedDailyTrendHistory.stools])
+  replaceArray('waters', [...seedWaters, ...seedDailyTrendHistory.waters])
+  replaceArray('walks', [...seedWalks, ...seedDailyTrendHistory.walks])
+  replaceArray('weightRecords', seedWeightHistory)
+  replaceArray('careRecords', seedCareHistory)
+  replaceArray('growthPhotos', [...seedGrowthPhotoHistory, ...seedGrowthPhotos])
+  replaceArray('diaries', seedDiaries)
+  replaceArray('chats', seedChats)
+
+  wx.setStorageSync(KEYS.supplies, seedSupplies)
+  wx.setStorageSync(KEYS.care, seedCareSchedule)
+  wx.setStorageSync(KEYS.feedGoal, DEFAULT_FEED_GOAL)
+  wx.setStorageSync(KEYS.waterGoal, Math.round((Number(seedPet.weight) || 0) * 55) || DEFAULT_WATER_GOAL)
+  wx.setStorageSync(KEYS.familyMembers, seedFamilyMembers)
+  wx.setStorageSync(KEYS.feedTrendDemo, true)
+  wx.setStorageSync(KEYS.dailyTrendDemo, true)
+  wx.setStorageSync(KEYS.growthPhotoDemo, true)
+  wx.setStorageSync(KEYS.twoMonthDemo, true)
+  wx.setStorageSync(KEYS.sixMonthDemo, SIX_MONTH_DEMO_VERSION)
+}
+
+function hasCompleteSixMonthDemoData() {
+  const feeds = wx.getStorageSync(KEYS.feeds)
+  const stools = wx.getStorageSync(KEYS.stools)
+  const waters = wx.getStorageSync(KEYS.waters)
+  const walks = wx.getStorageSync(KEYS.walks)
+  const weightRecords = wx.getStorageSync(KEYS.weightRecords)
+  const careRecords = wx.getStorageSync(KEYS.careRecords)
+  const growthPhotos = wx.getStorageSync(KEYS.growthPhotos)
+  const diaries = wx.getStorageSync(KEYS.diaries)
+  const chats = wx.getStorageSync(KEYS.chats)
+  const supplies = normalizeSupplies(wx.getStorageSync(KEYS.supplies))
+  return wx.getStorageSync(KEYS.sixMonthDemo) === SIX_MONTH_DEMO_VERSION &&
+    Array.isArray(feeds) && feeds.length > 450 &&
+    Array.isArray(stools) && stools.length > 380 &&
+    Array.isArray(waters) && waters.length > 740 &&
+    Array.isArray(walks) && walks.length > 310 &&
+    Array.isArray(weightRecords) && weightRecords.length >= 27 &&
+    Array.isArray(careRecords) && careRecords.length >= 40 &&
+    Array.isArray(growthPhotos) && growthPhotos.length >= 17 &&
+    Array.isArray(diaries) && diaries.length >= 14 &&
+    Array.isArray(chats) && chats.length >= 12 &&
+    Array.isArray(supplies.dogFood.history) && supplies.dogFood.history.length >= 4 &&
+    Array.isArray(supplies.snack.history) && supplies.snack.history.length >= 4
+}
 
 function ensureSeedData() {
   const pet = normalizePet(wx.getStorageSync(KEYS.pet))
@@ -336,12 +520,12 @@ function ensureSeedData() {
   const arrayDefaults = {
     feeds: seedFeeds,
     diaries: seedDiaries,
-    chats: [],
+    chats: seedChats,
     stools: seedStools,
     waters: seedWaters,
     walks: seedWalks,
-    careRecords: [],
-    growthPhotos: []
+    careRecords: seedCareHistory,
+    growthPhotos: seedGrowthPhotoHistory
   }
   Object.keys(arrayDefaults).forEach(key => {
     const records = wx.getStorageSync(KEYS[key])
@@ -362,6 +546,9 @@ function ensureSeedData() {
   const supplies = wx.getStorageSync(KEYS.supplies)
   const normalizedSupplies = normalizeSupplies(supplies)
   wx.setStorageSync(KEYS.supplies, normalizedSupplies)
+
+  const familyMembers = normalizeFamilyMembers(wx.getStorageSync(KEYS.familyMembers))
+  wx.setStorageSync(KEYS.familyMembers, familyMembers)
 
   const care = wx.getStorageSync(KEYS.care)
   const normalizedCare = normalizeCareSchedule(care)
@@ -391,6 +578,9 @@ function ensureSeedData() {
     try {
       const account = wx.getAccountInfoSync()
       if (account && account.miniProgram && account.miniProgram.envVersion === 'develop') {
+        if (!hasCompleteSixMonthDemoData()) {
+          applySixMonthDemoData()
+        }
         if (!wx.getStorageSync(KEYS.feedTrendDemo)) {
           const feeds = wx.getStorageSync(KEYS.feeds)
           const ids = new Set(feeds.map(item => item.id))
@@ -454,6 +644,8 @@ const get = key => {
   if (key === 'pet') return normalizePet(value)
   if (key === 'care') return normalizeCareSchedule(value)
   if (key === 'supplies') return normalizeSupplies(value)
+  if (key === 'familyMembers') return normalizeFamilyMembers(value)
+  if (key === 'externalBreedKnowledge') return value && typeof value === 'object' && !Array.isArray(value) ? value : { items: [], updatedAt: 0, sources: [] }
   if (key === 'feedGoal') {
     const goal = Number(value)
     return Number.isFinite(goal) && goal > 0 && goal <= 5000 ? Math.round(goal) : DEFAULT_FEED_GOAL
@@ -489,6 +681,23 @@ const get = key => {
   if (ARRAY_KEYS.has(key)) return Array.isArray(value) ? value : []
   return value || []
 }
-const set = (key, value) => wx.setStorageSync(KEYS[key], value)
+const set = (key, value, options = {}) => {
+  if (!options.skipCloud && READ_ONLY_PROTECTED_KEYS.has(key)) {
+    try {
+      const status = wx.getStorageSync('paw_share_status')
+      if (status && status.shared && status.role === 'viewer') {
+        if (wx.showToast) wx.showToast({ title: '只读成员不能修改共享档案', icon: 'none' })
+        return Promise.resolve({ ok: false, error: 'readonly' })
+      }
+    } catch (error) {}
+  }
+  wx.setStorageSync(KEYS[key], value)
+  if (!options.skipCloud) {
+    try {
+      return require('./cloud-data').saveKey(key, value)
+    } catch (error) {}
+  }
+  return Promise.resolve({ ok: true, skipped: true })
+}
 
-module.exports = { KEYS, ensureSeedData, get, set, todayKey, getDefaultCareSchedule, normalizeCareSchedule, getDefaultSupplies, normalizeSupplies }
+module.exports = { KEYS, ensureSeedData, get, set, todayKey, getDefaultCareSchedule, normalizeCareSchedule, getDefaultSupplies, normalizeSupplies, normalizeFamilyMembers }

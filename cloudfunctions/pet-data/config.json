@@ -1,5 +1,12 @@
 {
   "permissions": {
     "openapi": []
-  }
+  },
+  "triggers": [
+    {
+      "name": "weeklyBreedKnowledge",
+      "type": "timer",
+      "config": "0 10 4 * * 1 *"
+    }
+  ]
 }

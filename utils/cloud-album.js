@@ -66,7 +66,8 @@ function saveLocalPhotos(tempPaths, metadata) {
 
 function saveGrowthPhotos(tempPaths, metadata) {
   if (!cloud.isAvailable()) return saveLocalPhotos(tempPaths, metadata)
-  const uploads = tempPaths.map((filePath, index) => {
+  const sourcePaths = (Array.isArray(tempPaths) ? tempPaths : []).filter(Boolean)
+  const uploads = sourcePaths.map((filePath, index) => {
     const cloudPath = `growth-photos/${metadata.dayKey}/${metadata.createdAt}-${index}-${Math.random().toString(36).slice(2, 9)}.${extension(filePath)}`
     return cloud.uploadFile(cloudPath, filePath).then(fileID => ({
       id: `growth-${metadata.createdAt}-${index}`,
@@ -78,10 +79,42 @@ function saveGrowthPhotos(tempPaths, metadata) {
   })
   return Promise.all(uploads).then(items => {
     const photos = items.filter(Boolean)
-    if (!photos.length) return []
+    if (!photos.length) return saveLocalPhotos(sourcePaths, metadata)
     return cloud.callFunction('pet-data', { action: 'addGrowthPhotos', photos })
       .then(result => mergePhotos(result.photos || photos, []))
+      .catch(error => {
+        const message = String(error && error.message || error || '')
+        if (/readonly|permission|鍙|鏉冮檺|涓讳汉|只读|权限|主人/i.test(message)) throw error
+        return photos
+      })
   })
 }
 
-module.exports = { loadGrowthPhotos, mergePhotos, saveGrowthPhotos }
+function removeLocalFile(path) {
+  return new Promise(resolve => {
+    if (!path || !/^wxfile:\/\//.test(String(path)) || typeof wx === 'undefined' || typeof wx.removeSavedFile !== 'function') {
+      resolve({ ok: true, skipped: true })
+      return
+    }
+    wx.removeSavedFile({
+      filePath: path,
+      success: () => resolve({ ok: true }),
+      fail: error => resolve({ ok: false, error })
+    })
+  })
+}
+
+function deleteGrowthPhoto(photo) {
+  const target = normalizePhoto(photo)
+  if (!target) return Promise.resolve({ ok: false, error: 'invalid_photo' })
+  if (!cloud.isAvailable() || !/^cloud:\/\//.test(String(target.path || ''))) {
+    return removeLocalFile(target.path)
+  }
+  return cloud.callFunction('pet-data', {
+    action: 'deleteGrowthPhoto',
+    id: target.id,
+    path: target.path
+  })
+}
+
+module.exports = { loadGrowthPhotos, mergePhotos, saveGrowthPhotos, deleteGrowthPhoto }

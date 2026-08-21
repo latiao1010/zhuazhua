@@ -3,40 +3,40 @@
   "packOptions": {
     "ignore": [
       {
-        "type": "folder",
-        "value": "server"
+        "value": "server",
+        "type": "folder"
       },
       {
-        "type": "folder",
-        "value": "tests"
+        "value": "tests",
+        "type": "folder"
       },
       {
-        "type": "folder",
-        "value": "cloudfunctions"
+        "value": "cloudfunctions",
+        "type": "folder"
       },
       {
-        "type": "file",
-        "value": "assets/growth-demo-home.png"
+        "value": "assets/growth-demo-home.png",
+        "type": "file"
       },
       {
-        "type": "file",
-        "value": "assets/growth-demo-lawn.png"
+        "value": "assets/growth-demo-lawn.png",
+        "type": "file"
       },
       {
-        "type": "file",
-        "value": "assets/growth-demo-rain.png"
+        "value": "assets/growth-demo-rain.png",
+        "type": "file"
       },
       {
-        "type": "file",
-        "value": "Start-AI-Proxy.ps1"
+        "value": "Start-AI-Proxy.ps1",
+        "type": "file"
       },
       {
-        "type": "file",
-        "value": ".gitignore"
+        "value": ".gitignore",
+        "type": "file"
       },
       {
-        "type": "file",
-        "value": "README.md"
+        "value": "README.md",
+        "type": "file"
       }
     ],
     "include": []

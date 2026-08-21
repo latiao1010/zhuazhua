@@ -149,15 +149,11 @@
     </view>
     <view class="weight-history-title">历史记录</view>
     <scroll-view class="weight-history" scroll-y enhanced show-scrollbar="false">
-      <view class="weight-history-row {{item.hasPhoto ? 'has-photo' : ''}}" wx:for="{{weightTrend.history}}" wx:key="id" data-index="{{index}}" bindtap="previewWeightPhoto">
-        <image wx:if="{{item.hasPhoto}}" src="{{item.photoPath}}" mode="aspectFill"></image>
-        <view class="weight-history-photo-empty" wx:else>⚖</view>
-        <view class="weight-history-copy"><text>{{item.date}}</text><view>{{item.timeText || '历史记录'}} · {{item.hasPhoto ? '成长照片' : '未添加照片'}}</view></view>
+      <view class="weight-history-row" wx:for="{{weightTrend.history}}" wx:key="id">
+        <view class="weight-history-copy"><text>{{item.date}}</text><view>{{item.timeText || '历史记录'}}</view></view>
         <view class="weight-history-value">{{item.weight}}<text>kg</text></view>
-        <text class="weight-history-arrow">{{item.hasPhoto ? '›' : ''}}</text>
       </view>
     </scroll-view>
-    <view class="weight-note">成长照片请在“我的”资料卡中的“成长相册”上传和查看；旧的体重照片也会保留在相册中。</view>
   </view>
 </view>
 

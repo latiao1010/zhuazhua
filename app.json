@@ -3,7 +3,6 @@
     "pages/profile/profile",
     "pages/feed/feed",
     "pages/chat/chat",
-    "pages/avatar/avatar",
     "pages/account/account"
   ],
   "window": {
@@ -20,14 +19,10 @@
     "borderStyle": "white",
     "list": [
       { "pagePath": "pages/profile/profile", "text": "首页" },
-      { "pagePath": "pages/chat/chat", "text": "AI宠物顾问" },
+      { "pagePath": "pages/chat/chat", "text": "宠物顾问" },
       { "pagePath": "pages/account/account", "text": "我的" }
     ]
   },
-  "permission": {
-    "scope.userLocation": { "desc": "用于获取本地天气与遛宠降雨提醒" }
-  },
-  "requiredPrivateInfos": ["getLocation"],
   "style": "v2",
   "sitemapLocation": "sitemap.json"
 }

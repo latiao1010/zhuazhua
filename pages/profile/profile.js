@@ -1,5 +1,6 @@
 const store = require('../../utils/store')
 const { getWeather } = require('../../utils/weather')
+const cloudData = require('../../utils/cloud-data')
 
 function getBirthdayInfo(birthday) {
   const birth = new Date(`${birthday}T00:00:00`)
@@ -115,13 +116,13 @@ function buildWeightTrend(records, currentWeight) {
     .map(item => {
       const weight = Number(item.weight)
       const createdAt = Number(item.createdAt) || Number(item.id) || new Date(`${item.dayKey || store.todayKey()}T00:00:00`).getTime()
-      return { ...item, weight, createdAt, photoPath: item.photoPath || '' }
+      return { ...item, weight, createdAt }
     })
     .filter(item => item.dayKey && item.weight > 0)
     .sort((a, b) => b.createdAt - a.createdAt)
   if (!normalized.length && Number(currentWeight) > 0) {
     const createdAt = Date.now()
-    normalized = [{ id: createdAt, createdAt, dayKey: store.todayKey(), time: '', weight: Number(currentWeight), photoPath: '' }]
+    normalized = [{ id: createdAt, createdAt, dayKey: store.todayKey(), time: '', weight: Number(currentWeight) }]
   }
   const byDay = {}
   normalized.forEach(item => {
@@ -149,8 +150,7 @@ function buildWeightTrend(records, currentWeight) {
     history: normalized.slice(0, 30).map(item => ({
       ...item,
       date: item.dayKey.replace(/-/g, '.'),
-      timeText: item.time || '',
-      hasPhoto: Boolean(item.photoPath)
+      timeText: item.time || ''
     })),
     current: last ? last.weight : Number(currentWeight) || 0,
     change,
@@ -618,7 +618,7 @@ function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, c
       { icon: '🌿', label: '肠胃', action: 'stool', ...stomachStatus },
       { icon: '🐾', label: '活力', action: 'walk', ...activityStatus }
     ],
-    findings: aiPredictions,
+    findings: aiPredictions.slice(0, 3),
     knowledge: getPersonalizedKnowledge({
       now,
       pet,
@@ -638,7 +638,11 @@ Page({
     seasonName: '', seasonTip: '', lifeStage: '', healthTips: [],
     homeDashboard: { greeting: '', healthScore: 100, healthSummary: '', tasks: [], statusCards: [], completedCount: 0, totalTasks: 6, progress: 0, nextTask: {}, laterTasks: [], findings: [], knowledge: { detail: [] } }
   },
-  onShow() { this.refresh(); this.loadWeather() },
+  onShow() {
+    this.refresh()
+    cloudData.seedAndSyncSixMonthDemo().then(() => this.refresh())
+    this.loadWeather()
+  },
   refresh() {
     const pet = store.get('pet')
     const start = new Date(pet.birthday)
@@ -684,12 +688,6 @@ Page({
   closeFestivals() { this.setData({ festivalOpen: false }) },
   openWeightTrend() { this.setData({ weightTrendOpen: true }) },
   closeWeightTrend() { this.setData({ weightTrendOpen: false }) },
-  previewWeightPhoto(e) {
-    const item = this.data.weightTrend.history[e.currentTarget.dataset.index]
-    if (!item || !item.photoPath) return wx.showToast({ title: '这次称重没有添加照片', icon: 'none' })
-    const urls = this.data.weightTrend.history.filter(record => record.photoPath).map(record => record.photoPath)
-    wx.previewImage({ current: item.photoPath, urls })
-  },
   openFeedDetail() { this.refresh(); this.setData({ feedDetailOpen: true }) },
   closeFeedDetail() { this.setData({ feedDetailOpen: false }) },
   goFeed() {

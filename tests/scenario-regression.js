@@ -6,6 +6,12 @@ const Module = require('module')
 const ROOT = path.resolve(__dirname, '..')
 const TODAY = '2026-07-30'
 
+function offsetDayKey(daysAgo) {
+  const date = new Date(`${TODAY}T00:00:00`)
+  date.setDate(date.getDate() - daysAgo)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
 function clone(value) {
   return value === undefined ? undefined : JSON.parse(JSON.stringify(value))
 }
@@ -63,6 +69,7 @@ function makeState(overrides = {}) {
       dogFood: { productName: '', openedDate: '', packageAmount: '', history: [] },
       snack: { productName: '', openedDate: '', packageAmount: '', history: [] }
     },
+    familyMembers: [{ id: 'owner', name: '我', relation: '主人', role: 'owner', roleLabel: '主人', status: '已加入', joinedAt: TODAY, lastActive: TODAY }],
     weightRecords: [{ id: 1, createdAt: 1, dayKey: '2026-07-01', time: '08:00', weight: 11, photoPath: '' }],
     ...clone(overrides)
   }
@@ -76,6 +83,7 @@ function makeStore(state) {
     },
     set(key, value) {
       state[key] = value
+      return Promise.resolve({ ok: true })
     },
     todayKey() {
       return TODAY
@@ -90,6 +98,17 @@ function makeStore(state) {
         dogFood: { ...defaults.dogFood, ...((value && value.dogFood) || {}) },
         snack: { ...defaults.snack, ...((value && value.snack) || {}) }
       }
+    },
+    normalizeFamilyMembers(value) {
+      const roles = { owner: '主人', admin: '共同照护', viewer: '只读查看' }
+      const members = Array.isArray(value) ? value : []
+      const normalized = members.map((item, index) => {
+        const role = roles[item.role] ? item.role : index === 0 ? 'owner' : 'admin'
+        return { ...item, role, roleLabel: roles[role], name: item.name || '家庭成员', relation: item.relation || '家人', status: item.status || '已加入', joinedAt: item.joinedAt || TODAY }
+      })
+      return normalized.some(item => item.role === 'owner')
+        ? normalized
+        : [{ id: 'owner', name: '我', relation: '主人', role: 'owner', roleLabel: '主人', status: '已加入', joinedAt: TODAY }, ...normalized]
     }
   }
 }
@@ -97,7 +116,7 @@ function makeStore(state) {
 function makeWx() {
   const calls = {
     toasts: [], saved: [], removed: [], previews: [], navigations: [], switches: [],
-    tabShows: 0, tabHides: 0, vibrations: 0, clipboard: []
+    tabShows: 0, tabHides: 0, vibrations: 0, clipboard: [], albums: [], settings: 0
   }
   let savedIndex = 0
   const wx = {
@@ -112,9 +131,11 @@ function makeWx() {
       calls.saved.push({ tempFilePath: options.tempFilePath, savedFilePath })
       options.success({ savedFilePath })
     },
-    removeSavedFile(options) { calls.removed.push(options.filePath) },
+    removeSavedFile(options) { calls.removed.push(options.filePath); if (options.success) options.success({}) },
     chooseMedia() {},
     previewImage(options) { calls.previews.push(options) },
+    saveImageToPhotosAlbum(options) { calls.albums.push(options.filePath); options.success({}) },
+    openSetting() { calls.settings += 1 },
     navigateTo(options) { calls.navigations.push(options.url) },
     switchTab(options) { calls.switches.push(options.url) },
     setNavigationBarTitle() {},
@@ -127,6 +148,8 @@ function makeWx() {
 function loadPage(relativePath, store, wx, weather) {
   const filename = path.join(ROOT, relativePath)
   delete require.cache[require.resolve(filename)]
+  const knowledgePath = path.join(ROOT, 'utils/pet-knowledge.js')
+  if (require.cache[knowledgePath]) delete require.cache[knowledgePath]
   const originalLoad = Module._load
   const originalPage = global.Page
   let captured
@@ -134,6 +157,7 @@ function loadPage(relativePath, store, wx, weather) {
   global.Page = config => { captured = config }
   Module._load = function patchedLoad(request, parent, isMain) {
     if (request === '../../utils/store') return store
+    if (request === './store' && parent && parent.filename === knowledgePath) return store
     if (request === '../../utils/weather') return weather || { getWeather: () => Promise.resolve({ apparent: 25, rainTime: '' }) }
     return originalLoad.call(this, request, parent, isMain)
   }
@@ -188,7 +212,7 @@ function withTimers(run) {
 }
 
 async function main() {
-  await scenario('空存储能初始化全部基础数据', () => {
+  await scenario('空存储能初始化覆盖半年的全部模块假数据', () => {
     const storage = {}
     const storePath = path.join(ROOT, 'utils/store.js')
     delete require.cache[require.resolve(storePath)]
@@ -206,16 +230,20 @@ async function main() {
       .forEach(key => assert.ok(Array.isArray(storage[key]), `${key} should be an array`))
     assert.ok(storage.paw_feeds.every(item => /^\d{4}-\d{2}-\d{2}$/.test(item.dayKey)))
     assert.ok(storage.paw_feeds.some(item => item.dayKey === store.todayKey()))
-    assert.ok(storage.paw_feeds.length > 80)
-    assert.ok(storage.paw_stools.length > 60)
-    assert.ok(storage.paw_water_records.length > 110)
-    assert.ok(storage.paw_walk_records.length > 45)
+    assert.ok(storage.paw_feeds.length > 450)
+    assert.ok(storage.paw_stools.length > 380)
+    assert.ok(storage.paw_water_records.length > 740)
+    assert.ok(storage.paw_walk_records.length > 310)
     const feedDays = [...new Set(storage.paw_feeds.map(item => item.dayKey))].sort()
-    assert.ok(feedDays.length >= 60)
-    assert.ok((new Date(`${feedDays[feedDays.length - 1]}T00:00:00`) - new Date(`${feedDays[0]}T00:00:00`)) / 86400000 >= 59)
-    assert.ok(storage.paw_weight_records.length >= 9)
+    assert.ok(feedDays.length >= 180)
+    assert.ok((new Date(`${feedDays[feedDays.length - 1]}T00:00:00`) - new Date(`${feedDays[0]}T00:00:00`)) / 86400000 >= 180)
+    assert.ok(storage.paw_weight_records.length >= 27)
     assert.deepStrictEqual([...new Set(storage.paw_care_records.map(item => item.key))].sort(), ['bath', 'dental', 'deworming', 'medicine', 'nail', 'vaccine'])
-    assert.ok(storage.paw_growth_photos.length >= 10)
+    assert.ok(storage.paw_care_records.length >= 40)
+    assert.ok(storage.paw_growth_photos.length >= 17)
+    assert.ok(storage.paw_diaries.length >= 14)
+    assert.ok(storage.paw_chats.length >= 12)
+    assert.ok(storage.paw_chats.some(item => item.source === 'local-knowledge'))
     const photoCounts = storage.paw_growth_photos.reduce((counts, item) => {
       counts[item.dayKey] = (counts[item.dayKey] || 0) + 1
       return counts
@@ -229,9 +257,15 @@ async function main() {
     assert.strictEqual(storage.paw_feed_trend_demo_v1, true)
     assert.strictEqual(storage.paw_daily_trend_demo_v1, true)
     assert.strictEqual(storage.paw_two_month_demo_v1, true)
+    assert.strictEqual(storage.paw_six_month_demo_v1, 'six-month-v1')
     assert.ok(storage.paw_supply_records.dogFood.openedDate)
     assert.ok(storage.paw_supply_records.snack.openedDate)
+    assert.ok(storage.paw_supply_records.dogFood.history.length >= 4)
+    assert.ok(storage.paw_supply_records.snack.history.length >= 4)
     assert.ok(storage.paw_care_schedule.dentalCycle > 0)
+    assert.ok(storage.paw_care_schedule.dentalLast)
+    assert.strictEqual(storage.paw_generated_avatar, undefined)
+    assert.strictEqual(storage.paw_avatar_generation_status, undefined)
     assert.strictEqual(storage.paw_feed_goal, 260)
     assert.strictEqual(storage.paw_water_goal, 616)
   })
@@ -495,7 +529,7 @@ async function main() {
     assert.ok(calls.toasts.length >= 2)
   })
 
-  await scenario('体重变化和照片都能形成可预览的成长记录', () => {
+  await scenario('体重变化会形成趋势记录，成长照片仅在相册管理', () => {
     const state = makeState()
     const { wx, calls } = makeWx()
     const store = makeStore(state)
@@ -504,21 +538,195 @@ async function main() {
       pet: clone(state.pet),
       draft: { ...state.pet, weight: 11.6 },
       careDraft: defaultCare(),
-      today: TODAY,
-      weightPhotoTemp: 'temp-growth.jpg'
+      today: TODAY
     })
     account.savePet.call(accountContext)
     assert.strictEqual(state.weightRecords.length, 2)
     assert.strictEqual(state.weightRecords[0].weight, 11.6)
-    assert.ok(state.weightRecords[0].photoPath.startsWith('wxfile://'))
+    assert.ok(!state.weightRecords[0].photoPath)
     const profile = loadPage('pages/profile/profile.js', store, wx, { getWeather: () => Promise.resolve({ apparent: 25, rainTime: '' }) })
     const profileContext = pageContext(profile)
     profile.refresh.call(profileContext)
     profile.openWeightTrend.call(profileContext)
-    const photoIndex = profileContext.data.weightTrend.history.findIndex(item => item.hasPhoto)
-    profile.previewWeightPhoto.call(profileContext, { currentTarget: { dataset: { index: photoIndex } } })
-    assert.strictEqual(calls.previews.length, 1)
-    assert.strictEqual(calls.previews[0].current, state.weightRecords[0].photoPath)
+    assert.strictEqual(typeof profile.previewWeightPhoto, 'undefined')
+    const profileWxml = fs.readFileSync(path.join(ROOT, 'pages/profile/profile.wxml'), 'utf8')
+    assert.ok(!profileWxml.includes('成长照片'))
+    assert.ok(!profileWxml.includes('未添加照片'))
+  })
+
+  await scenario('编辑资料头像会上传云存储并更新档案头像', async () => {
+    const state = makeState()
+    const { wx, calls } = makeWx()
+    wx.cloud = {
+      init() {},
+      callFunction() { return Promise.resolve({ result: { ok: true } }) },
+      uploadFile(options) {
+        calls.saved.push({ tempFilePath: options.filePath, savedFilePath: `cloud://env/${options.cloudPath}` })
+        return Promise.resolve({ fileID: `cloud://env/${options.cloudPath}` })
+      }
+    }
+    const page = loadPage('pages/account/account.js', makeStore(state), wx)
+    const context = pageContext(page, {
+      pet: clone(state.pet),
+      draft: { ...state.pet, weight: 11.2 },
+      careDraft: defaultCare(),
+      today: TODAY,
+      newAvatarTemp: 'wxfile://new-profile-avatar.png'
+    })
+    page.savePet.call(context)
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    assert.ok(state.pet.avatar.startsWith('cloud://env/pet-avatars/'))
+    assert.strictEqual(context.data.profileEditOpen, false)
+    assert.strictEqual(calls.toasts[0].title, '资料已保存')
+  })
+
+  await scenario('资料卡每个字段可单独点开修改，右上角不再放统一修改入口', async () => {
+    const state = makeState()
+    const { wx, calls } = makeWx()
+    const page = loadPage('pages/account/account.js', makeStore(state), wx)
+    const context = pageContext(page)
+    page.onShow.call(context)
+
+    page.openProfileFieldEdit.call(context, { currentTarget: { dataset: { field: 'name' } } })
+    assert.strictEqual(context.data.profileFieldTitle, '昵称')
+    page.onProfileFieldInput.call(context, { detail: { value: '小糯米' } })
+    await page.saveProfileFieldEdit.call(context)
+    assert.strictEqual(state.pet.name, '小糯米')
+
+    page.openProfileFieldEdit.call(context, { currentTarget: { dataset: { field: 'breed' } } })
+    const breedIndex = context.data.breedOptions.indexOf('贵宾')
+    assert.ok(breedIndex >= 0)
+    page.onProfileFieldBreed.call(context, { detail: { value: String(breedIndex) } })
+    await page.saveProfileFieldEdit.call(context)
+    assert.strictEqual(state.pet.breed, '贵宾')
+
+    page.openProfileFieldEdit.call(context, { currentTarget: { dataset: { field: 'weight' } } })
+    page.onProfileFieldWeight.call(context, { detail: { value: [10, 7] } })
+    await page.saveProfileFieldEdit.call(context)
+    assert.strictEqual(state.pet.weight, 11.7)
+    assert.strictEqual(state.weightRecords[0].weight, 11.7)
+
+    page.openProfileFieldEdit.call(context, { currentTarget: { dataset: { field: 'sex' } } })
+    page.onProfileFieldSex.call(context, { detail: { value: '1' } })
+    await page.saveProfileFieldEdit.call(context)
+    assert.strictEqual(state.pet.sex, '女孩')
+
+    const accountWxml = fs.readFileSync(path.join(ROOT, 'pages/account/account.wxml'), 'utf8')
+    assert.ok(!accountWxml.includes('settings-icon" bindtap="openProfileEdit"'))
+    assert.ok(accountWxml.includes('data-field="name" bindtap="openProfileFieldEdit"'))
+    assert.ok(accountWxml.includes('data-field="birthday" bindtap="openProfileFieldEdit"'))
+    assert.ok(accountWxml.includes('range="{{breedOptions}}"'))
+    assert.ok(accountWxml.includes('mode="multiSelector" range="{{weightPickerRanges}}"'))
+    assert.ok(calls.toasts.some(item => item.title === '资料已保存'))
+  })
+
+  await scenario('家庭共享可添加成员、调整权限、复制共享码并移除成员', async () => {
+    const state = makeState()
+    const { wx, calls } = makeWx()
+    const page = loadPage('pages/account/account.js', makeStore(state), wx)
+    const context = pageContext(page)
+    page.onShow.call(context)
+    page.openFamilyManager.call(context)
+    assert.strictEqual(context.data.familyOpen, true)
+    assert.strictEqual(context.data.familyMembers.length, 1)
+
+    page.openAddFamilyMember.call(context)
+    page.onFamilyNameInput.call(context, { detail: { value: '妈妈' } })
+    page.onFamilyRelation.call(context, { detail: { value: '2' } })
+    page.onFamilyRole.call(context, { detail: { value: '0' } })
+    await page.saveFamilyMember.call(context)
+    assert.strictEqual(state.familyMembers.length, 2)
+    assert.strictEqual(state.familyMembers[1].name, '妈妈')
+    assert.strictEqual(state.familyMembers[1].role, 'admin')
+
+    await page.changeFamilyMemberRole.call(context, { currentTarget: { dataset: { index: 1 } }, detail: { value: '1' } })
+    assert.strictEqual(state.familyMembers[1].role, 'viewer')
+
+    page.copyInviteCode.call(context)
+    assert.ok(calls.clipboard[0].startsWith('ZZ-'))
+    const share = page.onShareAppMessage.call(context)
+    assert.ok(share.title.includes('邀请你一起照顾'))
+    assert.ok(share.path.includes('shareCode='))
+
+    page.removeFamilyMember.call(context, { currentTarget: { dataset: { index: 1 } } })
+    await Promise.resolve()
+    assert.strictEqual(state.familyMembers.length, 1)
+    assert.ok(calls.toasts.some(item => item.title.includes('移除')))
+
+    const accountWxml = fs.readFileSync(path.join(ROOT, 'pages/account/account.wxml'), 'utf8')
+    assert.ok(accountWxml.includes('家庭成员共享管理'))
+    assert.ok(accountWxml.includes('open-type="share"'))
+  })
+
+  await scenario('只读共享成员不能在我的页修改资料或管理成员', () => {
+    const state = makeState()
+    const { wx, calls } = makeWx()
+    const page = loadPage('pages/account/account.js', makeStore(state), wx)
+    const context = pageContext(page, {
+      pet: clone(state.pet),
+      familyMembers: clone(state.familyMembers).map(item => ({ ...item, initial: item.name.slice(0, 1) })),
+      shareShared: true,
+      shareRole: 'viewer',
+      shareRoleLabel: '只读查看',
+      shareReadOnly: true
+    })
+    page.openProfileFieldEdit.call(context, { currentTarget: { dataset: { field: 'name' } } })
+    assert.strictEqual(context.data.profileFieldEditOpen, false)
+    page.editAvatar.call(context)
+    page.openAddFamilyMember.call(context)
+    assert.strictEqual(context.data.familyDraftOpen, false)
+    assert.ok(calls.toasts.some(item => item.title.includes('只读') || item.title.includes('只有主人')))
+  })
+
+  await scenario('资料卡头像点击后会直接上传并替换头像', async () => {
+    const state = makeState()
+    const { wx, calls } = makeWx()
+    wx.chooseMedia = options => options.success({ tempFiles: [{ tempFilePath: 'wxfile://inline-avatar.jpg' }] })
+    wx.cloud = {
+      init() {},
+      callFunction() { return Promise.resolve({ result: { ok: true } }) },
+      uploadFile(options) {
+        calls.saved.push({ tempFilePath: options.filePath, savedFilePath: `cloud://env/${options.cloudPath}` })
+        return Promise.resolve({ fileID: `cloud://env/${options.cloudPath}` })
+      }
+    }
+    const page = loadPage('pages/account/account.js', makeStore(state), wx)
+    const context = pageContext(page)
+    page.onShow.call(context)
+    await page.editAvatar.call(context)
+    assert.ok(state.pet.avatar.startsWith('cloud://env/pet-avatars/'))
+    assert.strictEqual(context.data.profileFieldSaving, false)
+    assert.ok(calls.toasts.some(item => item.title === '头像已更新'))
+  })
+
+  await scenario('成长相册照片可以确认后删除且不会误触预览', async () => {
+    const state = makeState({
+      growthPhotos: [
+        { id: 'photo-1', path: 'wxfile://growth-delete.jpg', dayKey: TODAY, time: '09:00', createdAt: 100 },
+        { id: 'photo-2', path: 'wxfile://growth-keep.jpg', dayKey: TODAY, time: '10:00', createdAt: 200 }
+      ]
+    })
+    const { wx, calls } = makeWx()
+    const page = loadPage('pages/account/account.js', makeStore(state), wx)
+    const context = pageContext(page)
+    page.onShow.call(context)
+    assert.strictEqual(context.data.growthPhotos.length, 2)
+    const deleteIndex = context.data.growthPhotos.findIndex(item => item.id === 'photo-1')
+    page.deleteGrowthPhoto.call(context, { currentTarget: { dataset: { index: deleteIndex } } })
+    await Promise.resolve()
+    await Promise.resolve()
+    assert.strictEqual(state.growthPhotos.length, 1)
+    assert.strictEqual(context.data.growthPhotos.length, 1)
+    assert.strictEqual(context.data.growthPhotos[0].id, 'photo-2')
+    assert.ok(calls.removed.includes('wxfile://growth-delete.jpg'))
+    assert.strictEqual(calls.previews.length, 0)
+    assert.ok(calls.toasts.some(item => item.title.includes('删除')))
   })
 
   await scenario('30 条体重假数据会正确去重、排序并限制图表数量', () => {
@@ -598,26 +806,32 @@ async function main() {
     assert.strictEqual(state.careRecords[0].nextDate, '2026-07-24')
   })
 
-  await scenario('成长照片保存失败时不会写入半条记录', () => {
+  await scenario('头像保存失败时不会写入半条资料记录', () => {
     const state = makeState()
     const { wx, calls } = makeWx()
-    wx.saveFile = options => options.fail(new Error('disk full'))
+    wx.cloud = {
+      init() {},
+      callFunction() { return Promise.resolve({ result: { ok: true } }) },
+      uploadFile() { return Promise.reject(new Error('upload failed')) }
+    }
     const page = loadPage('pages/account/account.js', makeStore(state), wx)
     const context = pageContext(page, {
       pet: clone(state.pet),
       draft: { ...state.pet, weight: 11.8 },
       careDraft: defaultCare(),
       today: TODAY,
-      weightPhotoTemp: 'temp-failed.jpg'
+      newAvatarTemp: 'temp-avatar.jpg'
     })
     page.savePet.call(context)
+    return Promise.resolve().then(() => Promise.resolve()).then(() => {
     assert.strictEqual(state.pet.weight, 11.2)
     assert.strictEqual(state.weightRecords.length, 1)
     assert.strictEqual(context.data.saving, false)
     assert.ok(calls.toasts.some(item => item.title.includes('失败')))
+    })
   })
 
-  await scenario('体重历史超过 100 条时会清理最旧照片文件', () => {
+  await scenario('体重历史超过 100 条不会影响旧成长照片', () => {
     const records = Array.from({ length: 100 }, (_, index) => ({
       id: index + 1,
       createdAt: 1000 - index,
@@ -637,10 +851,10 @@ async function main() {
     })
     page.savePet.call(context)
     assert.strictEqual(state.weightRecords.length, 100)
-    assert.ok(calls.removed.includes('wxfile://oldest-growth.jpg'))
+    assert.ok(!calls.removed.includes('wxfile://oldest-growth.jpg'))
   })
 
-  await scenario('清空聊天会取消尚未返回的 AI 回复', () => withTimers(flush => {
+  await scenario('清空聊天会取消尚未返回的本地知识库回复', () => withTimers(flush => {
     const state = makeState()
     const { wx } = makeWx()
     const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
@@ -654,7 +868,7 @@ async function main() {
     assert.strictEqual(context.data.thinking, false)
   }))
 
-  await scenario('AI 聊天正常回复会持久化并解除思考状态', () => withTimers(flush => {
+  await scenario('本地知识库聊天正常回复会持久化并解除思考状态', () => withTimers(flush => {
     const state = makeState()
     const { wx } = makeWx()
     const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
@@ -663,35 +877,511 @@ async function main() {
     flush()
     assert.strictEqual(state.chats.length, 2)
     assert.strictEqual(state.chats[1].role, 'ai')
-    assert.ok(state.chats[1].text.includes('560') && state.chats[1].text.includes('672'))
+    assert.ok(/\d+ml/.test(state.chats[1].text))
     assert.strictEqual(context.data.thinking, false)
   }))
 
-  await scenario('AI 聊聊会通过本地代理调用 DeepSeek 并保存真实回复', async () => {
-    const state = makeState()
+  await scenario('宠物顾问使用本地知识库且不会请求 DeepSeek', () => withTimers(flush => {
+    const state = makeState({
+      feeds: [{ dayKey: TODAY, amount: 105 }],
+      waters: [{ dayKey: TODAY, amount: 180 }],
+      walks: [{ dayKey: TODAY, duration: 26, distance: 1.8 }]
+    })
     const { wx } = makeWx()
-    let requestOptions
     wx.request = options => {
-      requestOptions = options
-      options.success({
-        statusCode: 200,
-        data: { content: '这是来自 DeepSeek 的宠物照护建议。', model: 'deepseek-v4-flash' }
-      })
-      return { abort() {} }
+      throw new Error(`审核版不应请求网络 AI：${options.url || ''}`)
     }
     const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
-    const context = pageContext(page, { pet: state.pet, input: '糯米今天精神怎么样？', messages: [], thinking: false })
+    const context = pageContext(page, { pet: state.pet, input: '糯米今天应该喝多少水？', messages: [], thinking: false })
     page.send.call(context)
-    await Promise.resolve()
-    await Promise.resolve()
-    assert.strictEqual(requestOptions.url, 'http://127.0.0.1:8789/api/chat')
-    assert.strictEqual(requestOptions.data.messages[0].role, 'user')
-    assert.ok(!JSON.stringify(requestOptions.data).includes('sk-'))
+    flush()
     assert.strictEqual(state.chats.length, 2)
-    assert.strictEqual(state.chats[1].text, '这是来自 DeepSeek 的宠物照护建议。')
-    assert.strictEqual(state.chats[1].source, 'deepseek-v4-flash')
+    assert.ok(state.chats[1].text.includes('糯米'))
+    assert.ok(state.chats[1].text.length > 20)
+    assert.strictEqual(state.chats[1].source, 'local-knowledge')
     assert.strictEqual(context.data.thinking, false)
-  })
+  }))
+
+  await scenario('本地知识库能结合饮食饮水散步便便体重和护理给出分场景建议', () => withTimers(flush => {
+    const state = makeState({
+      feeds: [
+        { dayKey: TODAY, amount: 90, type: '早餐' },
+        { dayKey: TODAY, amount: 70, type: '午餐' },
+        { dayKey: '2026-07-29', amount: 255, type: '全天' }
+      ],
+      waters: [
+        { dayKey: TODAY, amount: 110 },
+        { dayKey: TODAY, amount: 130 },
+        { dayKey: '2026-07-29', amount: 590 }
+      ],
+      walks: [
+        { dayKey: TODAY, duration: 18, distance: 1.1 },
+        { dayKey: '2026-07-29', duration: 42, distance: 2.2 }
+      ],
+      stools: [
+        { dayKey: TODAY, condition: '偏软', color: '黄色', abnormal: true },
+        { dayKey: '2026-07-29', condition: '正常成形', color: '棕色', abnormal: false }
+      ],
+      weightRecords: [
+        { dayKey: '2026-07-16', weight: 10.9, createdAt: 1 },
+        { dayKey: '2026-07-23', weight: 11.0, createdAt: 2 },
+        { dayKey: TODAY, weight: 11.2, createdAt: 3 }
+      ],
+      care: { ...defaultCare(), bath: '2026-08-01', dental: TODAY, medicine: '2026-08-02' }
+    })
+    const { wx } = makeWx()
+    wx.request = options => {
+      throw new Error(`审核版本地知识库不应请求网络 AI：${options.url || ''}`)
+    }
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { pet: state.pet, messages: [], thinking: false })
+
+    context.data.input = '糯米今天状态怎么样？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[1].text.includes('今日状态'))
+    assert.ok(state.chats[1].text.includes('饮水'))
+    assert.ok(state.chats[1].text.includes('偏软'))
+
+    context.data.input = '糯米最近的体重趋势怎么样？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[3].text.includes('体重趋势'))
+    assert.ok(state.chats[3].text.includes('11.2kg'))
+
+    context.data.input = '糯米可以吃巧克力吗？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[5].text.includes('不建议'))
+    assert.ok(state.chats[5].text.includes('巧克力'))
+
+    context.data.input = '驱虫洗澡什么时候做？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[7].text.includes('护理提醒'))
+    assert.ok(state.chats[7].text.includes('洗澡'))
+    assert.ok(state.chats.every(item => item.source !== 'deepseek'))
+  }))
+
+  await scenario('单项护理问题只回答用户点名的项目，不被更近的护理提醒干扰', () => withTimers(flush => {
+    const state = makeState({
+      care: {
+        ...defaultCare(),
+        vaccine: '2026-08-22', vaccineCycle: 12, vaccineLast: '2025-08-22',
+        deworming: '2026-08-16', dewormingCycle: 3, dewormingLast: '2026-05-16',
+        dental: TODAY, dentalCycle: 1, dentalLast: '2026-07-29'
+      },
+      careRecords: [{ id: 'dental-1', key: 'dental', label: '刷牙护理', date: '2026-07-30', nextDate: '2026-07-31' }]
+    })
+    const { wx } = makeWx()
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { pet: state.pet, messages: [], thinking: false })
+
+    context.data.input = '下次疫苗是什么时候？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[1].text.includes('疫苗提醒'))
+    assert.ok(state.chats[1].text.includes('2026-08-22'))
+    assert.ok(!state.chats[1].text.includes('刷牙'))
+
+    context.data.input = '下次驱虫是什么时候？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[3].text.includes('驱虫提醒'))
+    assert.ok(state.chats[3].text.includes('2026-08-16'))
+    assert.ok(!state.chats[3].text.includes('刷牙'))
+
+    context.data.input = '上次刷牙啥时候？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[5].text.includes('刷牙记录'))
+    assert.ok(state.chats[5].text.includes('2026-07-30'))
+    assert.ok(!state.chats[5].text.includes('口腔观察'))
+  }))
+
+  await scenario('零食还有多少会查询用品余量，不会误判成饮食建议', () => withTimers(flush => {
+    const state = makeState({
+      feeds: [{ dayKey: TODAY, amount: 180, type: '正餐' }, { dayKey: TODAY, amount: 12, type: '零食' }],
+      supplies: {
+        dogFood: { productName: '测试狗粮', openedDate: '2026-07-28', packageAmount: 2000, history: [] },
+        snack: { productName: '鸡肉零食', openedDate: '2026-07-28', packageAmount: 500, history: [] }
+      }
+    })
+    const { wx } = makeWx()
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { pet: state.pet, messages: [], thinking: false })
+
+    context.data.input = '零食还有多少？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[1].text.includes('用品余量'))
+    assert.ok(state.chats[1].text.includes('鸡肉零食'))
+    assert.ok(state.chats[1].text.includes('约剩'))
+    assert.ok(!state.chats[1].text.includes('饮食判断'))
+  }))
+
+  await scenario('宠物粮推荐覆盖档案推荐、筛选、玩具、对比和配料解释', () => withTimers(flush => {
+    const state = makeState({
+      pet: { ...makeState().pet, birthday: '2023-03-16', weight: 13.5 },
+      stools: [{ dayKey: TODAY, condition: '偏软', abnormal: true }]
+    })
+    const { wx } = makeWx()
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { pet: state.pet, messages: [], thinking: false })
+    const cases = [
+      ['根据我家宠物推荐主粮、零食和玩具', '根据宠物推荐'],
+      ['帮我筛选适合我家宠物的主粮', '主粮筛选'],
+      ['帮我筛选训练零食', '零食筛选'],
+      ['帮我对比两款主粮应该看什么', '商品对比'],
+      ['宠物粮的蛋白、脂肪和配料表怎么看', '营养/配料解释']
+    ]
+    cases.forEach(([input, expected], index) => {
+      context.data.input = input
+      page.send.call(context)
+      flush()
+      assert.ok(state.chats[index * 2 + 1].text.includes(expected))
+      assert.ok(state.chats[index * 2 + 1].source === 'local-knowledge')
+      if (index === 0) {
+        assert.ok(state.chats[1].text.includes('零食'))
+        assert.ok(state.chats[1].text.includes('玩具'))
+      }
+    })
+  }))
+
+  await scenario('本地知识库覆盖症状、用品余量、食物安全和品种年龄提示', () => withTimers(flush => {
+    const state = makeState({
+      pet: { ...makeState().pet, breed: '柯基', birthday: '2023-03-16', weight: 11.2 },
+      feeds: [
+        { dayKey: TODAY, amount: 80, type: '早餐' },
+        { dayKey: TODAY, amount: 95, type: '晚餐' },
+        { dayKey: '2026-07-29', amount: 250, type: '全天' }
+      ],
+      waters: [{ dayKey: TODAY, amount: 260 }],
+      walks: [{ dayKey: TODAY, duration: 32, distance: 1.8 }],
+      stools: [{ dayKey: TODAY, condition: '正常成形', color: '棕色', abnormal: false }],
+      care: { ...defaultCare(), bath: '2026-08-01', dental: TODAY },
+      supplies: {
+        dogFood: { productName: '测试狗粮', openedDate: '2026-07-20', packageAmount: 5000, history: [] },
+        snack: { productName: '鸡肉零食', openedDate: '2026-07-25', packageAmount: 500, history: [] }
+      }
+    })
+    const { wx } = makeWx()
+    wx.request = options => {
+      throw new Error(`审核版本地知识库不应请求网络 AI：${options.url || ''}`)
+    }
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { pet: state.pet, messages: [], thinking: false })
+
+    context.data.input = '糯米耳朵臭怎么办？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[1].text.includes('耳朵观察'))
+    assert.ok(state.chats[1].text.includes('耳道'))
+
+    context.data.input = '狗粮余量还够吗？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[3].text.includes('用品余量'))
+    assert.ok(state.chats[3].text.includes('测试狗粮'))
+    assert.ok(state.chats[3].text.includes('约剩'))
+
+    context.data.input = '糯米可以吃苹果吗？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[5].text.includes('食物安全'))
+    assert.ok(state.chats[5].text.includes('少量'))
+
+    context.data.input = '柯基今天运动怎么安排？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[7].text.includes('运动判断'))
+    assert.ok(state.chats[7].text.includes('腰背'))
+    assert.ok(state.chats.every(item => item.source !== 'deepseek'))
+  }))
+
+  await scenario('本地知识库覆盖泌尿中暑出行绝育护理操作和记录建议', () => withTimers(flush => {
+    const state = makeState({
+      pet: { ...makeState().pet, breed: '柯基', birthday: '2023-03-16', weight: 11.2 },
+      feeds: [{ dayKey: TODAY, amount: 180, type: '全天' }],
+      waters: [{ dayKey: TODAY, amount: 210 }],
+      walks: [{ dayKey: TODAY, duration: 45, distance: 2.3 }],
+      stools: [{ dayKey: TODAY, condition: '正常成形', color: '棕色', abnormal: false }],
+      care: { ...defaultCare(), vaccine: '2026-08-20', deworming: '2026-08-10', bath: '2026-08-13', dental: TODAY, nail: '2026-08-15' }
+    })
+    const { wx } = makeWx()
+    wx.request = options => {
+      throw new Error(`审核版本地知识库不应请求网络 AI：${options.url || ''}`)
+    }
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { pet: state.pet, messages: [], thinking: false })
+
+    context.data.input = '糯米尿黄尿少怎么办？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[1].text.includes('尿尿观察'))
+    assert.ok(state.chats[1].text.includes('饮水'))
+
+    context.data.input = '天气太热一直喘会不会中暑？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[3].text.includes('中暑'))
+    assert.ok(state.chats[3].text.includes('建议：'))
+
+    context.data.input = '下周寄养要准备什么？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[5].text.includes('出行/寄养'))
+    assert.ok(state.chats[5].text.includes('疫苗'))
+
+    context.data.input = '糯米绝育要注意什么？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[7].text.includes('绝育'))
+    assert.ok(state.chats[7].text.includes('术后'))
+
+    context.data.input = '洗澡和剪指甲怎么做？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[9].text.includes('洗澡护理') || state.chats[9].text.includes('剪指甲'))
+    assert.ok(state.chats[9].text.includes('奖励') || state.chats[9].text.includes('吹干'))
+
+    context.data.input = '平时要记录什么？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[11].text.includes('记录建议'))
+    assert.ok(state.chats[11].text.includes('主粮总量'))
+    assert.ok(state.chats.every(item => item.source !== 'deepseek'))
+  }))
+
+  await scenario('本地知识库覆盖食物清单活动时间日常洗护和常见不适处理', () => withTimers(flush => {
+    const state = makeState({
+      pet: { ...makeState().pet, breed: '柯基', birthday: '2023-03-16', weight: 11.2 },
+      feeds: [{ dayKey: TODAY, amount: 200, type: '全天' }],
+      waters: [{ dayKey: TODAY, amount: 300 }],
+      walks: [{ dayKey: TODAY, duration: 35, distance: 2 }],
+      stools: [{ dayKey: TODAY, condition: '正常成形', color: '棕色', abnormal: false }],
+      care: { ...defaultCare(), bath: '2026-08-13', dental: TODAY, nail: '2026-08-15' }
+    })
+    const { wx } = makeWx()
+    wx.request = options => {
+      throw new Error(`审核版本地知识库不应请求网络 AI：${options.url || ''}`)
+    }
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { pet: state.pet, messages: [], thinking: false })
+
+    context.data.input = '宠物常见能吃的食物有哪些？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[1].text.includes('可少量尝试食物'))
+    assert.ok(state.chats[1].text.includes('鸡胸肉'))
+
+    context.data.input = '宠物不能吃的食物有哪些？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[3].text.includes('禁食清单'))
+    assert.ok(state.chats[3].text.includes('巧克力'))
+
+    context.data.input = '对毛发和肠胃好的食物有什么？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[5].text.includes('友好食物'))
+    assert.ok(state.chats[5].text.includes('鱼油') || state.chats[5].text.includes('南瓜'))
+
+    context.data.input = '柯基每天活动时间多久合适？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[7].text.includes('建议活动量'))
+    assert.ok(state.chats[7].text.includes('45-70'))
+
+    context.data.input = '日常洗护怎么安排？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[9].text.includes('日常洗护'))
+    assert.ok(state.chats[9].text.includes('刷牙'))
+
+    context.data.input = '常见的不适症状和解决方法有哪些？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[11].text.includes('常见不适处理'))
+    assert.ok(state.chats[11].text.includes('呕吐'))
+
+    context.data.input = '糯米呕吐了怎么办？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[13].text.includes('呕吐观察'))
+    assert.ok(state.chats[13].text.includes('建议：'))
+    assert.ok(state.chats.every(item => item.source !== 'deepseek'))
+  }))
+
+  await scenario('本地知识库覆盖疫苗驱虫术后减肥老幼睡眠异物和应激场景', () => withTimers(flush => {
+    const state = makeState({
+      pet: { ...makeState().pet, breed: '柯基', birthday: '2023-03-16', weight: 13.5 },
+      feeds: [{ dayKey: TODAY, amount: 230, type: '全天' }],
+      waters: [{ dayKey: TODAY, amount: 360 }],
+      walks: [{ dayKey: TODAY, duration: 28, distance: 1.4 }],
+      stools: [{ dayKey: TODAY, condition: '正常成形', color: '棕色', abnormal: false }],
+      care: { ...defaultCare(), vaccine: '2026-08-13', deworming: '2026-08-10' },
+      weightRecords: [
+        { dayKey: '2026-07-20', weight: 12.8, createdAt: 1 },
+        { dayKey: TODAY, weight: 13.5, createdAt: 2 }
+      ]
+    })
+    const { wx } = makeWx()
+    wx.request = options => {
+      throw new Error(`审核版本地知识库不应请求网络 AI：${options.url || ''}`)
+    }
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { pet: state.pet, messages: [], thinking: false })
+
+    context.data.input = '打完疫苗后要注意什么？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[1].text.includes('疫苗后观察'))
+    assert.ok(state.chats[1].text.includes('不要洗澡'))
+
+    context.data.input = '术后伤口怎么观察？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[3].text.includes('术后伤口观察'))
+    assert.ok(state.chats[3].text.includes('伊丽莎白圈'))
+
+    context.data.input = '糯米太胖了怎么减肥？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[5].text.includes('体重管理'))
+    assert.ok(state.chats[5].text.includes('零食'))
+
+    context.data.input = '老年宠物怎么照护？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[7].text.includes('老年照护'))
+    assert.ok(state.chats[7].text.includes('关节'))
+
+    context.data.input = '睡太多正常吗？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[9].text.includes('睡眠观察'))
+
+    context.data.input = '吞了袜子怎么办？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[11].text.includes('误吞异物'))
+    assert.ok(state.chats[11].text.includes('不要'))
+
+    context.data.input = '打雷分离焦虑怎么办？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[13].text.includes('应激') || state.chats[13].text.includes('分离焦虑'))
+    assert.ok(state.chats.every(item => item.source !== 'deepseek'))
+  }))
+
+  await scenario('本地知识库批量覆盖家庭、训练、猫狗、天气、外出和护理场景包', () => withTimers(flush => {
+    const state = makeState({
+      pet: { ...makeState().pet, breed: '柯基', birthday: '2023-03-16', weight: 11.2 },
+      feeds: [{ dayKey: TODAY, amount: 200, type: '全天' }],
+      waters: [{ dayKey: TODAY, amount: 320 }],
+      walks: [{ dayKey: TODAY, duration: 36, distance: 1.8 }],
+      stools: [{ dayKey: TODAY, condition: '正常成形', color: '棕色', abnormal: false }]
+    })
+    const { wx } = makeWx()
+    wx.request = options => {
+      throw new Error(`审核版本地知识库不应请求网络 AI：${options.url || ''}`)
+    }
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { pet: state.pet, messages: [], thinking: false })
+    const cases = [
+      ['家里电线阳台怎么防护？', '家庭环境安全'],
+      ['新宠到家第一天怎么适应？', '新宠到家适应'],
+      ['定点大小便和尿垫训练怎么做？', '定点如厕训练'],
+      ['猫砂盆乱尿怎么办？', '猫砂盆与乱尿'],
+      ['出门爆冲牵引训练怎么做？', '牵引爆冲与召回'],
+      ['护食吃饭咬人怎么办？', '护食与资源守护'],
+      ['路上捡食乱吃地上东西怎么办？', '外出捡食'],
+      ['家里两只狗打架，多宠怎么相处？', '多宠相处'],
+      ['猫狗混养狗追猫怎么办？', '猫狗混养'],
+      ['雨天不能出门怎么消耗精力？', '雨天室内活动'],
+      ['夏天散步柏油路会不会烫脚？', '夏天散步防烫脚'],
+      ['冬天天气冷要不要穿衣服保暖？', '冬天保暖'],
+      ['坐车流口水晕车怎么办？', '坐车晕车'],
+      ['转粮和换主粮怎么过渡？', '换粮过渡'],
+      ['训练零食奖励怎么给？', '训练零食与奖励'],
+      ['坐下训练和等待训练怎么做？', '基础口令训练'],
+      ['航空箱和笼内训练怎么做？', '笼内与航空箱训练'],
+      ['猫吐毛球化毛怎么办？', '毛球与吐毛'],
+      ['肛门腺蹭屁股屁股臭怎么办？', '肛门腺与蹭屁股'],
+      ['脚垫舔脚趾间炎怎么办？', '脚垫与趾间炎'],
+      ['耳螨跳蚤蜱虫体外驱虫怎么处理？', '耳螨跳蚤蜱虫'],
+      ['幼犬换牙双排牙咬家具怎么办？', '换牙与口腔'],
+      ['眼屎多流泪泪痕怎么办？', '眼睛分泌物'],
+      ['宠物沐浴露和皮肤过敏怎么处理？', '皮肤过敏与洗护产品'],
+      ['补钙营养膏卵磷脂要不要吃？', '补钙与营养品'],
+      ['年度体检和健康检查多久一次？', '年度体检计划'],
+      ['出差没人管，寄养和上门喂养怎么准备？', '寄养与上门喂养'],
+      ['过年烟花鞭炮害怕怎么办？', '节假日烟花鞭炮'],
+      ['上班怎么办，独自在家多久合适？', '独自在家安排'],
+      ['疫苗没打完幼犬社交能不能出门？', '幼宠疫苗前社交'],
+      ['老年关节爬楼腰背怎么保护？', '老年关节与爬楼'],
+      ['挑食不吃粮只吃零食怎么办？', '挑食与拒食']
+    ]
+    cases.forEach(([input, expected], index) => {
+      context.data.input = input
+      page.send.call(context)
+      flush()
+      const reply = state.chats[index * 2 + 1].text
+      assert.ok(reply.includes(expected), `${input} should hit ${expected}, got ${reply}`)
+      assert.ok(reply.includes('参考：'), `${input} should include a concise record reference`)
+      assert.ok(reply.includes('建议：'), `${input} should include a concise action`)
+    })
+    assert.ok(state.chats.every(item => item.source !== 'deepseek'))
+  }))
+
+  await scenario('ZIP 补充知识库可回答急症、症状、食物、日常提示和提醒规则', () => withTimers(flush => {
+    const state = makeState({
+      pet: { ...makeState().pet, breed: '柯基', birthday: '2023-03-16', weight: 11.2 },
+      feeds: [{ dayKey: TODAY, amount: 190, type: '全天' }],
+      waters: [{ dayKey: TODAY, amount: 280 }],
+      walks: [{ dayKey: TODAY, duration: 30, distance: 1.5 }],
+      stools: [{ dayKey: TODAY, condition: '正常成形', color: '棕色', abnormal: false }]
+    })
+    const { wx } = makeWx()
+    wx.request = options => {
+      throw new Error(`审核版本地知识库不应请求网络 AI：${options.url || ''}`)
+    }
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { pet: state.pet, messages: [], thinking: false })
+
+    context.data.input = '木糖醇中毒怎么办？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[1].text.includes('急症卡：木糖醇中毒'))
+    assert.ok(state.chats[1].text.includes('不要做：'))
+
+    context.data.input = '便血要观察什么？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[3].text.includes('症状索引：便血'))
+    assert.ok(state.chats[3].text.includes('危险信号：'))
+
+    context.data.input = '生食能不能吃？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[5].text.includes('食物补充库：生食'))
+    assert.ok(state.chats[5].text.includes('风险等级'))
+
+    context.data.input = '牛磺酸对猫狗营养有什么用？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[7].text.includes('知识库补充：牛磺酸'))
+    assert.ok(state.chats[7].text.includes('相关主题'))
+
+    context.data.input = '口腔检查提醒多久一次？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[9].text.includes('提醒规则补充：口腔检查'))
+    assert.ok(state.chats[9].text.includes('默认间隔'))
+
+    assert.ok(state.chats.every(item => item.source !== 'deepseek'))
+  }))
 
   await scenario('连续点击生成不会产生重复日记', () => withTimers(flush => {
     const state = makeState()
@@ -708,94 +1398,16 @@ async function main() {
     assert.strictEqual(state.diaries.length, 1)
   }))
 
-  await scenario('AI Q版头像会调用即梦并阻止重复提交', async () => {
-    const state = makeState()
-    const { wx, calls } = makeWx()
-    const store = makeStore(state)
-    const requests = []
-    wx.getFileSystemManager = () => ({
-      getFileInfo(options) { options.success({ size: 1024 }) },
-      readFile(options) { options.success({ data: 'ZmFrZS1pbWFnZQ==' }) }
-    })
-    wx.request = options => {
-      requests.push(options)
-      if (options.method === 'POST') {
-        options.success({ statusCode: 202, data: { submitId: 'dreamina-submit-1', status: 'querying' } })
-      } else {
-        options.success({ statusCode: 200, data: { submitId: 'dreamina-submit-1', status: 'success', imageUrl: 'http://127.0.0.1:8789/generated/result.png' } })
-      }
-      return { abort() {} }
-    }
-    wx.downloadFile = options => options.success({ statusCode: 200, tempFilePath: 'wxfile://tmp-dreamina.png' })
-    const avatar = loadPage('pages/avatar/avatar.js', store, wx)
-    const avatarContext = pageContext(avatar, { pet: state.pet, photo: 'wxfile://pet.jpg', generating: false, generated: false })
-    avatar.chooseStyle.call(avatarContext, {
-      currentTarget: { dataset: { id: 'anime', name: '治愈漫画' } }
-    })
-    avatar.generate.call(avatarContext)
-    avatar.generate.call(avatarContext)
-    for (let index = 0; index < 8; index += 1) await Promise.resolve()
-    assert.strictEqual(requests.filter(item => item.method === 'POST').length, 1)
-    assert.ok(requests[0].url.endsWith('/api/avatar'))
-    assert.strictEqual(requests[0].data.styleId, 'anime')
-    assert.strictEqual(requests[0].data.style, '治愈漫画')
-    assert.strictEqual(avatarContext.data.generatedImage, 'wxfile://saved-1.jpg')
-    assert.strictEqual(avatarContext.data.generated, true)
-    assert.strictEqual(state.generatedAvatar.path, 'wxfile://saved-1.jpg')
-    assert.strictEqual(state.avatarGenerationStatus.status, 'success')
-    assert.strictEqual(calls.vibrations, 1)
-  })
-
-  await scenario('头像页会恢复并可预览最近生成的Q版头像', () => {
-    const state = makeState({
-      generatedAvatar: { path: 'wxfile://saved-q-avatar.jpg', styleId: 'anime', style: '治愈漫画', createdAt: 123 }
-    })
-    const { wx, calls } = makeWx()
-    const avatar = loadPage('pages/avatar/avatar.js', makeStore(state), wx)
-    const avatarContext = pageContext(avatar)
-    avatar.onShow.call(avatarContext)
-    assert.strictEqual(avatarContext.data.generated, true)
-    assert.strictEqual(avatarContext.data.generatedImage, 'wxfile://saved-q-avatar.jpg')
-    assert.strictEqual(avatarContext.data.generatedStyle, '治愈漫画')
-    avatar.previewGenerated.call(avatarContext)
-    assert.deepStrictEqual(calls.previews[0].urls, ['wxfile://saved-q-avatar.jpg'])
-  })
-
-  await scenario('即梦失败原因会留在头像页而不是只显示短提示', () => {
-    const state = makeState()
-    const { wx, calls } = makeWx()
-    const avatar = loadPage('pages/avatar/avatar.js', makeStore(state), wx)
-    const avatarContext = pageContext(avatar, { pet: state.pet, styleId: 'soft3d', style: '软萌公仔', generating: true })
-    avatarContext.generationVersion = 2
-    avatar.failGenerate.call(avatarContext, new Error('generation failed: task was deleted'), 2)
-    assert.strictEqual(avatarContext.data.generating, false)
-    assert.ok(avatarContext.data.generationError.includes('任务已被服务端删除'))
-    assert.strictEqual(state.avatarGenerationStatus.status, 'fail')
-    assert.strictEqual(calls.toasts[0].title, '本次生成未成功')
-  })
-
-  await scenario('Q版头像页使用单屏布局且不需要横向或纵向滚动', () => {
-    const wxml = fs.readFileSync(path.join(ROOT, 'pages/avatar/avatar.wxml'), 'utf8')
-    const wxss = fs.readFileSync(path.join(ROOT, 'pages/avatar/avatar.wxss'), 'utf8')
-    assert.ok(!wxml.includes('<scroll-view'))
-    assert.ok(/class="step-card photo-step" bindtap="choosePhoto"/.test(wxml))
-    assert.ok(wxml.includes('无遮挡 · 支持 JPG / PNG'))
-    assert.ok(wxml.includes('class="controls-panel"'))
-    assert.ok(wxml.includes('class="action-zone"'))
-    assert.ok(wxml.includes('class="steps-stack"'))
-    assert.ok(!wxml.includes('class="selection-status"'))
-    assert.ok(/page\s*\{[^}]*overflow\s*:\s*hidden/s.test(wxss))
-    assert.ok(/\.avatar-page\s*\{[^}]*height\s*:\s*100%/s.test(wxss))
-    assert.ok(/\.controls-panel\s*\{[^}]*flex\s*:\s*1/s.test(wxss))
-    assert.ok(/grid-template-rows\s*:\s*minmax\(0,1fr\) minmax\(0,1fr\)/s.test(wxss))
-    assert.ok(/grid-template-columns\s*:\s*repeat\(4/s.test(wxss))
-    assert.ok(/\.preview\s*\{[^}]*height\s*:\s*420rpx/s.test(wxss))
-    assert.ok(/\.result image\s*\{[^}]*width\s*:\s*100%[^}]*height\s*:\s*100%/s.test(wxss))
-    assert.ok(/\.style-art\s*\{[^}]*height\s*:\s*56rpx/s.test(wxss))
+  await scenario('审核版已移除头像生成页面和图片模型入口', () => {
+    const appConfig = JSON.parse(fs.readFileSync(path.join(ROOT, 'app.json'), 'utf8'))
+    assert.ok(!appConfig.pages.includes('pages/avatar/avatar'))
+    assert.ok(!fs.existsSync(path.join(ROOT, 'pages/avatar/avatar.js')))
+    assert.ok(!fs.existsSync(path.join(ROOT, 'utils/dreamina.js')))
+    assert.ok(!fs.existsSync(path.join(ROOT, 'utils/deepseek.js')))
   })
 
   await scenario('WXML 中所有交互处理函数都真实存在', () => {
-    const pageNames = ['profile', 'feed', 'chat', 'avatar', 'account', 'diary']
+    const pageNames = ['profile', 'feed', 'chat', 'account', 'diary']
     pageNames.forEach(name => {
       const state = makeState()
       const { wx } = makeWx()
@@ -806,30 +1418,15 @@ async function main() {
     })
   })
 
-  await scenario('AI聊聊和Q版头像在同一页面以页签切换', () => {
-    const state = makeState()
-    const { wx, calls } = makeWx()
-    const chat = loadPage('pages/chat/chat.js', makeStore(state), wx)
-    const context = pageContext(chat)
-    chat.switchHubTab.call(context, { currentTarget: { dataset: { tab: 'avatar' } } })
-    assert.strictEqual(context.data.hubTab, 'avatar')
-    chat.switchHubTab.call(context, { currentTarget: { dataset: { tab: 'chat' } } })
-    assert.strictEqual(context.data.hubTab, 'chat')
-    assert.deepStrictEqual(calls.navigations, [])
+  await scenario('宠物顾问页面不再包含头像生成页签', () => {
     const chatWxml = fs.readFileSync(path.join(ROOT, 'pages/chat/chat.wxml'), 'utf8')
-    assert.ok(chatWxml.includes('data-tab="avatar" bindtap="switchHubTab"'))
-    assert.ok(chatWxml.includes('wx:if="{{hubTab === \'chat\'}}"'))
-    assert.ok(chatWxml.includes('class="avatar-tab-panel" wx:else'))
-    assert.ok(chatWxml.includes('bindtap="choosePhoto"'))
-    assert.ok(chatWxml.includes('bindtap="generate"'))
-    assert.ok(chatWxml.includes('class="ai-tool-icon"'))
+    assert.ok(!chatWxml.includes('data-tab="avatar"'))
+    assert.ok(!chatWxml.includes('class="avatar-tab-panel"'))
+    assert.ok(!chatWxml.includes('bindtap="generate"'))
     assert.ok(chatWxml.includes('class="head-title"'))
-    assert.ok(chatWxml.indexOf('class="ai-tool-switch"') < chatWxml.indexOf('class="chat-head"'))
-    const chatBlockStart = chatWxml.indexOf('<block wx:if="{{hubTab === \'chat\'}}">')
-    assert.ok(chatWxml.indexOf('class="chat-head"') > chatBlockStart)
     const appConfig = JSON.parse(fs.readFileSync(path.join(ROOT, 'app.json'), 'utf8'))
     assert.ok(!appConfig.tabBar.list.some(item => item.pagePath === 'pages/avatar/avatar'))
-    assert.ok(appConfig.pages.includes('pages/avatar/avatar'))
+    assert.ok(!appConfig.pages.includes('pages/avatar/avatar'))
   })
 
   await scenario('首页在所有记录为空时仍能生成完整状态和 AI 预测', () => {
@@ -841,7 +1438,7 @@ async function main() {
     const context = pageContext(profile)
     profile.refresh.call(context)
     assert.strictEqual(context.data.homeDashboard.tasks.length, 6)
-    assert.strictEqual(context.data.homeDashboard.findings.length, 4)
+    assert.strictEqual(context.data.homeDashboard.findings.length, 3)
     assert.strictEqual(context.data.todayFeedCount, 0)
     assert.strictEqual(context.data.todayStoolCount, 0)
     assert.strictEqual(context.data.weightTrend.history.length, 1)
@@ -858,8 +1455,8 @@ async function main() {
     const weather = await require(weatherPath).getWeather()
     global.wx = originalWx
     assert.strictEqual(weather.live, false)
-    assert.strictEqual(weather.location, '离线提示')
-    assert.ok(weather.rainText.includes('暂未取得实时天气'))
+    assert.strictEqual(weather.location, '本地提示')
+    assert.ok(weather.rainText.includes('审核版暂不获取定位'))
   })
 
   await scenario('页面清单和三个 Tab 路由都指向真实文件', () => {
@@ -872,38 +1469,275 @@ async function main() {
       assert.ok(fs.existsSync(path.join(ROOT, `${route}.wxss`)), `${route}.wxss is missing`)
     })
     assert.strictEqual(new Set(appConfig.tabBar.list.map(item => item.pagePath)).size, 3)
-    assert.strictEqual(appConfig.tabBar.list.find(item => item.pagePath === 'pages/chat/chat').text, 'AI宠物顾问')
+    assert.strictEqual(appConfig.tabBar.list.find(item => item.pagePath === 'pages/chat/chat').text, '宠物顾问')
   })
 
-  await scenario('DeepSeek 密钥不会进入小程序前端包', () => {
+  await scenario('审核版前端包不包含大模型接口或密钥', () => {
     const projectConfig = JSON.parse(fs.readFileSync(path.join(ROOT, 'project.config.json'), 'utf8'))
     const ignored = projectConfig.packOptions.ignore || []
     assert.ok(ignored.some(item => item.type === 'folder' && item.value === 'server'))
     const frontendFiles = [
       'app.js', 'app.json',
-      ...['profile', 'feed', 'chat', 'avatar', 'account', 'diary'].flatMap(name => [
+      ...['profile', 'feed', 'chat', 'account', 'diary'].flatMap(name => [
         `pages/${name}/${name}.js`,
         `pages/${name}/${name}.wxml`,
         `pages/${name}/${name}.json`
       ]),
-      'utils/store.js', 'utils/weather.js', 'utils/deepseek.js', 'utils/dreamina.js'
+      'utils/store.js', 'utils/weather.js', 'utils/pet-knowledge.js', 'utils/pet-knowledge-supplement.js'
     ]
     frontendFiles.forEach(relativePath => {
       const content = fs.readFileSync(path.join(ROOT, relativePath), 'utf8')
       assert.ok(!/sk-[A-Za-z0-9_-]{20,}/.test(content), `${relativePath} must not contain an API key`)
+      assert.ok(!/deepseek|dreamina|生成 Q 版头像|Q版头像/i.test(content), `${relativePath} must not contain removed AI avatar/deepseek code`)
     })
+  })
+
+  await scenario('TheDogAPI/TheCatAPI weekly breed supplement answers from local cache', () => withTimers(flush => {
+    const state = makeState({
+      pet: { ...makeState().pet, breed: '柯基', birthday: '2023-03-16', weight: 11.2 },
+      externalBreedKnowledge: {
+        version: 'external-breed-v1',
+        updatedAt: Date.UTC(2026, 7, 10),
+        sources: ['TheDogAPI', 'TheCatAPI'],
+        dogCount: 1,
+        catCount: 1,
+        items: [{
+          id: 'dog-pembroke',
+          species: 'dog',
+          source: 'TheDogAPI',
+          name: 'Pembroke Welsh Corgi',
+          aliases: ['柯基'],
+          temperament: ['Outgoing', 'Tenacious', 'Friendly'],
+          lifeSpan: '12 - 14 years',
+          weight: '10 - 14',
+          origin: 'Wales',
+          summary: 'Breed group: Herding'
+        }]
+      }
+    })
+    const { wx } = makeWx()
+    wx.request = options => {
+      throw new Error(`local cache should not request third-party API: ${options.url || ''}`)
+    }
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { pet: state.pet, messages: [], thinking: false })
+    context.data.input = '柯基这个品种寿命和性格怎么样？'
+    page.send.call(context)
+    flush()
+    const reply = state.chats[1].text
+    assert.ok(reply.includes('每周品种补充'))
+    assert.ok(reply.includes('TheDogAPI'))
+    assert.ok(reply.includes('12 - 14 years'))
+    assert.ok(reply.includes('11.2kg'))
+    assert.ok(state.chats.every(item => item.source !== 'deepseek'))
+  }))
+
+  await scenario('Local knowledge keeps context for follow-up questions', () => withTimers(flush => {
+    const state = makeState()
+    const { wx } = makeWx()
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { pet: state.pet, messages: [], thinking: false })
+    context.data.input = '被虫咬了怎么办？'
+    page.send.call(context)
+    flush()
+    context.data.input = '那后面还要注意什么？'
+    page.send.call(context)
+    flush()
+    assert.strictEqual(state.chats.length, 4)
+    assert.ok(state.chats[3].text.includes('虫咬') || state.chats[3].text.includes('红肿') || state.chats[3].text.includes('叮咬'))
+    assert.strictEqual(state.chats[3].source, 'local-knowledge')
+  }))
+
+  await scenario('Local knowledge handles additive symptom updates without repeating the same template', () => withTimers(flush => {
+    const state = makeState()
+    const { wx } = makeWx()
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { pet: state.pet, messages: [], thinking: false })
+    context.data.input = '糯米吐了怎么办？'
+    page.send.call(context)
+    flush()
+    context.data.input = '早上也吐了'
+    page.send.call(context)
+    flush()
+    assert.strictEqual(state.chats.length, 4)
+    assert.ok(state.chats[3].text.includes('呕吐次数增加'))
+    assert.ok(state.chats[3].text.includes('2 次以上') || state.chats[3].text.includes('反复呕吐'))
+    assert.strictEqual(state.chats[3].source, 'local-knowledge')
+  }))
+
+  await scenario('Local knowledge adds pet-specific context in a conversational tone', () => withTimers(flush => {
+    const state = makeState({
+      feeds: [{ dayKey: TODAY, amount: 120 }],
+      waters: [{ dayKey: TODAY, amount: 260 }],
+      walks: [{ dayKey: TODAY, duration: 18, distance: 1.1 }],
+      stools: [{ dayKey: TODAY, condition: '偏软', abnormal: true }]
+    })
+    const { wx } = makeWx()
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { pet: state.pet, messages: [], thinking: false })
+    context.data.input = '今天运动怎么安排？'
+    page.send.call(context)
+    flush()
+    assert.ok(state.chats[1].text.includes('糯米'))
+    assert.ok(state.chats[1].text.includes('已经动了') || state.chats[1].text.includes('轻松散步'))
+    assert.ok(state.chats[1].text.includes('便便'))
+    assert.ok(!state.chats[1].text.includes('结合糯米的日常记录：今日喂食'))
+  }))
+
+  await scenario('Local knowledge compares with previous records in follow-up questions', () => withTimers(flush => {
+    const state = makeState({
+      waters: [
+        { dayKey: TODAY, amount: 260 },
+        { dayKey: offsetDayKey(1), amount: 420 },
+        { dayKey: offsetDayKey(2), amount: 410 },
+        { dayKey: offsetDayKey(3), amount: 400 },
+        { dayKey: offsetDayKey(8), amount: 560 },
+        { dayKey: offsetDayKey(9), amount: 540 }
+      ],
+      feeds: [{ dayKey: TODAY, amount: 120 }],
+      walks: [{ dayKey: TODAY, duration: 18, distance: 1.1 }],
+      stools: [{ dayKey: TODAY, condition: '偏软', abnormal: true }]
+    })
+    const { wx } = makeWx()
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { pet: state.pet, messages: [], thinking: false })
+    context.data.input = '糯米今天应该喝多少水？'
+    page.send.call(context)
+    flush()
+    context.data.messages = state.chats
+    context.data.input = '和之前比呢'
+    page.send.call(context)
+    flush()
+    const reply = state.chats[3].text
+    assert.ok(reply.includes('饮水对比'))
+    assert.ok(reply.includes('和之前比'))
+    assert.ok(reply.includes('昨天'))
+    assert.ok(reply.includes('近 7 天'))
+    assert.ok(!reply.includes('0 次喂食，共 0g'))
+  }))
+
+  await scenario('Comparison follow-up stays on the previous user topic, not side details in the reply', () => withTimers(flush => {
+    const state = makeState({
+      feeds: [
+        { id: 'today-feed', dayKey: TODAY, time: '08:00', amount: 180 },
+        { id: 'yesterday-feed', dayKey: offsetDayKey(1), time: '08:00', amount: 240 }
+      ],
+      waters: [
+        { id: 'today-water', dayKey: TODAY, time: '08:00', amount: 0 },
+        { id: 'yesterday-water', dayKey: offsetDayKey(1), time: '08:00', amount: 450 }
+      ]
+    })
+    const { wx } = makeWx()
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { pet: state.pet, messages: [], thinking: false })
+    context.data.input = '糯米最近吃的多吗'
+    page.send.call(context)
+    flush()
+    context.data.input = '和之前呢'
+    page.send.call(context)
+    flush()
+    const reply = state.chats[state.chats.length - 1].text
+    assert.ok(reply.includes('饮食对比'))
+    assert.ok(reply.includes('今天吃了'))
+    assert.ok(!reply.includes('饮水对比'))
+    assert.ok(reply.split('\n\n').length <= 3)
+  }))
+
+  await scenario('A new vomiting question is not hijacked by the previous weight comparison', () => withTimers(flush => {
+    const state = makeState({
+      weightRecords: [
+        { dayKey: TODAY, weight: 11.2 },
+        { dayKey: offsetDayKey(7), weight: 10.9 }
+      ]
+    })
+    const { wx } = makeWx()
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { pet: state.pet, messages: [], thinking: false })
+    context.data.input = '体重和之前比呢'
+    page.send.call(context)
+    flush()
+    context.data.messages = state.chats
+    context.data.input = '今天吐了怎么办'
+    page.send.call(context)
+    flush()
+    const reply = state.chats[3].text
+    assert.ok(reply.includes('呕吐观察'))
+    assert.ok(!reply.includes('体重趋势判断'))
+  }))
+
+  await scenario('Local knowledge upgrades repeated symptoms with record-based triage', () => withTimers(flush => {
+    const state = makeState({
+      stools: [{ dayKey: TODAY, condition: '偏软', abnormal: true }],
+      waters: [{ dayKey: TODAY, amount: 180 }]
+    })
+    const { wx } = makeWx()
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { pet: state.pet, messages: [], thinking: false })
+    context.data.input = '糯米今天吐了 2 次，还没精神怎么办？'
+    page.send.call(context)
+    flush()
+    const reply = state.chats[1].text
+    assert.ok(reply.includes('已经呕吐 2 次'))
+    assert.ok(reply.includes('不建议继续在家反复观察'))
+    assert.ok(reply.includes('尽快联系兽医'))
+    assert.ok(reply.includes('记录每次发生的时间和内容'))
+  }))
+
+  await scenario('V3 expert system retrieves local knowledge and applies emergency rules', () => {
+    const expert = require(path.join(ROOT, 'utils/expert-system.js'))
+    const result = expert.answer('我家公猫一直蹲猫砂盆但是尿不出来', { breed: '英短' })
+    assert.ok(result)
+    assert.strictEqual(result.riskLevel, 3)
+    assert.ok(result.text.includes('立即联系动物急诊'))
+    assert.ok(result.score >= 12)
+  })
+
+  await scenario('Medication questions are not mistaken for feeding questions', () => {
+    const knowledge = require(path.join(ROOT, 'utils/pet-knowledge.js'))
+    assert.strictEqual(knowledge.detectIntent('拉稀了吃什么药'), 'medicine')
+    assert.strictEqual(knowledge.detectIntent('驱虫药怎么吃'), 'medicine')
+  })
+
+  await scenario('Medication history questions search records instead of giving drug advice', () => withTimers(flush => {
+    const state = makeState({
+      careRecords: [{ id: 'medicine-1', key: 'medicine', label: '宠物用药', date: '2026-07-23', nextDate: '2026-08-22' }]
+    })
+    const { wx } = makeWx()
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { pet: state.pet, messages: [], thinking: false })
+    context.data.input = '在记录里找糯米最近在吃什么药'
+    page.send.call(context)
+    flush()
+    const reply = state.chats[1].text
+    assert.strictEqual(require(path.join(ROOT, 'utils/pet-knowledge.js')).detectIntent('糯米最近在吃什么药'), 'medicineRecord')
+    assert.ok(reply.includes('2026-07-23'))
+    assert.ok(reply.includes('没有填写药名和剂量'))
+    assert.ok(!reply.includes('用药提醒'))
+  }))
+
+  await scenario('Conflicting health questions use safety-first intent priorities', () => {
+    const knowledge = require(path.join(ROOT, 'utils/pet-knowledge.js'))
+    assert.strictEqual(knowledge.detectIntent('吃了人药怎么办'), 'danger')
+    assert.strictEqual(knowledge.detectIntent('吃完驱虫药吐了'), 'postCare')
+    assert.strictEqual(knowledge.detectIntent('巧克力吃了怎么办'), 'foodSafety')
+    assert.strictEqual(knowledge.detectIntent('公猫蹲猫砂盆尿不出来'), 'urine')
+    assert.strictEqual(knowledge.detectIntent('今天没吃饭还没精神'), 'symptomGuide')
+    assert.strictEqual(knowledge.detectIntent('猫咪不喝水还吐了'), 'symptomGuide')
+    assert.strictEqual(knowledge.detectIntent('打针后能洗澡吗'), 'postCare')
+    assert.strictEqual(knowledge.detectIntent('感冒怎么办'), 'symptomGuide')
+    assert.strictEqual(knowledge.detectIntent('天气太热一直喘会不会中暑'), 'heat')
+    assert.strictEqual(knowledge.detectIntent('木糖醇中毒怎么办'), 'supplementEmergency')
   })
 
   await scenario('Responsive layouts hide scrollbars and keep small screens usable', () => {
     const appStyles = fs.readFileSync(path.join(ROOT, 'app.wxss'), 'utf8')
-    const avatarStyles = fs.readFileSync(path.join(ROOT, 'pages/avatar/avatar.wxss'), 'utf8')
     const chatStyles = fs.readFileSync(path.join(ROOT, 'pages/chat/chat.wxss'), 'utf8')
     const profileStyles = fs.readFileSync(path.join(ROOT, 'pages/profile/profile.wxss'), 'utf8')
     const accountStyles = fs.readFileSync(path.join(ROOT, 'pages/account/account.wxss'), 'utf8')
 
     assert.ok(/::-webkit-scrollbar\s*\{[^}]*display\s*:\s*none/s.test(appStyles))
 
-    const wxmlFiles = ['profile', 'feed', 'chat', 'avatar', 'account', 'diary']
+    const wxmlFiles = ['profile', 'feed', 'chat', 'account', 'diary']
       .map(name => path.join(ROOT, `pages/${name}/${name}.wxml`))
     wxmlFiles.forEach(file => {
       const wxml = fs.readFileSync(file, 'utf8')
@@ -914,11 +1748,9 @@ async function main() {
     })
 
     const chatWxml = fs.readFileSync(path.join(ROOT, 'pages/chat/chat.wxml'), 'utf8')
-    assert.ok(/<scroll-view class="avatar-tab-panel"[^>]*scroll-y[^>]*show-scrollbar="false"/.test(chatWxml))
-    assert.ok(/@media[^\{]*max-height\s*:\s*620px/.test(avatarStyles))
+    assert.ok(/<scroll-view class="chat-scroll"[^>]*scroll-y[^>]*show-scrollbar="false"/.test(chatWxml))
     assert.ok(/@media[^\{]*max-height\s*:\s*620px/.test(chatStyles))
     assert.ok(/@media[^\{]*max-height\s*:\s*620px/.test(profileStyles))
-    assert.ok(/@media[^\{]*max-width\s*:\s*360px/.test(avatarStyles))
     assert.ok(/@media[^\{]*max-width\s*:\s*360px/.test(chatStyles))
     assert.ok(/@media[^\{]*max-width\s*:\s*360px/.test(profileStyles))
     assert.ok(/@media[^\{]*max-width\s*:\s*360px/.test(accountStyles))

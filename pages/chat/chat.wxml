@@ -1,33 +1,35 @@
 <view class="chat-page">
-  <view class="ai-tool-switch">
-    <view class="ai-tool {{hubTab === 'chat' ? 'active' : ''}}" data-tab="chat" bindtap="switchHubTab"><view class="ai-tool-icon">✦</view><text class="ai-tool-label">AI 聊聊</text></view>
-    <view class="ai-tool avatar-tool {{hubTab === 'avatar' ? 'active' : ''}}" data-tab="avatar" bindtap="switchHubTab"><view class="ai-tool-icon">🎨</view><text class="ai-tool-label">Q版头像</text></view>
-  </view>
-
-  <block wx:if="{{hubTab === 'chat'}}">
   <view class="chat-head">
-    <view class="ai-avatar">✦</view>
-    <view class="head-copy"><view class="head-title">爪爪 AI 顾问 <text>在线</text></view><view class="status"><text class="status-dot"></text>已加载{{pet.name}}的资料，可随时提问</view></view>
+    <view class="advisor-avatar">🐾</view>
+    <view class="head-copy">
+      <view class="head-title">宠物顾问 <text>本地知识库</text></view>
+      <view class="status"><text class="status-dot"></text>已加载{{pet.name}}的资料和日常记录</view>
+    </view>
     <view class="head-action" bindtap="clearChat">···</view>
   </view>
 
   <scroll-view class="chat-scroll" scroll-y enhanced show-scrollbar="false" scroll-into-view="{{scrollTo}}">
     <view class="date-chip">今天</view>
     <view class="welcome">
-      <view class="welcome-icon">🐾</view>
+      <view class="welcome-icon">🐶</view>
       <view class="welcome-title">有什么能帮到你？</view>
-      <view class="welcome-sub">喂养、行为、健康小疑问，都可以和我聊聊</view>
+      <view class="welcome-sub">根据宠物资料、喂食、饮水、散步和健康记录给日常建议</view>
     </view>
-    <view class="quick-list" wx:if="{{messages.length === 0}}">
-      <view class="quick" wx:for="{{quickQuestions}}" wx:key="*this" data-text="{{item}}" bindtap="askQuick">{{item}}<text>›</text></view>
+    <view class="advisor-groups" wx:if="{{messages.length === 0}}">
+      <view class="advisor-group" wx:for="{{advisorGroups}}" wx:key="title">
+        <view class="advisor-group-head"><view class="advisor-group-title">{{item.title}}</view><view class="advisor-group-desc">{{item.desc}}</view></view>
+        <view class="advisor-group-items">
+          <view class="advisor-item" wx:for="{{item.items}}" wx:for-item="entry" wx:key="label" data-text="{{entry.text}}" bindtap="askQuick"><text>{{entry.label}}</text><text class="advisor-arrow">›</text></view>
+        </view>
+      </view>
     </view>
     <view class="messages">
       <view id="msg-{{index}}" class="message-row {{item.role}}" wx:for="{{messages}}" wx:key="id">
-        <view class="bubble-avatar" wx:if="{{item.role === 'ai'}}">✦</view>
+        <view class="bubble-avatar" wx:if="{{item.role === 'ai'}}">🐾</view>
         <view class="bubble {{item.role}}-bubble">{{item.text}}<view class="msg-time">{{item.time}}</view></view>
       </view>
-      <view class="message-row ai" wx:if="{{thinking}}"><view class="bubble-avatar">✦</view><view class="bubble ai-bubble typing"><text></text><text></text><text></text></view></view>
-      <view class="medical-tip" wx:if="{{messages.length}}">AI 建议仅供日常参考，如有持续不适请及时咨询专业兽医。</view>
+      <view class="message-row ai" wx:if="{{thinking}}"><view class="bubble-avatar">🐾</view><view class="bubble ai-bubble typing"><text></text><text></text><text></text></view></view>
+      <view class="medical-tip" wx:if="{{messages.length}}">本地知识库建议仅供日常参考，如有持续不适请及时咨询专业兽医。</view>
     </view>
   </scroll-view>
 
@@ -35,56 +37,4 @@
     <view class="input-wrap"><input value="{{input}}" bindinput="onInput" bindconfirm="send" confirm-type="send" placeholder="问问关于{{pet.name}}的事…" /><text>☺</text></view>
     <button class="send {{input ? 'ready' : ''}}" bindtap="send">↑</button>
   </view>
-  </block>
-
-  <scroll-view class="avatar-tab-panel" wx:else scroll-y enhanced show-scrollbar="false">
-    <view class="page avatar-page embedded-avatar-page">
-      <view class="preview card">
-        <view class="preview-bg"></view>
-        <view class="before" wx:if="{{!generated}}">
-          <image src="{{photo || pet.avatar}}" mode="aspectFill"></image>
-          <view class="before-badge">原始照片</view>
-        </view>
-        <view class="result" wx:else bindtap="previewGenerated">
-          <image src="{{generatedImage}}" mode="aspectFill"></image>
-          <view class="ai-badge">云端 AI 生成 · {{generatedStyle || style}}</view>
-          <view class="result-hint" wx:if="{{!generationError}}">已生成，点击查看大图</view>
-          <view class="float-star one">✦</view><view class="float-star two">✦</view>
-        </view>
-        <view class="generating" wx:if="{{generating}}"><view class="loader">✦</view><text>AI 正在施展魔法…</text><text class="small">正在捕捉毛孩子的可爱特征</text></view>
-        <view class="generation-error" wx:if="{{generationError}}">
-          <view class="generation-error-icon">!</view>
-          <view><view>本次没有生成成功</view><text>{{generationError}}</text></view>
-        </view>
-      </view>
-
-      <view class="controls-panel">
-        <view class="steps-stack">
-          <view class="step-card photo-step" bindtap="choosePhoto">
-            <view class="step photo-head">
-              <text>01</text>
-              <view class="step-copy"><view class="bold">选择一张清晰照片</view><text class="small">建议正脸、光线充足、无遮挡 · 支持 JPG / PNG</text></view>
-              <view class="photo-action"><text>＋</text><view>{{photo ? '重选' : '上传'}}</view></view>
-            </view>
-            <view class="photo-guides"><view><text>◉</text>正脸清晰</view><view><text>☀</text>光线充足</view><view><text>◇</text>没有遮挡</view></view>
-          </view>
-
-          <view class="step-card style-block">
-            <view class="step style-step"><text>02</text><view><view class="bold">选择喜欢的画风</view><text class="small">云端图片模型 · 提示词画风</text></view></view>
-            <view class="styles"><view class="style-list">
-              <view class="style {{styleId === item.id ? 'selected' : ''}}" wx:for="{{styles}}" wx:key="id" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="chooseStyle">
-                <view class="style-art" style="background: {{item.bg}}">{{item.icon}}</view><view>{{item.name}}</view><text wx:if="{{styleId === item.id}}">✓</text>
-              </view>
-            </view></view>
-          </view>
-        </view>
-
-        <view class="action-zone">
-          <button class="generate-btn" disabled="{{generating}}" bindtap="generate"><text>✦</text>{{generated ? ' 再生成一张' : ' 生成 Q 版头像'}}</button>
-          <view class="result-actions" wx:if="{{generated}}"><button class="ghost-btn" open-type="share">分享</button><button class="primary-btn" bindtap="saveAvatar">设为档案头像</button></view>
-          <view class="privacy">🔒 照片会临时上传至微信云存储，完成生成后删除临时原图</view>
-        </view>
-      </view>
-    </view>
-  </scroll-view>
 </view>

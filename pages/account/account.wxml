@@ -1,30 +1,42 @@
 <view class="page account-page">
   <view class="topbar">
     <view><view class="page-title">我的宠物资料</view></view>
-    <view class="settings-icon" bindtap="openProfileEdit">⚙</view>
   </view>
 
   <view class="profile-cover display-profile-card card">
     <view class="cover-glow"></view>
-    <view class="avatar-wrap display-avatar">
+    <view class="avatar-wrap display-avatar" bindtap="editAvatar">
       <image src="{{pet.avatar}}" mode="aspectFill"></image>
+      <view class="display-avatar-edit">📷</view>
     </view>
     <view class="profile-display-info">
       <view class="display-name-line">
-        <view><text>我的宝贝</text><view>{{pet.name}}</view></view>
+        <view class="display-name-main" data-field="name" bindtap="openProfileFieldEdit"><text>我的宝贝</text><view>{{pet.name}}<text class="inline-edit-mark">›</text></view></view>
         <view class="growth-album-entry" bindtap="openGrowthAlbum">
           <text>📷</text>
           <view><text>成长相册</text><view>{{growthPhotos.length}} 张照片</view></view>
           <text>›</text>
         </view>
-        <view class="birthday-chip"><text>🎂 宠物生日</text><view>{{pet.birthday}}</view></view>
+        <view class="birthday-chip" data-field="birthday" bindtap="openProfileFieldEdit"><text>🎂 宠物生日</text><view>{{pet.birthday}} <text>›</text></view></view>
       </view>
       <view class="pet-meta">
-        <view><text>🐾</text>{{pet.breed}}</view>
-        <view><text>•</text>{{pet.sex}}</view>
-        <view><text>⚖️</text>{{pet.weight}} kg</view>
+        <view data-field="breed" bindtap="openProfileFieldEdit"><text>🐾</text>{{pet.breed}}<text class="pet-meta-arrow">›</text></view>
+        <view data-field="sex" bindtap="openProfileFieldEdit"><text>•</text>{{pet.sex}}<text class="pet-meta-arrow">›</text></view>
+        <view data-field="weight" bindtap="openProfileFieldEdit"><text>⚖️</text>{{pet.weight}} kg<text class="pet-meta-arrow">›</text></view>
       </view>
     </view>
+  </view>
+
+  <view class="family-share-entry" bindtap="openFamilyManager">
+    <view class="family-share-icon">👨‍👩‍👧</view>
+    <view class="family-share-copy">
+      <view>家庭成员共享管理</view>
+      <text>{{familyMembers.length}} 位成员 · 一起照顾{{pet.name}}</text>
+    </view>
+    <view class="family-share-avatars">
+      <text wx:for="{{familyMembers}}" wx:key="id" wx:if="{{index < 3}}">{{item.initial}}</text>
+    </view>
+    <text class="family-share-arrow">›</text>
   </view>
 
   <view class="care-heading"><view>护理与疫苗记录</view></view>
@@ -47,6 +59,94 @@
   </view>
 
   <view class="privacy-note">🔒 资料仅保存在本机，可随时修改</view>
+</view>
+
+<view class="family-page" wx:if="{{familyOpen}}">
+  <view class="family-top">
+    <view class="family-back" catchtap="closeFamilyManager">←</view>
+    <view><text>家庭共享</text><view>和家人一起管理{{pet.name}}的日常</view></view>
+    <button class="family-add" wx:if="{{!shareShared || shareRole === 'owner'}}" bindtap="openAddFamilyMember">添加</button>
+    <view class="family-role-badge" wx:else>{{shareRoleLabel}}</view>
+  </view>
+
+  <view class="family-share-panel">
+    <view>
+      <text>云端共享码</text>
+      <view>{{shareShared && shareRole !== 'owner' ? '仅主人可生成' : (familyInviteLoading ? '生成中…' : familyInviteCode)}}</view>
+      <text>{{shareShared && shareRole !== 'owner' ? '你可以查看共享成员；只有主人能生成邀请和管理权限' : '家人打开分享或输入共享码后，会绑定到同一只宠物云档案'}}</text>
+    </view>
+    <view class="family-share-actions" wx:if="{{!shareShared || shareRole === 'owner'}}">
+      <button loading="{{familyInviteLoading}}" disabled="{{familyInviteLoading}}" bindtap="copyInviteCode">复制</button>
+      <button open-type="share">微信分享</button>
+    </view>
+  </view>
+
+  <view class="family-section-title">成员与权限</view>
+  <view class="family-member-card" wx:for="{{familyMembers}}" wx:key="id">
+    <view class="family-member-avatar">{{item.initial}}</view>
+    <view class="family-member-info">
+      <view><text>{{item.name}}</text><text>{{item.status}}</text></view>
+      <text>{{item.relation}} · {{item.roleLabel}}</text>
+      <text wx:if="{{item.lastActive}}">最近活跃 {{item.lastActive}}</text>
+    </view>
+    <view class="family-member-actions">
+      <picker wx:if="{{item.role !== 'owner' && (!shareShared || shareRole === 'owner')}}" mode="selector" range="{{familyRoleOptions}}" range-key="label" data-index="{{index}}" bindchange="changeFamilyMemberRole">
+        <view>权限</view>
+      </picker>
+      <view wx:else>{{item.roleLabel}}</view>
+      <text wx:if="{{item.role !== 'owner' && (!shareShared || shareRole === 'owner')}}" data-index="{{index}}" bindtap="editFamilyMember">编辑</text>
+      <text wx:if="{{item.role !== 'owner' && (!shareShared || shareRole === 'owner')}}" data-index="{{index}}" bindtap="removeFamilyMember">移除</text>
+    </view>
+  </view>
+
+  <view class="family-note">共同照护可记录喂食、饮水、散步、护理和照片；只读查看适合临时看护或医生了解情况。</view>
+
+  <view class="profile-field-overlay" wx:if="{{familyDraftOpen}}" catchtap="closeFamilyDraft">
+    <view class="profile-field-sheet family-draft-sheet" catchtap="noop">
+      <view class="profile-field-head">
+        <view>{{familyEditingIndex >= 0 ? '编辑成员' : '添加成员'}}</view>
+        <text bindtap="closeFamilyDraft">×</text>
+      </view>
+      <input class="profile-field-input" value="{{familyDraft.name}}" focus="{{true}}" bindinput="onFamilyNameInput" placeholder="成员昵称，比如 妈妈" />
+      <picker mode="selector" range="{{familyRelationOptions}}" value="{{familyRelationIndex}}" bindchange="onFamilyRelation">
+        <view class="profile-field-picker">{{familyDraft.relation || '选择关系'}}<text>›</text></view>
+      </picker>
+      <picker mode="selector" range="{{familyRoleOptions}}" range-key="label" value="{{familyRoleIndex}}" bindchange="onFamilyRole">
+        <view class="profile-field-picker">{{familyRoleOptions[familyRoleIndex].label}}<text>›</text></view>
+      </picker>
+      <view class="family-role-desc">{{familyRoleOptions[familyRoleIndex].desc}}</view>
+      <view class="profile-field-actions">
+        <button bindtap="closeFamilyDraft">取消</button>
+        <button loading="{{familySaving}}" disabled="{{familySaving}}" bindtap="saveFamilyMember">{{familySaving ? '保存中…' : '保存'}}</button>
+      </view>
+    </view>
+  </view>
+</view>
+
+<view class="profile-field-overlay" wx:if="{{profileFieldEditOpen}}" catchtap="closeProfileFieldEdit">
+  <view class="profile-field-sheet" catchtap="noop">
+    <view class="profile-field-head">
+      <view>修改{{profileFieldTitle}}</view>
+      <text bindtap="closeProfileFieldEdit">×</text>
+    </view>
+    <input wx:if="{{profileField === 'name'}}" class="profile-field-input" value="{{profileFieldValue}}" focus="{{true}}" bindinput="onProfileFieldInput" placeholder="请输入{{profileFieldTitle}}" />
+    <picker wx:elif="{{profileField === 'breed'}}" mode="selector" range="{{breedOptions}}" value="{{profileFieldBreedIndex}}" bindchange="onProfileFieldBreed">
+      <view class="profile-field-picker">{{profileFieldValue}}<text>›</text></view>
+    </picker>
+    <picker wx:elif="{{profileField === 'sex'}}" mode="selector" range="{{sexOptions}}" value="{{profileFieldSexIndex}}" bindchange="onProfileFieldSex">
+      <view class="profile-field-picker">{{profileFieldValue}}<text>›</text></view>
+    </picker>
+    <picker wx:elif="{{profileField === 'weight'}}" mode="multiSelector" range="{{weightPickerRanges}}" value="{{weightPickerValue}}" bindchange="onProfileFieldWeight">
+      <view class="profile-field-picker">{{profileFieldValue}} kg<text>›</text></view>
+    </picker>
+    <picker wx:elif="{{profileField === 'birthday'}}" mode="date" value="{{profileFieldValue}}" end="{{today}}" bindchange="onProfileFieldDate">
+      <view class="profile-field-picker">{{profileFieldValue}}<text>›</text></view>
+    </picker>
+    <view class="profile-field-actions">
+      <button bindtap="closeProfileFieldEdit">取消</button>
+      <button loading="{{profileFieldSaving}}" disabled="{{profileFieldSaving}}" bindtap="saveProfileFieldEdit">{{profileFieldSaving ? '保存中…' : '保存'}}</button>
+    </view>
+  </view>
 </view>
 
 <view class="profile-edit-page" wx:if="{{profileEditOpen}}">
@@ -88,6 +188,7 @@
   <view class="growth-photo-grid" wx:else>
     <view class="growth-photo-item" wx:for="{{growthPhotos}}" wx:key="id" data-index="{{index}}" bindtap="previewGrowthPhoto">
       <image src="{{item.path}}" mode="aspectFill"></image>
+      <text class="growth-photo-delete" data-index="{{index}}" catchtap="deleteGrowthPhoto">×</text>
       <view><text>{{item.dayKey}}</text><text wx:if="{{item.time}}">{{item.time}}</text></view>
     </view>
   </view>
