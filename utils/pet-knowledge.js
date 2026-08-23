@@ -897,7 +897,7 @@ function topicOf(text) {
   const value = String(text || '')
   if (/吐|呕吐/.test(value)) return 'vomit'
   if (/拉稀|腹泻|软便|便便|排便/.test(value)) return 'stool'
-  if (/喝水|喝.*水|饮水|水量|补水|尿/.test(value)) return 'water'
+  if (/喝水|喝.*水|饮水|水量|补水|尿|喝了|喝多少|喝够|喝得多|喝的多/.test(value)) return 'water'
   if (/喂食|饮食|吃饭|吃的多|吃得多|吃了多少|食量|食欲|挑食|粮|零食/.test(value)) return 'feed'
   if (/散步|运动|活动|出门/.test(value)) return 'walk'
   if (/体重|胖|瘦|减肥/.test(value)) return 'weight'
@@ -1363,7 +1363,7 @@ function compareWord(current, previous, unit = '') {
 }
 
 function isComparisonQuestion(text) {
-  return /和之前比|比之前|跟之前比|和上次比|比上次|之前呢|以前呢|比呢|变化|趋势|最近比/.test(String(text || ''))
+  return /和之前比|比之前|跟之前比|和上次比|比上次|之前呢|以前呢|比呢|变化|趋势|最近比|相比|对比|比起来|比一比|环比|跟上(周|个?月|次)比|和上(周|个?月|次)比|比上(周|个?月)/.test(String(text || ''))
 }
 
 function comparisonTopicOf(question) {
@@ -1416,29 +1416,55 @@ function detectTimeRange(question) {
   const text = String(question || '').replace(/\s+/g, '')
   if (!text) return null
   if (/^(今天|今日)/.test(text) && !/最近|过去/.test(text)) return null
+  // 「上周/上个月/昨天」指的是往前推的那一段，不是最近 N 天，要带偏移。
+  if (/前天/.test(text)) return { days: 1, offset: 2, label: '前天' }
+  if (/昨天|昨日/.test(text)) return { days: 1, offset: 1, label: '昨天' }
+  if (/上(一)?(周|星期|礼拜)/.test(text)) return { days: 7, offset: 7, label: '上周' }
+  if (/上(一)?个?月/.test(text)) return { days: 30, offset: 30, label: '上个月' }
   let match = text.match(/(?:最近|近|过去|这|前)?(\d+|[一二两三四五六七八九十]+)(?:天|日)/)
   if (match) {
     const days = parseCountWord(match[1])
-    if (days >= 2 && days <= 90) return { days: days, label: `最近 ${days} 天` }
+    if (days >= 2 && days <= 90) return { days: days, offset: 0, label: `最近 ${days} 天` }
   }
-  if (/半个?月/.test(text)) return { days: 15, label: '最近半个月' }
+  if (/半个?月/.test(text)) return { days: 15, offset: 0, label: '最近半个月' }
   match = text.match(/(?:最近|近|过去|这|本)?(\d+|[一二两三四五六七八九十]+)?(?:个)?(?:周|星期|礼拜)/)
   if (match) {
     const weeks = match[1] ? parseCountWord(match[1]) : 1
-    if (weeks >= 1 && weeks <= 12) return { days: weeks * 7, label: weeks === 1 ? '最近一周' : `最近 ${weeks} 周` }
+    if (weeks >= 1 && weeks <= 12) return { days: weeks * 7, offset: 0, label: weeks === 1 ? '最近一周' : `最近 ${weeks} 周` }
   }
   match = text.match(/(?:最近|近|过去|这|本)(\d+|[一二两三四五六七八九十]+)?(?:个)?月/)
   if (match) {
     const months = match[1] ? parseCountWord(match[1]) : 1
-    if (months >= 1 && months <= 6) return { days: months * 30, label: months === 1 ? '最近一个月' : `最近 ${months} 个月` }
+    if (months >= 1 && months <= 6) return { days: months * 30, offset: 0, label: months === 1 ? '最近一个月' : `最近 ${months} 个月` }
   }
   return null
 }
 
-// 日均一律按自然日历天数平均（总量 ÷ 窗口天数），没记录的日子算 0。
-// 这样反映真实摄入；若改成只除以有记录的天数，会把漏记的日子美化掉。
-function rangeStats(records, key, days) {
-  const keys = dayKeysFrom(0, days)
+// 当前这句没有主题词时（“那上周呢”），从上一轮用户提问继承；
+// 句子本身已有主题（“最近三天一直吐”）就不继承，避免被上文带偏。
+function rangeTopicOf(question, intent) {
+  const meta = activeReplyMeta || {}
+  // 当前这句自己说了主题就以它为准；intent 是在拼接了上一轮的句子上算的，
+  // 直接信它会让“昨天喝了多少”被上一轮的“吃了多少”带偏。
+  const own = topicOf(meta.originalQuestion || question)
+  if (RANGE_TOPICS.indexOf(own) >= 0) return own
+  if (own !== 'general') return ''
+  if (RANGE_TOPICS.indexOf(intent) >= 0) return intent
+  const direct = topicOf(question)
+  if (RANGE_TOPICS.indexOf(direct) >= 0) return direct
+  const turns = normalizeHistory(meta.history)
+  const currentIndex = turns.map(item => item.text).lastIndexOf(meta.originalQuestion || question)
+  const previous = turns.slice(0, currentIndex >= 0 ? currentIndex : turns.length)
+    .filter(item => item.role === 'user').reverse()
+  for (const turn of previous) {
+    const topic = topicOf(turn.text)
+    if (RANGE_TOPICS.indexOf(topic) >= 0) return topic
+  }
+  return ''
+}
+
+function rangeStats(records, key, days, offset) {
+  const keys = dayKeysFrom(offset || 0, days)
   const totals = groupTotals(records, key)
   const total = keys.reduce((sum, day) => sum + (totals[day] || 0), 0)
   const activeDays = keys.filter(day => (totals[day] || 0) > 0).length
@@ -1446,7 +1472,7 @@ function rangeStats(records, key, days) {
     total: Math.round(total),
     average: Math.round(total / days),
     activeDays: activeDays,
-    count: countWindow(records, 0, days)
+    count: countWindow(records, offset || 0, days)
   }
 }
 
@@ -1468,7 +1494,7 @@ function answerRange(ctx, question, topic, range) {
   const all = ctx.allRecords || {}
 
   if (topic === 'feed') {
-    const stats = rangeStats(all.feeds, 'amount', days)
+    const stats = rangeStats(all.feeds, 'amount', days, range.offset)
     const target = ctx.today.feed.targetGrams
     const diff = target ? stats.average - target : 0
     const word = levelWord(diff, target)
@@ -1493,7 +1519,7 @@ function answerRange(ctx, question, topic, range) {
   }
 
   if (topic === 'water') {
-    const stats = rangeStats(all.waters, 'amount', days)
+    const stats = rangeStats(all.waters, 'amount', days, range.offset)
     const target = ctx.today.water.targetMl
     const diff = target ? stats.average - target : 0
     const word = levelWord(diff, target)
@@ -1517,7 +1543,7 @@ function answerRange(ctx, question, topic, range) {
   }
 
   if (topic === 'walk') {
-    const stats = rangeStats(all.walks, 'duration', days)
+    const stats = rangeStats(all.walks, 'duration', days, range.offset)
     const verdict = !stats.count
       ? `${ctx.name}${label}没有散步记录。`
       : `${ctx.name}${label}共散步 ${stats.count} 次、${stats.total} 分钟，日均约 ${stats.average} 分钟。`
@@ -1534,7 +1560,7 @@ function answerRange(ctx, question, topic, range) {
     })
   }
 
-  const keySet = new Set(dayKeysFrom(0, days))
+  const keySet = new Set(dayKeysFrom(range.offset || 0, days))
   const inRange = (all.stools || []).filter(item => item && keySet.has(item.dayKey))
   const abnormal = inRange.filter(item => item.abnormal).length
   const activeDays = new Set(inRange.map(item => item.dayKey)).size
@@ -2892,7 +2918,10 @@ function createReply(question, pet, options = {}) {
   if (isComparisonQuestion(originalQuestion)) return answerComparison(ctx, originalQuestion)
   // 问句自带时间范围（最近七天/这周/近一个月）时，按那段时间统计，而不是回落成今天。
   const askedRange = detectTimeRange(originalQuestion)
-  if (askedRange && RANGE_TOPICS.indexOf(intent) >= 0) return answerRange(ctx, originalQuestion, intent, askedRange)
+  if (askedRange) {
+    const rangeTopic = rangeTopicOf(question, intent)
+    if (rangeTopic) return answerRange(ctx, originalQuestion, rangeTopic, askedRange)
+  }
   if (intent === 'danger') {
     return compose({
       title: `⚠️ 紧急判断：${profileText(ctx)}`,
