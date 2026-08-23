@@ -812,7 +812,8 @@ function buildPetContext(pet = {}) {
     lastFeed: lastRecord(feedsAll, 'amount'),
     lastWater: lastRecord(watersAll, 'amount'),
     lastWalk: lastRecord(walksAll, 'duration'),
-    lastStool: lastRecord(stoolsAll, 'condition')
+    lastStool: lastRecord(stoolsAll, 'condition'),
+    allRecords: { feeds: feedsAll, waters: watersAll, walks: walksAll, stools: stoolsAll }
   }
 }
 
@@ -999,6 +1000,9 @@ function chatLead(title, verdict) {
 function compactRecordLine(ctx, question, basis, title = '') {
   const titleText = String(title || '')
   if (!ctx) return ''
+  // 问的是一段时间时，证据行必须跟着那段时间走，不能回落成“今天”。
+  const askedRange = activeReplyMeta && activeReplyMeta.range
+  if (askedRange && askedRange.evidence) return `参考：${shortText(askedRange.evidence, 60)}`
   if (/对比/.test(titleText)) {
     const details = cleanItems(basis).slice(0, 2)
     return details.length ? `参考：${details.join(' · ')}` : ''
@@ -1389,6 +1393,167 @@ function comparisonTopicOf(question) {
     if (/体重趋势|体重|胖|瘦/.test(title)) return 'weight'
   }
   return 'weight'
+}
+
+const RANGE_TOPICS = ['feed', 'water', 'walk', 'stool']
+const CN_DIGITS = { 一: 1, 二: 2, 两: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10 }
+
+function parseCountWord(text) {
+  const value = String(text || '').trim()
+  if (!value) return 0
+  if (/^\d+$/.test(value)) return Number(value)
+  if (value === '十') return 10
+  let match = value.match(/^十([一二三四五六七八九])$/)
+  if (match) return 10 + CN_DIGITS[match[1]]
+  match = value.match(/^([一二两三四五六七八九])十([一二三四五六七八九])?$/)
+  if (match) return CN_DIGITS[match[1]] * 10 + (match[2] ? CN_DIGITS[match[2]] : 0)
+  return CN_DIGITS[value] || 0
+}
+
+// “最近七天吃得多吗”问的是一段时间，不是今天。认不出范围就返回 null，
+// 走原来的当日逻辑，避免误伤普通提问。
+function detectTimeRange(question) {
+  const text = String(question || '').replace(/\s+/g, '')
+  if (!text) return null
+  if (/^(今天|今日)/.test(text) && !/最近|过去/.test(text)) return null
+  let match = text.match(/(?:最近|近|过去|这|前)?(\d+|[一二两三四五六七八九十]+)(?:天|日)/)
+  if (match) {
+    const days = parseCountWord(match[1])
+    if (days >= 2 && days <= 90) return { days: days, label: `最近 ${days} 天` }
+  }
+  if (/半个?月/.test(text)) return { days: 15, label: '最近半个月' }
+  match = text.match(/(?:最近|近|过去|这|本)?(\d+|[一二两三四五六七八九十]+)?(?:个)?(?:周|星期|礼拜)/)
+  if (match) {
+    const weeks = match[1] ? parseCountWord(match[1]) : 1
+    if (weeks >= 1 && weeks <= 12) return { days: weeks * 7, label: weeks === 1 ? '最近一周' : `最近 ${weeks} 周` }
+  }
+  match = text.match(/(?:最近|近|过去|这|本)(\d+|[一二两三四五六七八九十]+)?(?:个)?月/)
+  if (match) {
+    const months = match[1] ? parseCountWord(match[1]) : 1
+    if (months >= 1 && months <= 6) return { days: months * 30, label: months === 1 ? '最近一个月' : `最近 ${months} 个月` }
+  }
+  return null
+}
+
+// 日均一律按自然日历天数平均（总量 ÷ 窗口天数），没记录的日子算 0。
+// 这样反映真实摄入；若改成只除以有记录的天数，会把漏记的日子美化掉。
+function rangeStats(records, key, days) {
+  const keys = dayKeysFrom(0, days)
+  const totals = groupTotals(records, key)
+  const total = keys.reduce((sum, day) => sum + (totals[day] || 0), 0)
+  const activeDays = keys.filter(day => (totals[day] || 0) > 0).length
+  return {
+    total: Math.round(total),
+    average: Math.round(total / days),
+    activeDays: activeDays,
+    count: countWindow(records, 0, days)
+  }
+}
+
+function levelWord(diff, target) {
+  if (!target) return ''
+  if (Math.abs(diff) <= target * 0.12) return '基本持平'
+  return diff > 0 ? '偏多' : '偏少'
+}
+
+function coverageNote(stats, days) {
+  if (!stats.activeDays) return ''
+  if (stats.activeDays >= days) return ''
+  return `只有 ${stats.activeDays}/${days} 天有记录，日均会被没记录的日子拉低`
+}
+
+function answerRange(ctx, question, topic, range) {
+  const days = range.days
+  const label = range.label
+  const all = ctx.allRecords || {}
+
+  if (topic === 'feed') {
+    const stats = rangeStats(all.feeds, 'amount', days)
+    const target = ctx.today.feed.targetGrams
+    const diff = target ? stats.average - target : 0
+    const word = levelWord(diff, target)
+    const verdict = !stats.count
+      ? `${ctx.name}${label}没有喂食记录，先补上才能判断吃得多不多。`
+      : target
+        ? `${ctx.name}${label}日均 ${stats.average}g，目标 ${target}g，${word}${word === '基本持平' ? '' : `约 ${Math.abs(diff)}g`}。`
+        : `${ctx.name}${label}日均 ${stats.average}g、共 ${stats.total}g；还没设每日目标，设一个判断会更准。`
+    if (activeReplyMeta) activeReplyMeta.range = { evidence: `${label}共 ${stats.total}g / ${stats.count} 次，日均 ${stats.average}g${target ? ` / 目标 ${target}g` : ''}` }
+    return compose({
+      title: `🍚 ${label}饮食：${profileText(ctx)}`,
+      verdict: verdict,
+      basis: [coverageNote(stats, days)],
+      actions: [
+        coverageNote(stats, days) ? '尽量每天都记一笔，日均才有参考价值' : '',
+        word === '偏多' ? '先收零食，再看主粮分量要不要下调' : '',
+        word === '偏少' ? '观察是不是天气、零食吃多了或身体状态影响食欲' : '',
+        '主粮固定餐次，零食别超过全天摄入的一小部分'
+      ],
+      warning: /不吃|拒食|没食欲|挑食/.test(question) ? '如果连续 24 小时明显拒食，或伴随呕吐、腹泻、精神差，请尽快咨询兽医。' : riskLine(ctx, question)
+    })
+  }
+
+  if (topic === 'water') {
+    const stats = rangeStats(all.waters, 'amount', days)
+    const target = ctx.today.water.targetMl
+    const diff = target ? stats.average - target : 0
+    const word = levelWord(diff, target)
+    const verdict = !stats.count
+      ? `${ctx.name}${label}没有饮水记录，先补上才能看出喝得够不够。`
+      : target
+        ? `${ctx.name}${label}日均喝 ${stats.average}ml，目标 ${target}ml，${word}${word === '基本持平' ? '' : `约 ${Math.abs(diff)}ml`}。`
+        : `${ctx.name}${label}日均喝 ${stats.average}ml、共 ${stats.total}ml。`
+    if (activeReplyMeta) activeReplyMeta.range = { evidence: `${label}共 ${stats.total}ml / ${stats.count} 次，日均 ${stats.average}ml${target ? ` / 目标 ${target}ml` : ''}` }
+    return compose({
+      title: `💧 ${label}饮水：${profileText(ctx)}`,
+      verdict: verdict,
+      basis: [coverageNote(stats, days)],
+      actions: [
+        word === '偏少' ? '多放几个水碗、换新鲜水，湿粮或泡粮也能补水' : '',
+        word === '偏多' ? '持续明显多饮多尿要留意，必要时查一下' : '',
+        '固定位置固定水碗，观察每天大致喝多少'
+      ],
+      warning: riskLine(ctx, question)
+    })
+  }
+
+  if (topic === 'walk') {
+    const stats = rangeStats(all.walks, 'duration', days)
+    const verdict = !stats.count
+      ? `${ctx.name}${label}没有散步记录。`
+      : `${ctx.name}${label}共散步 ${stats.count} 次、${stats.total} 分钟，日均约 ${stats.average} 分钟。`
+    if (activeReplyMeta) activeReplyMeta.range = { evidence: `${label}共 ${stats.total} 分钟 / ${stats.count} 次，日均 ${stats.average} 分钟` }
+    return compose({
+      title: `🐕 ${label}运动：${profileText(ctx)}`,
+      verdict: verdict,
+      basis: [coverageNote(stats, days)],
+      actions: [
+        stats.average < 30 ? '可以每天补一次 15-25 分钟的轻松散步或嗅闻游戏' : '运动量已有基础，保持规律即可',
+        '运动后看喘息恢复、脚垫和有没有跛行'
+      ],
+      warning: riskLine(ctx, question)
+    })
+  }
+
+  const keySet = new Set(dayKeysFrom(0, days))
+  const inRange = (all.stools || []).filter(item => item && keySet.has(item.dayKey))
+  const abnormal = inRange.filter(item => item.abnormal).length
+  const activeDays = new Set(inRange.map(item => item.dayKey)).size
+  const verdict = !inRange.length
+    ? `${ctx.name}${label}没有排便记录。`
+    : abnormal
+      ? `${ctx.name}${label}共排便 ${inRange.length} 次，其中 ${abnormal} 次需要观察。`
+      : `${ctx.name}${label}共排便 ${inRange.length} 次，都是正常记录。`
+  if (activeReplyMeta) activeReplyMeta.range = { evidence: `${label}共 ${inRange.length} 次，异常 ${abnormal} 次，${activeDays}/${days} 天有记录` }
+  return compose({
+    title: `💩 ${label}排便：${profileText(ctx)}`,
+    verdict: verdict,
+    basis: [`${activeDays}/${days} 天有记录`],
+    actions: [
+      abnormal ? '异常集中出现时先暂停新食物和零食，观察 1-2 天' : '继续保持规律饮食和记录',
+      '记录形态、颜色、次数和当天精神食欲'
+    ],
+    warning: abnormal >= 3 ? '如果血便、黑便、水样腹泻、频繁呕吐或精神差，请尽快就医。' : riskLine(ctx, question)
+  })
 }
 
 function answerComparison(ctx, question) {
@@ -2725,6 +2890,9 @@ function createReply(question, pet, options = {}) {
   const intent = detectIntent(question)
   // 只能由当前这句话触发“对比”，不能带入上一轮的对比关键词。
   if (isComparisonQuestion(originalQuestion)) return answerComparison(ctx, originalQuestion)
+  // 问句自带时间范围（最近七天/这周/近一个月）时，按那段时间统计，而不是回落成今天。
+  const askedRange = detectTimeRange(originalQuestion)
+  if (askedRange && RANGE_TOPICS.indexOf(intent) >= 0) return answerRange(ctx, originalQuestion, intent, askedRange)
   if (intent === 'danger') {
     return compose({
       title: `⚠️ 紧急判断：${profileText(ctx)}`,
