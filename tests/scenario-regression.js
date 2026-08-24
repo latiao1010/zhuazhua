@@ -1045,6 +1045,12 @@ async function main() {
         assert.ok(state.chats[1].text.includes('零食'))
         assert.ok(state.chats[1].text.includes('玩具'))
       }
+      if (index === 1) {
+        assert.ok(state.chats[3].text.includes('价格 '))
+        assert.ok(state.chats[3].text.includes('原料 '))
+        assert.ok(state.chats[3].text.includes('优点 '))
+        assert.ok(state.chats[3].text.includes('注意 '))
+      }
     })
   }))
 
