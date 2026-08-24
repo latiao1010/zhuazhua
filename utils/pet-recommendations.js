@@ -1,5 +1,6 @@
 // 审核版离线推荐目录：只做信息整理和筛选，不替代兽医或商品详情页。
 const { PET_FOOD_SKUS } = require('./pet-food-skus')
+const price = require('./pet-price')
 
 const CATALOG = {
   // 主粮 SKU 由评分卡提取结果覆盖同步；字段包括名称、市场价格、主要原料、优点和缺点。
@@ -57,9 +58,50 @@ function scoreItem(item, ctx, question) {
   return score
 }
 
-function recommend(category, ctx, question, limit = 3) {
+// 把价格意图折算成「元/斤」的上下限。用户说的月费要用宠物每日喂食量反推，
+// 因为目录里只有单价，没有包装规格。
+function priceBoundsPerJin(intent, dailyGrams) {
+  if (!intent || !intent.frame) return null
+  if (intent.frame === 'perJin') return { min: intent.min || 0, max: intent.max || Infinity }
+  const grams = dailyGrams > 0 ? dailyGrams : 0
+  if (!grams) return null
+  return {
+    min: intent.min ? price.monthlyToPerJin(intent.min, grams) : 0,
+    max: intent.max ? price.monthlyToPerJin(intent.max, grams) : Infinity
+  }
+}
+
+// anchor：上一轮推过的商品，用户说“太贵了”时以它为基准找更便宜的。
+function recommend(category, ctx, question, limit = 3, options = {}) {
   const list = CATALOG[category] || [...CATALOG.mainFood, ...CATALOG.snack, ...CATALOG.toy]
-  return list
+  const { items } = price.attachPrices(list)
+  const intent = options.intent !== undefined ? options.intent : price.parsePriceIntent(question)
+  const dailyGrams = Number(ctx && ctx.today && ctx.today.feed && ctx.today.feed.targetGrams) || 0
+  const bounds = priceBoundsPerJin(intent, dailyGrams)
+  const anchor = options.anchor && options.anchor.price ? options.anchor.price.mid : 0
+
+  let pool = items
+  if (intent) {
+    // 数据有问题的条目不参与价格筛选，避免用错误数字误导购买决策
+    const priced = pool.filter(item => item.price && !item.price.suspect)
+    let filtered = priced
+    if (bounds) {
+      filtered = priced.filter(item => item.price.mid >= bounds.min && item.price.mid <= bounds.max)
+    }
+    if (anchor && intent.cheaper) filtered = filtered.filter(item => item.price.mid <= anchor * 0.8)
+    if (anchor && intent.pricier) filtered = filtered.filter(item => item.price.mid >= anchor * 1.2)
+    // 没给具体数字、只说“便宜点”时，退到低价档
+    if (!bounds && !anchor && intent.cheaper) filtered = priced.filter(item => item.tier === 'low')
+    if (!bounds && !anchor && intent.pricier) filtered = priced.filter(item => item.tier === 'high')
+    // 主食冻干单价是干粮的几倍，除非用户预算本来就够高，否则不混进来比价
+    if (!intent.pricier) {
+      const keepPremium = bounds && bounds.max !== Infinity && filtered.some(item => item.tier === 'premium' && item.price.mid <= bounds.max)
+      if (!keepPremium) filtered = filtered.filter(item => item.tier !== 'premium')
+    }
+    if (filtered.length) pool = filtered
+  }
+
+  return pool
     .map(item => ({ ...item, score: scoreItem(item, ctx, question) }))
     .sort((a, b) => b.score - a.score || a.id.localeCompare(b.id))
     .slice(0, limit)
@@ -88,4 +130,4 @@ function catalog() {
   return JSON.parse(JSON.stringify(CATALOG))
 }
 
-module.exports = { catalog, recommend, findItems, ingredientAdvice, profileTags }
+module.exports = { catalog, recommend, findItems, ingredientAdvice, profileTags, priceBoundsPerJin }

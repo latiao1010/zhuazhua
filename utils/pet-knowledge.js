@@ -1,6 +1,7 @@
 const store = require('./store')
 const supplement = require('./pet-knowledge-supplement')
 const recommendations = require('./pet-recommendations')
+const priceUtil = require('./pet-price')
 
 let activeReplyMeta = null
 let expertSystem = null
@@ -2152,6 +2153,12 @@ function answerSupply(ctx, question) {
 function recommendationIntent(question) {
   const text = String(question || '')
   const hasRecommendWord = /推荐|怎么选|筛选|挑选|适合|买什么|哪个好|对比|比较|配料|营养|成分|原料/.test(text)
+  // 带价格的问句本身就是在选购：「一个月500以内的狗粮」没有“推荐”二字，
+  // 「太贵了有便宜点的吗」连主题都没有 —— 后者只在刚推过主粮时才接，避免误伤。
+  const priceIntent = priceUtil.parsePriceIntent(text)
+  const mentionsFood = /主粮|狗粮|猫粮|干粮|湿粮|粮/.test(text)
+  if (priceIntent && mentionsFood) return 'mainFood'
+  if (priceIntent && (priceIntent.cheaper || priceIntent.pricier) && lastRecommended.length && topicOf(text) === 'general') return 'mainFood'
   if (!hasRecommendWord) return ''
   if (/宠物粮推荐|根据宠物|根据我家|推荐.*主粮.*零食|推荐.*零食.*玩具/.test(text)) return 'pet'
   if (/对比|比较|哪个好|二选一|区别/.test(text) && /主粮|狗粮|猫粮|零食|玩具|粮/.test(text)) return 'compare'
@@ -2170,12 +2177,36 @@ function recommendationProfile(ctx) {
   return details.join(' · ')
 }
 
+// 记住上一轮推了什么：用户说“太贵了/便宜点”时没有具体数字，
+// 只能以上一轮的价格为基准来找更便宜的。
+let lastRecommended = []
+
+function priceFrameNote(intent, dailyGrams) {
+  if (!intent || !intent.frame || !intent.guessed) return ''
+  const unit = intent.frame === 'monthly' ? '元/月' : '元/斤'
+  const range = intent.min ? `${intent.min}-${intent.max}` : `${intent.max}`
+  return `已按${range}${unit}筛选${intent.frame === 'monthly' ? `（按每天 ${dailyGrams}g 折算）` : ''}，口径不对可以直接说`
+}
+
+function itemPriceLine(item, dailyGrams) {
+  const parsed = item.price || priceUtil.parsePrice(item.marketPrice)
+  if (!parsed) return ''
+  const monthly = priceUtil.monthlyCost(parsed, dailyGrams)
+  const suspect = parsed.suspect ? '，该价格疑似录入有误' : ''
+  return monthly ? `${item.marketPrice}（${priceUtil.formatMonthly(monthly)}）${suspect}` : `${item.marketPrice}${suspect}`
+}
+
+function activeDailyGrams() {
+  const meta = activeReplyMeta || {}
+  return Number(meta.ctx && meta.ctx.today && meta.ctx.today.feed && meta.ctx.today.feed.targetGrams) || 0
+}
+
 function formatRecommendationItem(item) {
   const label = item.fullName || `${item.brand ? `${item.brand} ` : ''}${item.name}`.trim()
   // 评分卡 SKU 优先展示已同步的真实字段；零食/玩具仍沿用原有标签和说明。
   if (item.marketPrice || item.ingredients || item.advantages || item.disadvantages) {
     const fields = [
-      item.marketPrice ? `价格 ${item.marketPrice}` : '',
+      item.marketPrice ? `价格 ${itemPriceLine(item, activeDailyGrams())}` : '',
       item.ingredients ? `原料 ${item.ingredients}` : '',
       item.advantages ? `优点 ${item.advantages}` : '',
       item.disadvantages ? `注意 ${item.disadvantages}` : ''
@@ -2208,13 +2239,19 @@ function answerRecommendation(ctx, question, kind) {
   }
 
   const category = kind === 'pet' ? 'mainFood' : kind
+  const intent = priceUtil.parsePriceIntent(question)
+  const dailyGrams = Number(ctx.today && ctx.today.feed && ctx.today.feed.targetGrams) || 0
+  // 只有“便宜点/太贵了”这类没带数字的说法才需要锚点
+  const anchor = intent && !intent.max && (intent.cheaper || intent.pricier) ? lastRecommended[0] : null
+  const options = { intent: intent, anchor: anchor }
   const items = kind === 'pet'
     ? [
-      ...recommendations.recommend('mainFood', ctx, question, 2),
+      ...recommendations.recommend('mainFood', ctx, question, 2, options),
       ...recommendations.recommend('snack', ctx, question, 1),
       ...recommendations.recommend('toy', ctx, question, 1)
     ]
-    : recommendations.recommend(category, ctx, question, 3)
+    : recommendations.recommend(category, ctx, question, 3, options)
+  if (category === 'mainFood') lastRecommended = items.filter(item => item.price && !item.price.suspect)
   const label = category === 'mainFood' ? '主粮' : category === 'snack' ? '零食' : '玩具'
   const profile = recommendationProfile(ctx)
   return compose({
@@ -2224,7 +2261,7 @@ function answerRecommendation(ctx, question, kind) {
       : `按${profile}，${label}可以优先看：${items.map(item => item.fullName || `${item.brand} ${item.name}`).join('、')}。`,
     basis: items.map(formatRecommendationItem),
     actions: category === 'mainFood'
-      ? ['先确认适用物种和年龄，并按体重、体况、活动量计算喂食量', '换粮用 7-10 天过渡，软便或呕吐时先退回上一步并观察']
+      ? [priceFrameNote(intent, dailyGrams), '先确认适用物种和年龄，并按体重、体况、活动量计算喂食量', '换粮用 7-10 天过渡，软便或呕吐时先退回上一步并观察']
       : category === 'snack'
         ? ['零食控制在全天热量的一小部分，训练时掰小粒使用', '第一次给新零食只给一点，观察便便、皮肤和精神 24 小时']
         : ['玩具要选不会吞下的小件，出现裂口、掉屑就更换', '每天短时互动，按年龄和关节状态安排强度']
