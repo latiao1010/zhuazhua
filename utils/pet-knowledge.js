@@ -1117,11 +1117,15 @@ function compose({ title, verdict, basis = [], actions = [], warning = '' }) {
   // 详细数据仍在记录页，避免顾问回复像体检报告一样堆成一团。
   const parts = [chatLead(title, verdict)]
   const meta = activeReplyMeta || {}
-  const evidence = meta.ctx
-    ? compactRecordLine(meta.ctx, meta.question, basis, title)
-    : (cleanItems(basis)[0] ? `参考：${shortText(cleanItems(basis)[0], 36)}` : '')
-  const actionItems = cleanItems(actions)
   const titleText = String(title || '')
+  const isSkuReply = /根据宠物推荐|主粮筛选|商品对比|营养\/配料解释/.test(titleText)
+  // SKU 数据本身就是用户要查看的商品信息，不能再被通用聊天摘要截断。
+  const evidence = isSkuReply
+    ? cleanItems(basis).slice(0, /商品对比/.test(titleText) ? 2 : 1).map(item => `参考：${item}`).join('\n')
+    : meta.ctx
+      ? compactRecordLine(meta.ctx, meta.question, basis, title)
+      : (cleanItems(basis)[0] ? `参考：${shortText(cleanItems(basis)[0], 36)}` : '')
+  const actionItems = cleanItems(actions)
   const action = (/绝育/.test(titleText) && actionItems.find(item => /术后/.test(item)))
     || (/洗澡|剪指甲|刷牙|洗护/.test(titleText) && actionItems.find(item => /奖励|吹干/.test(item)))
     || (/食物安全|食物补充库|友好食物/.test(titleText) && actionItems.find(item => /少量|一点点/.test(item)))
@@ -1976,7 +1980,18 @@ function recommendationProfile(ctx) {
 }
 
 function formatRecommendationItem(item) {
-  return `${item.brand ? `${item.brand} ` : ''}${item.name}：${item.tags.slice(0, 3).join('、')}；${item.note}`
+  const label = item.fullName || `${item.brand ? `${item.brand} ` : ''}${item.name}`.trim()
+  // 评分卡 SKU 优先展示已同步的真实字段；零食/玩具仍沿用原有标签和说明。
+  if (item.marketPrice || item.ingredients || item.advantages || item.disadvantages) {
+    const fields = [
+      item.marketPrice ? `价格 ${item.marketPrice}` : '',
+      item.ingredients ? `原料 ${item.ingredients}` : '',
+      item.advantages ? `优点 ${item.advantages}` : '',
+      item.disadvantages ? `注意 ${item.disadvantages}` : ''
+    ].filter(Boolean)
+    return `${label}：${fields.join('；')}`
+  }
+  return `${label}：${item.tags.slice(0, 3).join('、')}；${item.note}`
 }
 
 function answerRecommendation(ctx, question, kind) {
@@ -1985,7 +2000,7 @@ function answerRecommendation(ctx, question, kind) {
     return compose({
       title: '🥣 营养/配料解释',
       verdict: recommendations.ingredientAdvice(question),
-      basis: matched.length ? matched.slice(0, 2).map(item => `你提到的${item.name}：${item.note}`) : [`当前档案：${recommendationProfile(ctx)}`],
+      basis: matched.length ? matched.slice(0, 2).map(item => `你提到的${formatRecommendationItem(item)}`) : [`当前档案：${recommendationProfile(ctx)}`],
       actions: ['把商品配料表前 5 位、保证分析值和每 100g 热量发来，我可以按同一标准帮你看', '换粮或新增零食要留出 7-10 天观察期']
     })
   }
@@ -1995,8 +2010,8 @@ function answerRecommendation(ctx, question, kind) {
     const items = matched.length >= 2 ? matched.slice(0, 3) : recommendations.recommend(/零食|冻干/.test(question) ? 'snack' : /玩具/.test(question) ? 'toy' : 'mainFood', ctx, question, 2)
     return compose({
       title: '📊 商品对比',
-      verdict: items.length >= 2 ? `先按${items.map(item => `${item.brand || ''} ${item.name}`.trim()).join('、')}比较：优先看适用年龄/物种、配料透明度、热量和你家宠物吃后的稳定性。` : '先把要比较的两个商品名称或配料表发来，我再逐项比较。',
-      basis: items.map(item => `${item.name}：${item.tags.slice(0, 3).join('、')}；${item.note}`),
+      verdict: items.length >= 2 ? `先按${items.map(item => item.fullName || `${item.brand || ''} ${item.name}`.trim()).join('、')}比较：优先看适用年龄/物种、配料透明度、热量和你家宠物吃后的稳定性。` : '先把要比较的两个商品名称或配料表发来，我再逐项比较。',
+      basis: items.map(formatRecommendationItem),
       actions: ['不要只按价格或“高蛋白”排序，先排除不适合物种、年龄和体况的产品', '如果是处方粮或有慢性病，先让兽医确认']
     })
   }
@@ -2014,8 +2029,8 @@ function answerRecommendation(ctx, question, kind) {
   return compose({
     title: `🐾 ${kind === 'pet' ? '根据宠物推荐' : `${label}筛选`}`,
     verdict: kind === 'pet'
-      ? `按${profile}，主粮先看${items.slice(0, 2).map(item => `${item.brand} ${item.name}`).join('、')}；零食和玩具再按用途补充。`
-      : `按${profile}，${label}可以优先看：${items.map(item => `${item.brand} ${item.name}`).join('、')}。`,
+      ? `按${profile}，主粮先看${items.slice(0, 2).map(item => item.fullName || `${item.brand} ${item.name}`).join('、')}；零食和玩具再按用途补充。`
+      : `按${profile}，${label}可以优先看：${items.map(item => item.fullName || `${item.brand} ${item.name}`).join('、')}。`,
     basis: items.map(formatRecommendationItem),
     actions: category === 'mainFood'
       ? ['先确认适用物种和年龄，并按体重、体况、活动量计算喂食量', '换粮用 7-10 天过渡，软便或呕吐时先退回上一步并观察']
