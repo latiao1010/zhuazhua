@@ -1421,6 +1421,8 @@ function detectTimeRange(question) {
   const text = String(question || '').replace(/\s+/g, '')
   if (!text) return null
   if (/^(今天|今日)/.test(text) && !/最近|过去/.test(text)) return null
+  // 「下周寄养」「下个月体检」问的是将来的安排，不是历史区间统计
+  if (/下(一)?(周|个?月|次)|明天|后天/.test(text)) return null
   // 「上周/上个月/昨天」指的是往前推的那一段，不是最近 N 天，要带偏移。
   if (/前天/.test(text)) return { days: 1, offset: 2, label: '前天' }
   if (/昨天|昨日/.test(text)) return { days: 1, offset: 1, label: '昨天' }
@@ -1432,7 +1434,10 @@ function detectTimeRange(question) {
     if (days >= 2 && days <= 90) return { days: days, offset: 0, label: `最近 ${days} 天` }
   }
   if (/半个?月/.test(text)) return { days: 15, offset: 0, label: '最近半个月' }
-  match = text.match(/(?:最近|近|过去|这|本)?(\d+|[一二两三四五六七八九十]+)?(?:个)?(?:周|星期|礼拜)/)
+  // 前缀和数字都可选的话，光一个「周」字就能命中（「下周寄养」被当成「最近一周」），
+  // 所以要么带过去/当前的前缀，要么带数字。
+  match = text.match(/(?:最近|近|过去|这|本)(\d+|[一二两三四五六七八九十]+)?(?:个)?(?:周|星期|礼拜)/) ||
+          text.match(/(\d+|[一二两三四五六七八九十]+)(?:个)?(?:周|星期|礼拜)/)
   if (match) {
     const weeks = match[1] ? parseCountWord(match[1]) : 1
     if (weeks >= 1 && weeks <= 12) return { days: weeks * 7, offset: 0, label: weeks === 1 ? '最近一周' : `最近 ${weeks} 周` }
@@ -2967,7 +2972,9 @@ function createReply(question, pet, options = {}) {
   activeReplyMeta = { ctx, question, originalQuestion, history, followup: question !== originalQuestion }
   const intent = detectIntent(question)
   // 只能由当前这句话触发“对比”，不能带入上一轮的对比关键词。
-  if (isComparisonQuestion(originalQuestion)) return answerComparison(ctx, originalQuestion)
+  // 「对比两款主粮」问的是商品，不是记录。加入“对比”一词后这类问句会被
+  // 记录对比截胡，所以商品对比优先。
+  if (isComparisonQuestion(originalQuestion) && intent !== 'recommendation:compare') return answerComparison(ctx, originalQuestion)
   // 问句自带时间范围（最近七天/这周/近一个月）时，按那段时间统计，而不是回落成今天。
   const askedRange = detectTimeRange(originalQuestion)
   if (askedRange) {
