@@ -2,6 +2,10 @@
 const { PET_FOOD_SKUS } = require('./pet-food-skus')
 const price = require('./pet-price')
 
+// 命中区间的上限最多允许超预算这么多倍。1.5 是权衡：太严候选所剩无几，
+// 太松就会出现“要300、给你296-608”的矛盾显示。
+const PRICE_RANGE_TOLERANCE = 1.5
+
 const CATALOG = {
   // 主粮 SKU 由评分卡提取结果覆盖同步；字段包括名称、市场价格、主要原料、优点和缺点。
   mainFood: PET_FOOD_SKUS,
@@ -86,7 +90,16 @@ function recommend(category, ctx, question, limit = 3, options = {}) {
     const priced = pool.filter(item => item.price && !item.price.suspect)
     let filtered = priced
     if (bounds) {
-      filtered = priced.filter(item => item.price.mid >= bounds.min && item.price.mid <= bounds.max)
+      // 按价格区间下限判断：最低价落进预算就算命中（宽松口径）。
+      // 但只用下限会放进 19-39元/斤 这种上限翻倍的条目，说“300以内”却显示
+      // “296-608元/月”，观感自相矛盾。所以再排除区间过宽的：上限超预算 1.5 倍
+      // 就踢掉，保住命中率的同时不至于离谱。
+      filtered = priced.filter(item => item.price.low >= bounds.min && item.price.low <= bounds.max)
+      if (bounds.max !== Infinity) {
+        const ceiling = bounds.max * PRICE_RANGE_TOLERANCE
+        const within = filtered.filter(item => !Number.isFinite(item.price.high) ? false : item.price.high <= ceiling)
+        if (within.length) filtered = within
+      }
     }
     if (anchor && intent.cheaper) filtered = filtered.filter(item => item.price.mid <= anchor * 0.8)
     if (anchor && intent.pricier) filtered = filtered.filter(item => item.price.mid >= anchor * 1.2)

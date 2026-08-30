@@ -2185,7 +2185,7 @@ function priceFrameNote(intent, dailyGrams) {
   if (!intent || !intent.frame || !intent.guessed) return ''
   const unit = intent.frame === 'monthly' ? '元/月' : '元/斤'
   const range = intent.min ? `${intent.min}-${intent.max}` : `${intent.max}`
-  return `已按${range}${unit}筛选${intent.frame === 'monthly' ? `（按每天 ${dailyGrams}g 折算）` : ''}，口径不对可以直接说`
+  return `已按${range}${unit}筛选${intent.frame === 'monthly' ? `（按每天 ${dailyGrams}g 折算）` : ''}，按区间最低价命中，口径不对可以直接说`
 }
 
 function itemPriceLine(item, dailyGrams) {
