@@ -2874,8 +2874,12 @@ function isMedicationIngestion(text) {
 
 function isMedicationRecordQuery(text) {
   const value = String(text || '')
-  const asksWhichMedicine = /什么药|哪种药|哪个药|药名|有没有.*药|用的什么药|在吃药吗|吃药吗/.test(value)
-  const recordCue = /记录|档案|历史|最近|目前|现在|正在|查一下|查查|找一下|找找/.test(value)
+  // 「该吃什么药」「能用什么药」是在要建议，不是查档案。这类词一出现就不算记录查询，
+  // 否则下面放宽线索词之后会把求助误判成查记录。
+  if (/该吃|该用|应该吃|应该用|能吃|能用|可以吃|可以用|能不能|可不可以|要不要|推荐|怎么用|用多少|剂量/.test(value)) return false
+  const asksWhichMedicine = /什么药|哪种药|哪个药|药名|有没有.*药|用的什么药|在吃药吗|吃药吗|用药吗|在用药/.test(value)
+  // 「在用什么药吗」没有“最近/现在”这种显式时间词，但“在用/在吃”同样是在问当下的状态
+  const recordCue = /记录|档案|历史|最近|目前|现在|正在|在用|在吃|查一下|查查|找一下|找找/.test(value)
   return asksWhichMedicine && recordCue
 }
 
