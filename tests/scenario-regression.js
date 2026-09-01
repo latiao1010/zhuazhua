@@ -212,7 +212,7 @@ function withTimers(run) {
 }
 
 async function main() {
-  await scenario('空存储能初始化覆盖半年的全部模块假数据', () => {
+  await scenario('空存储能初始化覆盖八个月的全部模块假数据', () => {
     const storage = {}
     const storePath = path.join(ROOT, 'utils/store.js')
     delete require.cache[require.resolve(storePath)]
@@ -230,17 +230,17 @@ async function main() {
       .forEach(key => assert.ok(Array.isArray(storage[key]), `${key} should be an array`))
     assert.ok(storage.paw_feeds.every(item => /^\d{4}-\d{2}-\d{2}$/.test(item.dayKey)))
     assert.ok(storage.paw_feeds.some(item => item.dayKey === store.todayKey()))
-    assert.ok(storage.paw_feeds.length > 450)
-    assert.ok(storage.paw_stools.length > 380)
-    assert.ok(storage.paw_water_records.length > 740)
-    assert.ok(storage.paw_walk_records.length > 310)
+    assert.ok(storage.paw_feeds.length > 600)
+    assert.ok(storage.paw_stools.length > 500)
+    assert.ok(storage.paw_water_records.length > 980)
+    assert.ok(storage.paw_walk_records.length > 420)
     const feedDays = [...new Set(storage.paw_feeds.map(item => item.dayKey))].sort()
-    assert.ok(feedDays.length >= 180)
-    assert.ok((new Date(`${feedDays[feedDays.length - 1]}T00:00:00`) - new Date(`${feedDays[0]}T00:00:00`)) / 86400000 >= 180)
-    assert.ok(storage.paw_weight_records.length >= 27)
+    assert.ok(feedDays.length >= 240)
+    assert.ok((new Date(`${feedDays[feedDays.length - 1]}T00:00:00`) - new Date(`${feedDays[0]}T00:00:00`)) / 86400000 >= 240)
+    assert.ok(storage.paw_weight_records.length >= 35)
     assert.deepStrictEqual([...new Set(storage.paw_care_records.map(item => item.key))].sort(), ['bath', 'dental', 'deworming', 'medicine', 'nail', 'vaccine'])
-    assert.ok(storage.paw_care_records.length >= 40)
-    assert.ok(storage.paw_growth_photos.length >= 17)
+    assert.ok(storage.paw_care_records.length >= 58)
+    assert.ok(storage.paw_growth_photos.length >= 24)
     assert.ok(storage.paw_diaries.length >= 14)
     assert.ok(storage.paw_chats.length >= 12)
     assert.ok(storage.paw_chats.some(item => item.source === 'local-knowledge'))
@@ -257,7 +257,7 @@ async function main() {
     assert.strictEqual(storage.paw_feed_trend_demo_v1, true)
     assert.strictEqual(storage.paw_daily_trend_demo_v1, true)
     assert.strictEqual(storage.paw_two_month_demo_v1, true)
-    assert.strictEqual(storage.paw_six_month_demo_v1, 'six-month-v1')
+    assert.strictEqual(storage.paw_six_month_demo_v1, 'eight-month-v1')
     assert.ok(storage.paw_supply_records.dogFood.openedDate)
     assert.ok(storage.paw_supply_records.snack.openedDate)
     assert.ok(storage.paw_supply_records.dogFood.history.length >= 4)

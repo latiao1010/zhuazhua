@@ -25,6 +25,10 @@ const KEYS = {
   sixMonthDemo: 'paw_six_month_demo_v1'
 }
 
+// 演示数据的历史跨度。原来是 182 天（6 个月），散落写死在四处生成器里；
+// 提到 242 天（8 个月）后统一由这里控制，避免各模块跨度再次走偏。
+const DEMO_HISTORY_DAYS = 242
+
 const DEFAULT_FEED_GOAL = 260
 const DEFAULT_WATER_GOAL = 600
 const READ_ONLY_PROTECTED_KEYS = new Set([
@@ -207,7 +211,7 @@ const seedTodayFeeds = [
 
 function buildSeedFeedHistory() {
   const records = []
-  for (let daysBack = 1; daysBack <= 182; daysBack += 1) {
+  for (let daysBack = 1; daysBack <= DEMO_HISTORY_DAYS; daysBack += 1) {
     const dayKey = offsetDateKey(-daysBack)
     const [, month, day] = dayKey.split('-').map(Number)
     const daily = [
@@ -274,7 +278,7 @@ const seedWalks = [
 
 function buildSeedDailyTrendHistory() {
   const histories = { stools: [], waters: [], walks: [] }
-  for (let daysBack = 1; daysBack <= 182; daysBack += 1) {
+  for (let daysBack = 1; daysBack <= DEMO_HISTORY_DAYS; daysBack += 1) {
     const dayKey = offsetDateKey(-daysBack)
     const [, month, day] = dayKey.split('-').map(Number)
     const date = `${month}月${day}日`
@@ -335,7 +339,7 @@ const seedDailyTrendHistory = buildSeedDailyTrendHistory()
 
 function buildSeedWeightHistory() {
   const records = []
-  for (let daysBack = 0; daysBack <= 182; daysBack += 7) {
+  for (let daysBack = 0; daysBack <= DEMO_HISTORY_DAYS; daysBack += 7) {
     const dayKey = offsetDateKey(-daysBack)
     const createdAt = new Date(`${dayKey}T08:30:00`).getTime()
     records.push({
@@ -343,7 +347,7 @@ function buildSeedWeightHistory() {
       createdAt,
       dayKey,
       time: '08:30',
-      weight: Number((10.8 + (182 - daysBack) / 182 * 0.4 + (daysBack % 3) * 0.06).toFixed(1)),
+      weight: Number((10.8 + (DEMO_HISTORY_DAYS - daysBack) / DEMO_HISTORY_DAYS * 0.4 + (daysBack % 3) * 0.06).toFixed(1)),
       photoPath: ''
     })
   }
@@ -353,12 +357,12 @@ function buildSeedWeightHistory() {
 function buildSeedCareRecords() {
   const records = []
   const configs = [
-    { key: 'deworming', label: '体内外驱虫', icon: '🪱', days: [180, 90, 2] },
-    { key: 'medicine', label: '宠物用药', icon: '💊', days: [168, 140, 112, 84, 56, 28, 7] },
-    { key: 'vaccine', label: '疫苗接种', icon: '💉', days: [165] },
-    { key: 'bath', label: '洗澡护理', icon: '🛁', days: [182, 168, 154, 140, 126, 112, 98, 84, 70, 56, 42, 28, 14, 2] },
-    { key: 'dental', label: '刷牙护理', icon: '🦷', days: [175, 161, 147, 133, 119, 105, 91, 77, 63, 49, 35, 21, 14, 7, 1] },
-    { key: 'nail', label: '修剪指甲', icon: '✂️', days: [170, 140, 110, 80, 50, 20] }
+    { key: 'deworming', label: '体内外驱虫', icon: '🪱', days: [240, 180, 90, 2] },
+    { key: 'medicine', label: '宠物用药', icon: '💊', days: [238, 210, 182, 168, 140, 112, 84, 56, 28, 7] },
+    { key: 'vaccine', label: '疫苗接种', icon: '💉', days: [230, 165] },
+    { key: 'bath', label: '洗澡护理', icon: '🛁', days: [238, 224, 210, 196, 182, 168, 154, 140, 126, 112, 98, 84, 70, 56, 42, 28, 14, 2] },
+    { key: 'dental', label: '刷牙护理', icon: '🦷', days: [231, 217, 203, 189, 175, 161, 147, 133, 119, 105, 91, 77, 63, 49, 35, 21, 14, 7, 1] },
+    { key: 'nail', label: '修剪指甲', icon: '✂️', days: [230, 200, 170, 140, 110, 80, 50, 20] }
   ]
   configs.forEach(config => config.days.forEach(daysBack => {
     const date = offsetDateKey(-daysBack)
@@ -377,7 +381,7 @@ function storeNextDemoDate(date, key) {
 function buildSeedGrowthPhotoHistory() {
   const records = []
   const paths = ['/assets/growth-demo-home.jpg', '/assets/growth-demo-lawn.jpg', '/assets/growth-demo-rain.jpg']
-  ;[180, 165, 150, 135, 120, 105, 90, 75, 60, 45, 30, 15, 7, 3].forEach((daysBack, index) => {
+  ;[240, 225, 210, 195, 180, 165, 150, 135, 120, 105, 90, 75, 60, 45, 30, 15, 7, 3].forEach((daysBack, index) => {
     const dayKey = offsetDateKey(-daysBack)
     const time = `${String(8 + index % 4 * 3).padStart(2, '0')}:20`
     records.push({ id: `demo-growth-history-${dayKey}-1`, path: paths[index % paths.length], dayKey, time, createdAt: new Date(`${dayKey}T${time}:00`).getTime() })
@@ -444,7 +448,8 @@ const seedGrowthPhotoHistory = buildSeedGrowthPhotoHistory()
 const seedChats = buildSeedChats()
 const seedSupplies = buildSeedSupplies()
 const seedCareSchedule = buildSeedCareSchedule()
-const SIX_MONTH_DEMO_VERSION = 'six-month-v1'
+// 跨度变了就要升版本，否则已经播过种的设备不会重新生成
+const SIX_MONTH_DEMO_VERSION = 'eight-month-v1'
 
 function isDemoRecord(item, key) {
   if (!item || typeof item !== 'object') return true
