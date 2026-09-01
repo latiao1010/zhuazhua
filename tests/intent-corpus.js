@@ -102,9 +102,41 @@ BUTTON_EXPECT.forEach(([text, pattern]) => {
   console.log(`  ✗ 按钮「${text}」→ ${actual}，不符合 ${pattern}`)
 })
 
+// 所有追问文案都必须落到明确的回答上。新增按钮时最容易犯的错就是写一句
+// 意图识别接不住的话，用户点了却得到兜底的「今日状态」。
+// 「和之前比呢」依赖上文，单独带历史验证。
+console.log('追问文案有归属')
+const CONTEXT_ONLY = new Set(['和之前比呢'])
+const allTexts = new Map()
+suggestions.FOLLOW_UPS.forEach(group => group.items.forEach(item => allTexts.set(item.text, item.label)))
+suggestions.evergreen(DB.paw_pet).forEach(item => allTexts.set(item.text, item.label))
+allTexts.forEach((label, text) => {
+  if (CONTEXT_ONLY.has(text)) return
+  const title = knowledge.createReply(text, DB.paw_pet, { history: [{ role: 'user', text }] }).split('\n')[0]
+  if (/^【今日状态】/.test(title) && !/状态/.test(text)) {
+    failed++
+    console.log(`  ✗ 按钮「${label}」的文案「${text}」落到兜底：${title}`)
+    return
+  }
+  passed++
+})
+{
+  const history = [
+    { role: 'user', text: '一周的喝水呢' },
+    { role: 'ai', text: '【最近一周饮水】' },
+    { role: 'user', text: '和之前比呢' }
+  ]
+  const title = knowledge.createReply('和之前比呢', DB.paw_pet, { history }).split('\n')[0]
+  if (/对比/.test(title)) passed++
+  else { failed++; console.log(`  ✗ 带上文的「和之前比呢」→ ${title}`) }
+}
+
 // 每种回答都要能给出追问，且文案不能重复
 console.log('追问生成')
-const TITLES = ['【主粮筛选】', '【饮食判断】', '【最近 7 天饮水】', '【上周运动】', '【肠胃判断】', '【食物安全】', '【用药提醒】', '']
+const TITLES = ['【主粮筛选】', '【饮食判断】', '【最近 7 天饮水】', '【上周运动】', '【肠胃判断】',
+  '【食物安全】', '【用药提醒】', '【体重趋势判断】', '【疫苗提醒】', '【出行/寄养准备】',
+  '【雨天室内活动】', '【日常洗护】', '【幼年照护】', '【今日状态】', '【用品余量】',
+  '【症状索引：呕吐】', '【紧急判断】', '【商品对比】', '']
 TITLES.forEach(title => {
   const items = suggestions.followUps(title, DB.paw_pet)
   const texts = items.map(item => item.text)
