@@ -131,6 +131,36 @@ allTexts.forEach((label, text) => {
   else { failed++; console.log(`  ✗ 带上文的「和之前比呢」→ ${title}`) }
 }
 
+// 提取错位的残缺记录不能出现在任何面向用户的回答里。scorecard-sku-057
+// 品牌为空、产品名位置串进了品牌、优点栏是「找不到」占位符，缺点栏是评测人
+// 的口语，这种信息不足以支撑购买判断。
+console.log('残缺商品记录已隔离')
+const recommendations = require(path.join(__dirname, '..', 'utils', 'pet-recommendations'))
+const { PET_FOOD_SKUS } = require(path.join(__dirname, '..', 'utils', 'pet-food-skus'))
+const malformed = PET_FOOD_SKUS.filter(item => !recommendations.isWellFormed(item))
+malformed.forEach(item => {
+  const marker = item.fullName || item.name || item.brand
+  const leaked = [
+    '推荐个狗粮', '想要好一点的狗粮', '宠物粮的蛋白、脂肪和配料表怎么看',
+    `${marker}怎么样`, '帮我对比两款主粮应该看什么', '一个月500以内的狗粮'
+  ].filter(question => {
+    const reply = knowledge.createReply(question, DB.paw_pet, { history: [{ role: 'user', text: question }] })
+    return marker && reply.includes(marker)
+  })
+  if (leaked.length) {
+    failed++
+    console.log(`  ✗ 残缺记录「${marker}」出现在：${leaked.join('、')}`)
+    return
+  }
+  passed++
+})
+// 占位符文案不应出现在任何推荐结果里
+{
+  const reply = knowledge.createReply('推荐个狗粮', DB.paw_pet, { history: [{ role: 'user', text: '推荐个狗粮' }] })
+  if (/找不到|惨不忍睹/.test(reply)) { failed++; console.log('  ✗ 推荐结果里出现了占位符/口语化文案') }
+  else passed++
+}
+
 // 每种回答都要能给出追问，且文案不能重复
 console.log('追问生成')
 const TITLES = ['【主粮筛选】', '【饮食判断】', '【最近 7 天饮水】', '【上周运动】', '【肠胃判断】',

@@ -6,6 +6,18 @@ const price = require('./pet-price')
 // 太松就会出现“要300、给你296-608”的矛盾显示。
 const PRICE_RANGE_TOLERANCE = 1.5
 
+// 评分卡提取偶尔会整行错位：品牌掉空、产品名位置串进品牌、优点栏留着「找不到」
+// 这种占位符。这类记录信息不足以支撑购买判断，不参与推荐（数据本身保留）。
+function isWellFormed(item) {
+  if (!item) return false
+  if (item.type !== '主粮') return true
+  const placeholder = /^(找不到|无|暂无|未知|-|—|\/)$/
+  if (!String(item.brand || '').trim()) return false
+  if (String(item.fullName || '').trim().length <= 3) return false
+  if (placeholder.test(String(item.advantages || '').trim())) return false
+  return true
+}
+
 const CATALOG = {
   // 主粮 SKU 由评分卡提取结果覆盖同步；字段包括名称、市场价格、主要原料、优点和缺点。
   mainFood: PET_FOOD_SKUS,
@@ -78,7 +90,7 @@ function priceBoundsPerJin(intent, dailyGrams) {
 // anchor：上一轮推过的商品，用户说“太贵了”时以它为基准找更便宜的。
 function recommend(category, ctx, question, limit = 3, options = {}) {
   const list = CATALOG[category] || [...CATALOG.mainFood, ...CATALOG.snack, ...CATALOG.toy]
-  const { items } = price.attachPrices(list)
+  const { items } = price.attachPrices(list.filter(isWellFormed))
   const intent = options.intent !== undefined ? options.intent : price.parsePriceIntent(question)
   const dailyGrams = Number(ctx && ctx.today && ctx.today.feed && ctx.today.feed.targetGrams) || 0
   const bounds = priceBoundsPerJin(intent, dailyGrams)
@@ -121,7 +133,9 @@ function recommend(category, ctx, question, limit = 3, options = {}) {
 }
 
 function allItems() {
-  return [...CATALOG.mainFood, ...CATALOG.snack, ...CATALOG.toy]
+  // 同样要滤掉残缺记录：findItems 走的是「你提到的…」这条路径，
+  // 不过滤的话脏数据仍会被当成商品信息展示出来。
+  return [...CATALOG.mainFood, ...CATALOG.snack, ...CATALOG.toy].filter(isWellFormed)
 }
 
 function findItems(question) {
@@ -143,4 +157,4 @@ function catalog() {
   return JSON.parse(JSON.stringify(CATALOG))
 }
 
-module.exports = { catalog, recommend, findItems, ingredientAdvice, profileTags, priceBoundsPerJin }
+module.exports = { catalog, recommend, findItems, ingredientAdvice, profileTags, priceBoundsPerJin, isWellFormed }
