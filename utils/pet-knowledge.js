@@ -2160,6 +2160,15 @@ function recommendationIntent(question) {
   const hasRecommendWord = /推荐|怎么选|筛选|挑选|适合|买什么|哪个好|对比|比较|配料|营养|成分|原料/.test(text)
   // 带价格的问句本身就是在选购：「一个月500以内的狗粮」没有“推荐”二字，
   // 「太贵了有便宜点的吗」连主题都没有 —— 后者只在刚推过主粮时才接，避免误伤。
+  // 「能吃什么狗粮」「吃什么粮好」问的是选哪款商品，不是某种食物能不能吃。
+  // 区别在于问的是「什么 + 商品类目」，而不是「能不能吃 + 具体食物名」——
+  // 后者（能吃巧克力吗 / 能吃什么水果）没有商品类目词，仍然走食物安全。
+  // 排除对比和配料解释：「对比两款主粮应该看什么」也含“什么+主粮”，
+  // 但它该走 compare，不能被这里截胡。
+  const asksWhich = /什么|哪种|哪个|哪些/.test(text) && !/对比|比较|哪个好|二选一|区别|配料表|成分表|原料表/.test(text)
+  if (asksWhich && /玩具/.test(text)) return 'toy'
+  if (asksWhich && /零食|冻干|咬胶|磨牙棒/.test(text)) return 'snack'
+  if (asksWhich && /主粮|狗粮|猫粮|干粮|湿粮|粮/.test(text)) return 'mainFood'
   const priceIntent = priceUtil.parsePriceIntent(text)
   const mentionsFood = /主粮|狗粮|猫粮|干粮|湿粮|粮/.test(text)
   if (priceIntent && mentionsFood) return 'mainFood'
