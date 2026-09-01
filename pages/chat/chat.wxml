@@ -33,6 +33,10 @@
     </view>
   </scroll-view>
 
+  <scroll-view class="followups" wx:if="{{messages.length && !thinking}}" scroll-x enhanced show-scrollbar="false">
+    <view class="followup-item" wx:for="{{followUps}}" wx:key="text" data-text="{{item.text}}" bindtap="askQuick">{{item.label}}</view>
+  </scroll-view>
+
   <view class="composer">
     <view class="input-wrap"><input value="{{input}}" bindinput="onInput" bindconfirm="send" confirm-type="send" placeholder="问问关于{{pet.name}}的事…" /><text>☺</text></view>
     <button class="send {{input ? 'ready' : ''}}" bindtap="send">↑</button>

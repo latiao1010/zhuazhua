@@ -1,6 +1,7 @@
 const store = require('../../utils/store')
 const knowledge = require('../../utils/pet-knowledge')
 const cloudData = require('../../utils/cloud-data')
+const suggestions = require('../../utils/chat-suggestions')
 
 Page({
   data: {
@@ -10,7 +11,8 @@ Page({
     messages: [],
     scrollTo: '',
     quickQuestions: [],
-    advisorGroups: []
+    advisorGroups: [],
+    followUps: []
   },
 
   onShow() {
@@ -44,7 +46,15 @@ Page({
         ] }
       ]
     })
+    this.refreshFollowUps()
     this.scrollBottom()
+  },
+
+  // 追问按钮跟着最后一条回答走，用户点按钮就绕开了自由输入的意图识别
+  refreshFollowUps() {
+    const messages = this.data.messages || []
+    const lastAi = [...messages].reverse().find(item => item && item.role === 'ai')
+    this.setData({ followUps: suggestions.followUps(lastAi && lastAi.text, this.data.pet) })
   },
 
   onInput(e) {
@@ -71,6 +81,7 @@ Page({
       source: 'local-knowledge'
     }]
     this.setData({ messages: next, thinking: false })
+    this.refreshFollowUps()
     store.set('chats', next)
     this.replyTimer = null
     this.scrollBottom()
@@ -104,6 +115,7 @@ Page({
         this.replyTimer = null
         store.set('chats', [])
         this.setData({ messages: [], scrollTo: '', thinking: false })
+        this.refreshFollowUps()
       }
     })
   },

@@ -61,3 +61,7 @@ page{height:100%;overflow:hidden;background:#fff9f2;}
   .quick{padding-top:18rpx;padding-bottom:18rpx}
   .advisor-item{min-width:100%;}
 }
+
+.followups{flex:none;box-sizing:border-box;width:100%;padding:12rpx 24rpx 0;white-space:nowrap;background:#fff}
+.followup-item{display:inline-block;margin-right:10rpx;padding:12rpx 20rpx;border:1rpx solid #f0e2d8;border-radius:99rpx;color:#a9603f;background:#fff5ef;font-size:21rpx;font-weight:700}
+.followup-item:last-child{margin-right:24rpx}
