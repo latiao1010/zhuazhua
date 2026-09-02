@@ -712,11 +712,29 @@ async function acceptShareInvitation(openid, code, profile = {}) {
   return await getAllData(openid)
 }
 
+// 和客户端同样的判断：云端存的是播种当天的快照，日期会随时间变陈旧，
+// 但条数不变。只看数量会把过期快照当成完整数据，一直回灌给客户端。
+function coversRecentDays(records) {
+  if (!Array.isArray(records) || !records.length) return false
+  const yesterday = new Date()
+  yesterday.setHours(0, 0, 0, 0)
+  yesterday.setDate(yesterday.getDate() - 1)
+  const bound = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`
+  let latest = ''
+  records.forEach(item => {
+    const day = item && item.dayKey
+    if (typeof day === 'string' && day > latest) latest = day
+  })
+  return latest >= bound
+}
+
 function isCompleteSixMonthData(data) {
   const supplies = data && data.supplies
   const dogFoodHistory = supplies && supplies.dogFood && supplies.dogFood.history
   const snackHistory = supplies && supplies.snack && supplies.snack.history
   return data && typeof data === 'object' &&
+    coversRecentDays(data.feeds) && coversRecentDays(data.stools) &&
+    coversRecentDays(data.waters) && coversRecentDays(data.walks) &&
     Array.isArray(data.feeds) && data.feeds.length > 600 &&
     Array.isArray(data.stools) && data.stools.length > 500 &&
     Array.isArray(data.waters) && data.waters.length > 980 &&

@@ -500,6 +500,20 @@ function applySixMonthDemoData() {
   wx.setStorageSync(KEYS.sixMonthDemo, SIX_MONTH_DEMO_VERSION)
 }
 
+// 演示数据的 dayKey 是播种当天算出来的。云端存的是首次播种时的快照，日期
+// 就此冻结；随着日子推移「最近 7 天」会逐渐变空，而条数一条不少 —— 所以
+// 只按数量判断完整性检测不出来，必须同时看数据是否覆盖到最近。
+function coversRecentDays(records) {
+  if (!Array.isArray(records) || !records.length) return false
+  const yesterday = offsetDateKey(-1)
+  let latest = ''
+  records.forEach(item => {
+    const day = item && item.dayKey
+    if (typeof day === 'string' && day > latest) latest = day
+  })
+  return latest >= yesterday
+}
+
 function hasCompleteSixMonthDemoData() {
   const feeds = wx.getStorageSync(KEYS.feeds)
   const stools = wx.getStorageSync(KEYS.stools)
@@ -512,6 +526,8 @@ function hasCompleteSixMonthDemoData() {
   const chats = wx.getStorageSync(KEYS.chats)
   const supplies = normalizeSupplies(wx.getStorageSync(KEYS.supplies))
   return wx.getStorageSync(KEYS.sixMonthDemo) === SIX_MONTH_DEMO_VERSION &&
+    coversRecentDays(feeds) && coversRecentDays(stools) &&
+    coversRecentDays(waters) && coversRecentDays(walks) &&
     Array.isArray(feeds) && feeds.length > 600 &&
     Array.isArray(stools) && stools.length > 500 &&
     Array.isArray(waters) && waters.length > 980 &&
