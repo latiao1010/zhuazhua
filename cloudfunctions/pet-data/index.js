@@ -10,7 +10,9 @@ const SHARE_GROUP_COLLECTION = 'pet_share_groups'
 const SHARE_MEMBER_COLLECTION = 'pet_share_members'
 const SHARE_INVITE_COLLECTION = 'pet_share_invites'
 const EXTERNAL_KNOWLEDGE_COLLECTION = 'pet_external_knowledge'
-const DEMO_VERSION = 'six-month-v1'
+// 必须和 utils/store.js 的 SIX_MONTH_DEMO_VERSION 保持一致。
+// 不一致时云端会认为「已播种且完整」，把旧数据回灌覆盖客户端刚生成的新数据。
+const DEMO_VERSION = 'eight-month-v1'
 const META_KEY = '__demo_version'
 const BREED_KNOWLEDGE_KEY = 'breedKnowledge'
 const BREED_SYNC_INTERVAL = 7 * 24 * 60 * 60 * 1000
@@ -715,13 +717,13 @@ function isCompleteSixMonthData(data) {
   const dogFoodHistory = supplies && supplies.dogFood && supplies.dogFood.history
   const snackHistory = supplies && supplies.snack && supplies.snack.history
   return data && typeof data === 'object' &&
-    Array.isArray(data.feeds) && data.feeds.length > 450 &&
-    Array.isArray(data.stools) && data.stools.length > 380 &&
-    Array.isArray(data.waters) && data.waters.length > 740 &&
-    Array.isArray(data.walks) && data.walks.length > 310 &&
-    Array.isArray(data.weightRecords) && data.weightRecords.length >= 27 &&
-    Array.isArray(data.careRecords) && data.careRecords.length >= 40 &&
-    Array.isArray(data.growthPhotos) && data.growthPhotos.length >= 17 &&
+    Array.isArray(data.feeds) && data.feeds.length > 600 &&
+    Array.isArray(data.stools) && data.stools.length > 500 &&
+    Array.isArray(data.waters) && data.waters.length > 980 &&
+    Array.isArray(data.walks) && data.walks.length > 420 &&
+    Array.isArray(data.weightRecords) && data.weightRecords.length >= 35 &&
+    Array.isArray(data.careRecords) && data.careRecords.length >= 58 &&
+    Array.isArray(data.growthPhotos) && data.growthPhotos.length >= 24 &&
     Array.isArray(data.diaries) && data.diaries.length >= 14 &&
     Array.isArray(data.chats) && data.chats.length >= 12 &&
     Array.isArray(dogFoodHistory) && dogFoodHistory.length >= 4 &&

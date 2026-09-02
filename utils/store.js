@@ -512,13 +512,13 @@ function hasCompleteSixMonthDemoData() {
   const chats = wx.getStorageSync(KEYS.chats)
   const supplies = normalizeSupplies(wx.getStorageSync(KEYS.supplies))
   return wx.getStorageSync(KEYS.sixMonthDemo) === SIX_MONTH_DEMO_VERSION &&
-    Array.isArray(feeds) && feeds.length > 450 &&
-    Array.isArray(stools) && stools.length > 380 &&
-    Array.isArray(waters) && waters.length > 740 &&
-    Array.isArray(walks) && walks.length > 310 &&
-    Array.isArray(weightRecords) && weightRecords.length >= 27 &&
-    Array.isArray(careRecords) && careRecords.length >= 40 &&
-    Array.isArray(growthPhotos) && growthPhotos.length >= 17 &&
+    Array.isArray(feeds) && feeds.length > 600 &&
+    Array.isArray(stools) && stools.length > 500 &&
+    Array.isArray(waters) && waters.length > 980 &&
+    Array.isArray(walks) && walks.length > 420 &&
+    Array.isArray(weightRecords) && weightRecords.length >= 35 &&
+    Array.isArray(careRecords) && careRecords.length >= 58 &&
+    Array.isArray(growthPhotos) && growthPhotos.length >= 24 &&
     Array.isArray(diaries) && diaries.length >= 14 &&
     Array.isArray(chats) && chats.length >= 12 &&
     Array.isArray(supplies.dogFood.history) && supplies.dogFood.history.length >= 4 &&
