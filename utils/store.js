@@ -240,6 +240,10 @@ function buildSeedFeedHistory() {
 const seedFeedHistory = buildSeedFeedHistory()
 const seedFeeds = [...seedTodayFeeds, ...seedFeedHistory]
 
+// 与 seedFeeds 统一含义：seedXxxFull 一律是「当天 + 完整历史」。
+// 之前只有 feeds 在定义时拼好历史，另外三个要等 develop 环境的补种分支才补，
+// 结果体验版和正式版上喂食有 243 天，饮水/排便/散步只有 1 天。
+
 function buildSeedDiaries() {
   const templates = [
     { mood: '开心', weather: '☀️ 28℃', title: '今天也是元气满满的一天', content: '早上听见饭碗的声音就跑到厨房，傍晚散步也很配合，回家以后主动喝了水。', highlight: '今日高光：准时吃完三餐，还多走了 1,200 步。' },
@@ -336,6 +340,9 @@ function buildSeedDailyTrendHistory() {
 }
 
 const seedDailyTrendHistory = buildSeedDailyTrendHistory()
+const seedStoolsFull = [...seedStools, ...seedDailyTrendHistory.stools]
+const seedWatersFull = [...seedWaters, ...seedDailyTrendHistory.waters]
+const seedWalksFull = [...seedWalks, ...seedDailyTrendHistory.walks]
 
 function buildSeedWeightHistory() {
   const records = []
@@ -472,9 +479,9 @@ function applySixMonthDemoData() {
   }
 
   replaceArray('feeds', seedFeeds)
-  replaceArray('stools', [...seedStools, ...seedDailyTrendHistory.stools])
-  replaceArray('waters', [...seedWaters, ...seedDailyTrendHistory.waters])
-  replaceArray('walks', [...seedWalks, ...seedDailyTrendHistory.walks])
+  replaceArray('stools', seedStoolsFull)
+  replaceArray('waters', seedWatersFull)
+  replaceArray('walks', seedWalksFull)
   replaceArray('weightRecords', seedWeightHistory)
   replaceArray('careRecords', seedCareHistory)
   replaceArray('growthPhotos', [...seedGrowthPhotoHistory, ...seedGrowthPhotos])
@@ -526,9 +533,9 @@ function ensureSeedData() {
     feeds: seedFeeds,
     diaries: seedDiaries,
     chats: seedChats,
-    stools: seedStools,
-    waters: seedWaters,
-    walks: seedWalks,
+    stools: seedStoolsFull,
+    waters: seedWatersFull,
+    walks: seedWalksFull,
     careRecords: seedCareHistory,
     growthPhotos: seedGrowthPhotoHistory
   }
