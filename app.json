@@ -18,11 +18,21 @@
     "backgroundColor": "#FFFFFF",
     "borderStyle": "white",
     "list": [
-      { "pagePath": "pages/profile/profile", "text": "首页" },
-      { "pagePath": "pages/chat/chat", "text": "宠物顾问" },
-      { "pagePath": "pages/account/account", "text": "我的" }
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/chat/chat",
+        "text": "宠物顾问"
+      },
+      {
+        "pagePath": "pages/account/account",
+        "text": "我的"
+      }
     ]
   },
+  "lazyCodeLoading": "requiredComponents",
   "style": "v2",
   "sitemapLocation": "sitemap.json"
 }
