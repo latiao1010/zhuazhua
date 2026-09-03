@@ -51,7 +51,7 @@ function defaultCare() {
 function makeState(overrides = {}) {
   const pet = {
     name: '糯米', breed: '柯基', sex: '男孩', birthday: '2023-03-16',
-    togetherSince: '2023-03-16', weight: 11.2, avatar: '/assets/momo-chibi.png'
+    togetherSince: '2023-03-16', weight: 11.2, avatar: '/assets/momo-chibi.jpg'
   }
   return {
     pet,

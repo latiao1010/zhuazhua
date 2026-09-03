@@ -50,7 +50,7 @@ const seedPet = {
   birthday: '2023-03-16',
   weight: '11.2',
   togetherSince: '2023-03-16',
-  avatar: '/assets/momo-chibi.png',
+  avatar: '/assets/momo-chibi.jpg',
   tags: ['黏人精', '小吃货', '爱散步']
 }
 

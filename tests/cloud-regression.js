@@ -62,7 +62,7 @@ async function run() {
         }
         if (options.name === 'pet-data' && options.data.action === 'acceptShareInvitation') {
           return Promise.resolve({ result: { ok: true, data: {
-            pet: { name: '共享糯米', breed: '柯基', sex: '男孩', birthday: '2023-03-16', weight: 11.2, avatar: '/assets/momo-chibi.png' },
+            pet: { name: '共享糯米', breed: '柯基', sex: '男孩', birthday: '2023-03-16', weight: 11.2, avatar: '/assets/momo-chibi.jpg' },
             familyMembers: [
               { id: 'owner', name: '我', relation: '主人', role: 'owner', roleLabel: '主人', status: '已加入', joinedAt: '2026-08-05' },
               { id: 'member', name: '妈妈', relation: '家人', role: 'admin', roleLabel: '共同照护', status: '已加入', joinedAt: '2026-08-05' }
