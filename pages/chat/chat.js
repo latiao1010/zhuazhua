@@ -103,7 +103,10 @@ Page({
   },
 
   scrollBottom() {
-    setTimeout(() => this.setData({ scrollTo: `msg-${Math.max(0, this.data.messages.length - 1)}` }), 50)
+    setTimeout(() => {
+      const showFollowUps = this.data.messages.length && this.data.followUps.length && !this.data.thinking
+      this.setData({ scrollTo: showFollowUps ? 'followups-end' : `msg-${Math.max(0, this.data.messages.length - 1)}` })
+    }, 50)
   },
 
   clearChat() {

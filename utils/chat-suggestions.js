@@ -208,8 +208,9 @@ function evergreen(pet) {
   ]
 }
 
-// lastAnswer：上一条顾问回答的全文；没有就给通用建议
-function followUps(lastAnswer, pet, limit = 6) {
+// lastAnswer：上一条顾问回答的全文；没有就给通用建议。
+// 对话内一次只给 2～3 个方向，既能连续追问，也不会把聊天区变成一长串菜单。
+function followUps(lastAnswer, pet, limit = 3) {
   const title = String(lastAnswer || '').split('\n')[0]
   const matched = title ? FOLLOW_UPS.find(group => group.match.test(title)) : null
   const items = matched ? matched.items.slice() : []

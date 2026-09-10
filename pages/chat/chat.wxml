@@ -29,12 +29,21 @@
         <view class="bubble {{item.role}}-bubble">{{item.text}}<view class="msg-time">{{item.time}}</view></view>
       </view>
       <view class="message-row ai" wx:if="{{thinking}}"><view class="bubble-avatar">🐾</view><view class="bubble ai-bubble typing"><text></text><text></text><text></text></view></view>
+      <view class="followup-thread" wx:if="{{messages.length && !thinking}}">
+        <view class="message-row ai followup-row">
+          <view class="bubble-avatar">🐾</view>
+          <view class="bubble ai-bubble followup-panel">
+            <view class="followup-heading">你还可以继续问</view>
+            <view class="followup-option" wx:for="{{followUps}}" wx:key="text" data-text="{{item.text}}" bindtap="askQuick">
+              <text class="followup-label">{{item.label}}</text>
+              <text class="followup-arrow">›</text>
+            </view>
+          </view>
+        </view>
+        <view id="followups-end"></view>
+      </view>
       <view class="medical-tip" wx:if="{{messages.length}}">本地知识库建议仅供日常参考，如有持续不适请及时咨询专业兽医。</view>
     </view>
-  </scroll-view>
-
-  <scroll-view class="followups" wx:if="{{messages.length && !thinking}}" scroll-x enhanced show-scrollbar="false">
-    <view class="followup-item" wx:for="{{followUps}}" wx:key="text" data-text="{{item.text}}" bindtap="askQuick">{{item.label}}</view>
   </scroll-view>
 
   <view class="composer">

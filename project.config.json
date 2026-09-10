@@ -15,6 +15,10 @@
         "type": "folder"
       },
       {
+        "value": ".codex-temp",
+        "type": "folder"
+      },
+      {
         "value": "assets/growth-demo-home.png",
         "type": "file"
       },
@@ -36,10 +40,6 @@
       },
       {
         "value": "README.md",
-        "type": "file"
-      },
-      {
-        "value": "assets/momo-chibi.png",
         "type": "file"
       }
     ],
