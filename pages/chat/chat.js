@@ -12,7 +12,8 @@ Page({
     scrollTo: '',
     quickQuestions: [],
     advisorGroups: [],
-    followUps: []
+    followUps: [],
+    followUpHeading: '你还可以继续问'
   },
 
   onShow() {
@@ -54,7 +55,9 @@ Page({
   refreshFollowUps() {
     const messages = this.data.messages || []
     const lastAi = [...messages].reverse().find(item => item && item.role === 'ai')
-    this.setData({ followUps: suggestions.followUps(lastAi && lastAi.text, this.data.pet) })
+    const followUps = suggestions.followUps(lastAi && lastAi.text, this.data.pet)
+    if (lastAi) followUps.push({ label: '返回全部问题', action: 'back' })
+    this.setData({ followUps, followUpHeading: '你还可以继续问' })
   },
 
   onInput(e) {
@@ -64,6 +67,18 @@ Page({
   askQuick(e) {
     this.setData({ input: e.currentTarget.dataset.text })
     this.send()
+  },
+
+  onFollowUpTap(e) {
+    if (e.currentTarget.dataset.action === 'back') {
+      this.setData({
+        followUps: suggestions.allTopics(this.data.pet),
+        followUpHeading: '选择一个提问主题'
+      })
+      this.scrollBottom()
+      return
+    }
+    this.askQuick(e)
   },
 
   now() {

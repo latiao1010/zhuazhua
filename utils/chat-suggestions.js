@@ -208,6 +208,26 @@ function evergreen(pet) {
   ]
 }
 
+// 返回上一级时展示的完整主题入口。文案复用知识库已验证的问法，避免按钮能点
+// 但落入兜底回答。具体回答后的追问仍由 followUps 控制在 2～3 条。
+function allTopics(pet) {
+  const name = (pet && pet.name) || '它'
+  return [
+    { label: '今日状态', text: `${name}今天状态怎么样？` },
+    { label: '喂食记录', text: '最近七天吃的多吗' },
+    { label: '饮水记录', text: '最近七天喝水够吗' },
+    { label: '运动记录', text: '最近七天散步够不够' },
+    { label: '排便情况', text: '便便最近一周正常吗' },
+    { label: '体重管理', text: '体重和之前比呢' },
+    { label: '护理提醒', text: '下次驱虫什么时候' },
+    { label: '近期用药', text: '最近在吃什么药' },
+    { label: '用品余量', text: '狗粮还有多少' },
+    { label: '食物安全', text: '苹果、鸡胸肉和酸奶能不能吃？' },
+    { label: '主粮推荐', text: '帮我筛选适合我家宠物的主粮' },
+    { label: '雨天活动', text: '雨天在室内怎么消耗精力' }
+  ]
+}
+
 // lastAnswer：上一条顾问回答的全文；没有就给通用建议。
 // 对话内一次只给 2～3 个方向，既能连续追问，也不会把聊天区变成一长串菜单。
 function followUps(lastAnswer, pet, limit = 3) {
@@ -231,4 +251,4 @@ function followUps(lastAnswer, pet, limit = 3) {
   return items.slice(0, limit)
 }
 
-module.exports = { followUps, evergreen, FOLLOW_UPS }
+module.exports = { followUps, evergreen, allTopics, FOLLOW_UPS }

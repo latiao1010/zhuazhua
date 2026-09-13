@@ -33,10 +33,10 @@
         <view class="message-row ai followup-row">
           <view class="bubble-avatar">🐾</view>
           <view class="bubble ai-bubble followup-panel">
-            <view class="followup-heading">你还可以继续问</view>
-            <view class="followup-option" wx:for="{{followUps}}" wx:key="text" data-text="{{item.text}}" bindtap="askQuick">
+            <view class="followup-heading">{{followUpHeading}}</view>
+            <view class="followup-option {{item.action === 'back' ? 'back' : ''}}" wx:for="{{followUps}}" wx:key="label" data-text="{{item.text}}" data-action="{{item.action}}" bindtap="onFollowUpTap">
               <text class="followup-label">{{item.label}}</text>
-              <text class="followup-arrow">›</text>
+              <text class="followup-arrow">{{item.action === 'back' ? '‹' : '›'}}</text>
             </view>
           </view>
         </view>

@@ -110,6 +110,7 @@ const CONTEXT_ONLY = new Set(['和之前比呢'])
 const allTexts = new Map()
 suggestions.FOLLOW_UPS.forEach(group => group.items.forEach(item => allTexts.set(item.text, item.label)))
 suggestions.evergreen(DB.paw_pet).forEach(item => allTexts.set(item.text, item.label))
+suggestions.allTopics(DB.paw_pet).forEach(item => allTexts.set(item.text, item.label))
 allTexts.forEach((label, text) => {
   if (CONTEXT_ONLY.has(text)) return
   const title = knowledge.createReply(text, DB.paw_pet, { history: [{ role: 'user', text }] }).split('\n')[0]
