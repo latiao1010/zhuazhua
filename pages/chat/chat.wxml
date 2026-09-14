@@ -15,12 +15,11 @@
       <view class="welcome-title">有什么能帮到你？</view>
       <view class="welcome-sub">根据宠物资料、喂食、饮水、散步和健康记录给日常建议</view>
     </view>
-    <view class="advisor-groups" wx:if="{{messages.length === 0}}">
-      <view class="advisor-group" wx:for="{{advisorGroups}}" wx:key="title">
-        <view class="advisor-group-head"><view class="advisor-group-title">{{item.title}}</view><view class="advisor-group-desc">{{item.desc}}</view></view>
-        <view class="advisor-group-items">
-          <view class="advisor-item" wx:for="{{item.items}}" wx:for-item="entry" wx:key="label" data-text="{{entry.text}}" bindtap="askQuick"><text>{{entry.label}}</text><text class="advisor-arrow">›</text></view>
-        </view>
+    <view class="advisor-group unified-prompts" wx:if="{{messages.length === 0}}">
+      <view class="followup-heading"><text class="prompt-spark">✦</text>从一个问题开始</view>
+      <view class="followup-subtitle">点选你关心的问题，聊聊爱宠的日常</view>
+      <view class="advisor-group-items">
+        <view class="advisor-item {{item.visited ? 'visited' : ''}}" hover-class="prompt-pressed" wx:for="{{advisorQuestions}}" wx:key="label" data-text="{{item.text}}" data-label="{{item.label}}" data-category="welcome" bindtap="askQuick"><text>{{item.label}}</text><text class="advisor-arrow">›</text></view>
       </view>
     </view>
     <view class="messages">
@@ -29,12 +28,13 @@
         <view class="bubble {{item.role}}-bubble">{{item.text}}<view class="msg-time">{{item.time}}</view></view>
       </view>
       <view class="message-row ai" wx:if="{{thinking}}"><view class="bubble-avatar">🐾</view><view class="bubble ai-bubble typing"><text></text><text></text><text></text></view></view>
-      <view class="followup-thread" wx:if="{{messages.length && !thinking}}">
+      <view id="followups-start" class="followup-thread" wx:if="{{messages.length && !thinking}}">
         <view class="message-row ai followup-row">
           <view class="bubble-avatar">🐾</view>
           <view class="bubble ai-bubble followup-panel">
-            <view class="followup-heading">{{followUpHeading}}</view>
-            <view class="followup-option {{item.action === 'back' ? 'back' : ''}}" wx:for="{{followUps}}" wx:key="label" data-text="{{item.text}}" data-action="{{item.action}}" bindtap="onFollowUpTap">
+            <view class="followup-heading"><text class="prompt-spark">✦</text>{{followUpHeading}}</view>
+            <view class="followup-subtitle">点选一个问题，继续聊聊</view>
+            <view class="followup-option {{item.action === 'back' ? 'back' : ''}} {{item.visited ? 'visited' : ''}}" hover-class="prompt-pressed" wx:for="{{followUps}}" wx:key="label" data-text="{{item.text}}" data-label="{{item.label}}" data-category="{{followUpCategory}}" data-action="{{item.action}}" bindtap="onFollowUpTap">
               <text class="followup-label">{{item.label}}</text>
               <text class="followup-arrow">{{item.action === 'back' ? '‹' : '›'}}</text>
             </view>

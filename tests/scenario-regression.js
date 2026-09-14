@@ -119,7 +119,10 @@ function makeWx() {
     tabShows: 0, tabHides: 0, vibrations: 0, clipboard: [], albums: [], settings: 0
   }
   let savedIndex = 0
+  const storage = {}
   const wx = {
+    getStorageSync(key) { return clone(storage[key]) },
+    setStorageSync(key, value) { storage[key] = clone(value) },
     showToast(options) { calls.toasts.push(options) },
     showTabBar() { calls.tabShows += 1 },
     hideTabBar() { calls.tabHides += 1 },
@@ -852,6 +855,40 @@ async function main() {
     page.savePet.call(context)
     assert.strictEqual(state.weightRecords.length, 100)
     assert.ok(!calls.removed.includes('wxfile://oldest-growth.jpg'))
+  })
+
+  await scenario('提问卡片点击状态当天保留，跨日恢复且返回按钮不变灰', () => {
+    const state = makeState()
+    const { wx } = makeWx()
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const question = { label: '今日状态', text: '今天状态怎么样？' }
+    const context = pageContext(page, { advisorQuestions: [question], followUps: [question, { action: 'back' }] })
+    context.send = () => {}
+    context.askQuick({ currentTarget: { dataset: { text: question.text, label: question.label, category: 'welcome' } } })
+    assert.strictEqual(context.data.advisorQuestions[0].visited, true)
+    assert.strictEqual(context.data.followUps[0].visited, false)
+    context.data.followUpCategory = question.text
+    context.refreshQuestionVisits()
+    assert.strictEqual(context.data.followUps[0].visited, true)
+    context.data.messages = [{ role: 'ai', text: '【饮水建议】新回答' }]
+    context.refreshFollowUps()
+    assert.strictEqual(context.data.followUpCategory, question.text)
+    context.data.followUps = [question, { action: 'back' }]
+    context.refreshQuestionVisits()
+    assert.strictEqual(context.data.followUps[0].visited, true)
+    context.data.followUpCategory = 'answer:饮水'
+    context.refreshQuestionVisits()
+    assert.strictEqual(context.data.followUps[0].visited, false)
+    assert.strictEqual(context.data.followUps[1].visited, false)
+    const reopened = pageContext(page, { advisorQuestions: [question] })
+    reopened.refreshQuestionVisits()
+    assert.strictEqual(reopened.data.advisorQuestions[0].visited, true)
+    reopened.questionDay = () => 'next-day'
+    reopened.refreshQuestionVisits()
+    assert.strictEqual(reopened.data.advisorQuestions[0].visited, false)
+    context.data.thinking = true
+    context.askQuick({ currentTarget: { dataset: { text: '被阻止的问题' } } })
+    assert.ok(!context.readQuestionVisits().includes('被阻止的问题'))
   })
 
   await scenario('清空聊天会取消尚未返回的本地知识库回复', () => withTimers(flush => {

@@ -11,8 +11,10 @@ Page({
     messages: [],
     scrollTo: '',
     quickQuestions: [],
-    advisorGroups: [],
+    advisorQuestions: [],
     followUps: [],
+    followUpCategory: 'general',
+    rootQuestionCategory: 'general',
     followUpHeading: '你还可以继续问'
   },
 
@@ -26,6 +28,7 @@ Page({
     const pet = store.get('pet')
     this.setData({
       pet,
+      rootQuestionCategory: wx.getStorageSync('paw_chat_root_category') || 'general',
       messages: store.get('chats') || [],
       quickQuestions: [
         `${pet.name}今天状态怎么样？`,
@@ -33,22 +36,56 @@ Page({
         `${pet.breed}今天运动怎么安排？`,
         '便便偏软要不要担心？'
       ],
-      advisorGroups: [
-        { title: '宠物档案', desc: '年龄、体重、喂食和护理记录', items: [{ label: '查看档案建议', text: '结合我的宠物档案给今天的照护建议' }] },
-        { title: '每日知识', desc: '每天一条和当前状态相关的小知识', items: [{ label: '今日养宠知识', text: '给我一条结合年龄、天气和记录的今日养宠知识' }] },
-        { title: '宠物问答', desc: '直接问饮食、运动、排便和健康问题', items: [{ label: '今日状态', text: `${pet.name}今天状态怎么样？` }, { label: '运动安排', text: `${pet.breed}今天运动怎么安排？` }] },
-        { title: '食物能不能吃', desc: '先判断安全性，再看喂法和分量', items: [{ label: '食物判断', text: '苹果、鸡胸肉和酸奶能不能吃？' }] },
-        { title: '宠物粮推荐', desc: '按档案筛选主粮、零食和玩具', items: [
+      advisorQuestions: [
+          { label: '查看档案建议', text: '结合我的宠物档案给今天的照护建议' },
+          { label: '今日状态', text: `${pet.name}今天状态怎么样？` },
+          { label: '运动安排', text: `${pet.breed}今天运动怎么安排？` },
+          { label: '食物判断', text: '苹果、鸡胸肉和酸奶能不能吃？' },
           { label: '根据宠物推荐', text: '根据我家宠物推荐主粮、零食和玩具' },
           { label: '主粮筛选', text: '帮我筛选适合我家宠物的主粮' },
           { label: '零食筛选', text: '帮我筛选适合训练的零食' },
           { label: '商品对比', text: '帮我对比两款主粮应该看什么' },
           { label: '营养/配料解释', text: '宠物粮的蛋白、脂肪和配料表怎么看' }
-        ] }
       ]
     })
     this.refreshFollowUps()
+    this.scheduleQuestionReset()
     this.scrollBottom()
+  },
+
+  questionDay() {
+    const date = new Date()
+    return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+  },
+
+  readQuestionVisits() {
+    const saved = wx.getStorageSync('paw_chat_question_visits')
+    return saved && saved.day === this.questionDay() && Array.isArray(saved.keys) ? saved.keys : []
+  },
+
+  questionVisitKey(category, label, text) {
+    return JSON.stringify(['root', category, text])
+  },
+
+  refreshQuestionVisits() {
+    const texts = this.readQuestionVisits()
+    const decorate = (items, category) => items.map(item => ({ ...item, visited: item.action !== 'back' && texts.includes(this.questionVisitKey(category === 'welcome' || category === 'topics' ? item.text : category, item.label, item.text)) }))
+    this.setData({
+      advisorQuestions: decorate(this.data.advisorQuestions, 'welcome'),
+      followUps: decorate(this.data.followUps, this.data.followUpCategory)
+    })
+  },
+
+  scheduleQuestionReset() {
+    clearTimeout(this.questionResetTimer)
+    this.refreshQuestionVisits()
+    const now = new Date()
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+    this.questionResetTimer = setTimeout(() => this.scheduleQuestionReset(), midnight - now)
+  },
+
+  onHide() {
+    clearTimeout(this.questionResetTimer)
   },
 
   // 追问按钮跟着最后一条回答走，用户点按钮就绕开了自由输入的意图识别
@@ -57,7 +94,8 @@ Page({
     const lastAi = [...messages].reverse().find(item => item && item.role === 'ai')
     const followUps = suggestions.followUps(lastAi && lastAi.text, this.data.pet)
     if (lastAi) followUps.push({ label: '返回全部问题', action: 'back' })
-    this.setData({ followUps, followUpHeading: '你还可以继续问' })
+    this.setData({ followUps, followUpCategory: this.data.rootQuestionCategory, followUpHeading: '你还可以继续问' })
+    this.refreshQuestionVisits()
   },
 
   onInput(e) {
@@ -65,7 +103,19 @@ Page({
   },
 
   askQuick(e) {
-    this.setData({ input: e.currentTarget.dataset.text })
+    const text = (e.currentTarget.dataset.text || '').trim()
+    if (!text || this.data.thinking) return
+    const texts = this.readQuestionVisits()
+    const { category, label } = e.currentTarget.dataset
+    // 只有最外层入口会切换大类目，后续回答和追问始终沿用它。
+    const root = category === 'welcome' || category === 'topics' ? text : this.data.rootQuestionCategory
+    this.setData({ rootQuestionCategory: root })
+    wx.setStorageSync('paw_chat_root_category', root)
+    const key = this.questionVisitKey(root, label, text)
+    if (!texts.includes(key)) texts.push(key)
+    wx.setStorageSync('paw_chat_question_visits', { day: this.questionDay(), keys: texts })
+    this.refreshQuestionVisits()
+    this.setData({ input: text })
     this.send()
   },
 
@@ -73,9 +123,13 @@ Page({
     if (e.currentTarget.dataset.action === 'back') {
       this.setData({
         followUps: suggestions.allTopics(this.data.pet),
-        followUpHeading: '选择一个提问主题'
+        followUpCategory: 'topics',
+        followUpHeading: '选择一个提问主题',
+        scrollTo: ''
+      }, () => {
+        this.setData({ scrollTo: 'followups-start' })
       })
-      this.scrollBottom()
+      this.refreshQuestionVisits()
       return
     }
     this.askQuick(e)
@@ -139,6 +193,7 @@ Page({
   },
 
   onUnload() {
+    clearTimeout(this.questionResetTimer)
     this.replyVersion = (this.replyVersion || 0) + 1
     if (this.replyTimer) clearTimeout(this.replyTimer)
     this.replyTimer = null
