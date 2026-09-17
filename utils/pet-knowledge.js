@@ -2284,12 +2284,15 @@ function answerRecommendation(ctx, question, kind) {
 
 function answerStatus(ctx, question) {
   const issues = []
+  const missing = [['喂食', ctx.today.feed], ['饮水', ctx.today.water], ['散步', ctx.today.walk], ['排便', ctx.today.stool]].filter(item => !item[1].count).map(item => item[0])
   const latestStool = ctx.today.stool.records[0] || ctx.lastStool || {}
-  if (ctx.today.water.targetMl && ctx.today.water.ratio < 0.6) issues.push('饮水偏少')
-  if (ctx.today.feed.targetGrams && ctx.today.feed.ratio < 0.7) issues.push('进食偏少')
+  if (ctx.today.water.count && ctx.today.water.targetMl && ctx.today.water.ratio < 0.6) issues.push('饮水偏少')
+  if (ctx.today.feed.count && ctx.today.feed.targetGrams && ctx.today.feed.ratio < 0.7) issues.push('进食偏少')
   if (ctx.today.stool.abnormalCount) issues.push('有异常便便')
   if (!ctx.today.walk.count) issues.push('还没有散步记录')
-  const verdict = issues.length
+  const verdict = missing.length
+    ? `${ctx.name}今天的${missing.join('、')}还没有记录，记录不足，暂时不能完整判断状态。${issues.filter(item => item !== '还没有散步记录').length ? '已有记录提示：' + issues.filter(item => item !== '还没有散步记录').join('、') + '。' : ''}`
+    : issues.length
     ? `${ctx.name}今天有 ${issues.join('、')} 这几项需要留意。`
     : `${ctx.name}今天记录看起来比较平稳，没有明显异常信号。`
   return compose({
@@ -2306,7 +2309,7 @@ function answerStatus(ctx, question) {
     actions: [
       issues.includes('饮水偏少') ? '下午和晚饭后分几次补水' : '继续保持饮水记录',
       issues.includes('进食偏少') ? '先减少零食，观察下一餐食欲' : '喂食节奏保持稳定',
-      issues.includes('还没有散步记录') ? '天气允许的话补一次短散步' : '运动后检查脚垫和精神'
+      issues.includes('还没有散步记录') ? '先确认今天是否已散步，已完成可补记' : '运动后检查脚垫和精神'
     ],
     warning: riskLine(ctx, question)
   })

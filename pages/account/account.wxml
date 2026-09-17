@@ -12,11 +12,6 @@
     <view class="profile-display-info">
       <view class="display-name-line">
         <view class="display-name-main" data-field="name" bindtap="openProfileFieldEdit"><text>我的宝贝</text><view>{{pet.name}}<text class="inline-edit-mark">›</text></view></view>
-        <view class="growth-album-entry" bindtap="openGrowthAlbum">
-          <text>📷</text>
-          <view><text>成长相册</text><view>{{growthPhotos.length}} 张照片</view></view>
-          <text>›</text>
-        </view>
         <view class="birthday-chip" data-field="birthday" bindtap="openProfileFieldEdit"><text>🎂 宠物生日</text><view>{{pet.birthday}} <text>›</text></view></view>
       </view>
       <view class="pet-meta">
@@ -27,11 +22,18 @@
     </view>
   </view>
 
+  <view class="account-shortcuts">
+        <view class="growth-album-entry" bindtap="openGrowthAlbum">
+          <text>📷</text>
+          <view><text>成长相册</text><view>{{growthPhotos.length}} 张照片</view></view>
+          <text>›</text>
+        </view>
+
   <view class="family-share-entry" bindtap="openFamilyManager">
     <view class="family-share-icon">👨‍👩‍👧</view>
     <view class="family-share-copy">
-      <view>家庭成员共享管理</view>
-      <text>{{familyMembers.length}} 位成员 · 一起照顾{{pet.name}}</text>
+      <view>家庭共享</view>
+      <text>{{familyMembers.length}} 位成员</text>
     </view>
     <view class="family-share-avatars">
       <text wx:for="{{familyMembers}}" wx:key="id" wx:if="{{index < 3}}">{{item.initial}}</text>
@@ -39,26 +41,38 @@
     <text class="family-share-arrow">›</text>
   </view>
 
-  <view class="care-heading"><view>护理与疫苗记录</view></view>
-  <view class="care-section-note">点击项目记录护理，系统会自动计算下一次提醒</view>
-  <view class="care-plan-card care-dashboard">
-    <view class="care-plan-row care-deworming" data-key="deworming" bindtap="openCareDetail"><view class="care-plan-icon">驱</view><view class="care-plan-copy"><view>体内外驱虫</view></view><view class="care-countdown {{careView.deworming.countdownClass}}">{{careView.deworming.countdown}}</view><text class="care-arrow">›</text></view>
-    <view class="divider care-divider"></view>
-    <view class="care-plan-row care-medicine" data-key="medicine" bindtap="openCareDetail"><view class="care-plan-icon">药</view><view class="care-plan-copy"><view>宠物用药</view></view><view class="care-countdown {{careView.medicine.countdownClass}}">{{careView.medicine.countdown}}</view><text class="care-arrow">›</text></view>
-    <view class="divider care-divider"></view>
-    <view class="care-plan-row care-vaccine" data-key="vaccine" bindtap="openCareDetail"><view class="care-plan-icon">苗</view><view class="care-plan-copy"><view>疫苗接种</view></view><view class="care-countdown {{careView.vaccine.countdownClass}}">{{careView.vaccine.countdown}}</view><text class="care-arrow">›</text></view>
-    <view class="divider care-divider"></view>
-    <view class="care-plan-row care-bath" data-key="bath" bindtap="openCareDetail"><view class="care-plan-icon">浴</view><view class="care-plan-copy"><view>洗澡护理</view></view><view class="care-countdown {{careView.bath.countdownClass}}">{{careView.bath.countdown}}</view><text class="care-arrow">›</text></view>
-    <view class="divider care-divider"></view>
-    <view class="care-plan-row care-dental" data-key="dental" bindtap="openCareDetail"><view class="care-plan-icon">牙</view><view class="care-plan-copy"><view>刷牙护理</view></view><view class="care-countdown {{careView.dental.countdownClass}}">{{careView.dental.countdown}}</view><text class="care-arrow">›</text></view>
-    <view class="divider care-divider"></view>
-    <view class="care-plan-row care-nail" data-key="nail" bindtap="openCareDetail"><view class="care-plan-icon">剪</view><view class="care-plan-copy"><view>修剪指甲</view></view><view class="care-countdown {{careView.nail.countdownClass}}">{{careView.nail.countdown}}</view><text class="care-arrow">›</text></view>
-    <view class="supply-inline-head"><view>用品余量</view><text>结合喂食记录自动估算</text></view>
-    <view class="care-plan-row supply-food" data-key="dogFood" bindtap="openSupply"><view class="care-plan-icon">粮</view><view class="care-plan-copy"><view>狗粮</view></view><view class="care-countdown {{supplyView.dogFood.countdownClass}}">{{supplyView.dogFood.daysText}}</view><text class="care-arrow">›</text></view>
-    <view class="care-plan-row supply-snack" data-key="snack" bindtap="openSupply"><view class="care-plan-icon">骨</view><view class="care-plan-copy"><view>零食</view></view><view class="care-countdown {{supplyView.snack.countdownClass}}">{{supplyView.snack.daysText}}</view><text class="care-arrow">›</text></view>
+  </view>
+  <view class="upcoming-section">
+    <view class="care-heading"><view>近期提醒</view></view>
+    <view class="upcoming-list">
+      <view class="upcoming-row" wx:for="{{careView}}" wx:key="key" wx:if="{{item.needsAttention}}" data-key="{{item.key}}" bindtap="openCareDetail"><text>{{item.label}}</text><text>{{item.countdown}} ›</text></view>
+      <view class="upcoming-row" wx:for="{{supplyView}}" wx:key="key" wx:if="{{item.level === 'empty' || item.level === 'urgent' || item.level === 'low'}}" data-key="{{item.key}}" bindtap="openSupply"><text>{{item.label}}补货</text><text>{{item.daysText}} ›</text></view>
+
+    </view>
   </view>
 
-  <view class="privacy-note">🔒 资料仅保存在本机，可随时修改</view>
+  <view class="care-heading"><view>护理与疫苗记录</view></view>
+  <view class="care-section-note">点击查看详情或记录完成；用药日期为提醒。</view>
+  <view class="care-plan-card care-dashboard">
+    <view class="care-plan-row care-deworming" data-key="deworming" bindtap="openCareDetail"><view class="care-plan-icon">驱</view><view class="care-plan-copy"><view>体内外驱虫</view><text class="care-meta">上次：{{careView.deworming.last || '暂无记录'}}</text><text class="care-meta">下次：{{careView.deworming.nextDate || '未设置'}}</text></view><view class="care-countdown {{careView.deworming.countdownClass}}">{{careView.deworming.countdown}}</view><text class="care-arrow">›</text></view>
+    <view class="divider care-divider"></view>
+    <view class="care-plan-row care-medicine" data-key="medicine" bindtap="openCareDetail"><view class="care-plan-icon">药</view><view class="care-plan-copy"><view>宠物用药</view><text class="care-meta">上次：{{careView.medicine.last || '暂无记录'}}</text><text class="care-meta">下次用药提醒：{{careView.medicine.nextDate || '未设置'}}</text></view><view class="care-countdown {{careView.medicine.countdownClass}}">{{careView.medicine.countdown}}</view><text class="care-arrow">›</text></view>
+    <view class="divider care-divider"></view>
+    <view class="care-plan-row care-vaccine" data-key="vaccine" bindtap="openCareDetail"><view class="care-plan-icon">苗</view><view class="care-plan-copy"><view>疫苗接种</view><text class="care-meta">上次：{{careView.vaccine.last || '暂无记录'}}</text><text class="care-meta">下次：{{careView.vaccine.nextDate || '未设置'}}</text></view><view class="care-countdown {{careView.vaccine.countdownClass}}">{{careView.vaccine.countdown}}</view><text class="care-arrow">›</text></view>
+    <view class="divider care-divider"></view>
+    <view class="care-plan-row care-bath" data-key="bath" bindtap="openCareDetail"><view class="care-plan-icon">浴</view><view class="care-plan-copy"><view>洗澡护理</view><text class="care-meta">上次：{{careView.bath.last || '暂无记录'}}</text><text class="care-meta">下次：{{careView.bath.nextDate || '未设置'}}</text></view><view class="care-countdown {{careView.bath.countdownClass}}">{{careView.bath.countdown}}</view><text class="care-arrow">›</text></view>
+    <view class="divider care-divider"></view>
+    <view class="care-plan-row care-dental" data-key="dental" bindtap="openCareDetail"><view class="care-plan-icon">牙</view><view class="care-plan-copy"><view>刷牙护理</view><text class="care-meta">上次：{{careView.dental.last || '暂无记录'}}</text><text class="care-meta">下次：{{careView.dental.nextDate || '未设置'}}</text></view><view class="care-countdown {{careView.dental.countdownClass}}">{{careView.dental.countdown}}</view><text class="care-arrow">›</text></view>
+    <view class="divider care-divider"></view>
+    <view class="care-plan-row care-nail" data-key="nail" bindtap="openCareDetail"><view class="care-plan-icon">剪</view><view class="care-plan-copy"><view>修剪指甲</view><text class="care-meta">上次：{{careView.nail.last || '暂无记录'}}</text><text class="care-meta">下次：{{careView.nail.nextDate || '未设置'}}</text></view><view class="care-countdown {{careView.nail.countdownClass}}">{{careView.nail.countdown}}</view><text class="care-arrow">›</text></view>
+    </view>
+  <view class="supply-inline-head"><view>用品余量</view><text>根据已记录消耗估算</text></view>
+  <view class="care-plan-card care-dashboard supply-dashboard">
+    <view class="care-plan-row supply-food" data-key="dogFood" bindtap="openSupply"><view class="care-plan-icon">粮</view><view class="care-plan-copy"><view>狗粮</view><text class="care-meta">{{supplyView.dogFood.remainingText}}</text></view><view class="care-countdown {{supplyView.dogFood.countdownClass}}">{{supplyView.dogFood.daysText}}</view><text class="care-arrow">›</text></view>
+    <view class="care-plan-row supply-snack" data-key="snack" bindtap="openSupply"><view class="care-plan-icon">骨</view><view class="care-plan-copy"><view>零食</view><text class="care-meta">{{supplyView.snack.remainingText}}</text></view><view class="care-countdown {{supplyView.snack.countdownClass}}">{{supplyView.snack.daysText}}</view><text class="care-arrow">›</text></view>
+  </view>
+
+  <view class="privacy-note">资料在本机缓存，并支持云端同步与家庭共享；照片可上传云端。</view>
 </view>
 
 <view class="family-page" wx:if="{{familyOpen}}">
@@ -168,7 +182,7 @@
     <view class="edit-form-row"><text>宠物生日</text><picker mode="date" value="{{draft.birthday}}" end="{{today}}" bindchange="onDate"><view>{{draft.birthday}} ›</view></picker></view>
   </view>
   <button class="profile-edit-save" loading="{{saving}}" disabled="{{saving}}" bindtap="savePet">{{saving ? '正在保存…' : '保存资料'}}</button>
-  <view class="profile-edit-note">🔒 资料仅保存在本机，可随时修改</view>
+  <view class="profile-edit-note">资料在本机缓存，并支持云端同步与家庭共享；照片可上传云端。</view>
 </view>
 
 <view class="growth-album-page" wx:if="{{growthAlbumOpen}}">

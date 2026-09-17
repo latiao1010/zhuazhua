@@ -13,6 +13,7 @@ Page({
     quickQuestions: [],
     advisorQuestions: [],
     followUps: [],
+    rootTopicLabel: '',
     followUpCategory: 'general',
     rootQuestionCategory: 'general',
     followUpHeading: '你还可以继续问'
@@ -21,36 +22,41 @@ Page({
   onShow() {
     if (!Number.isFinite(this.replyVersion)) this.replyVersion = 0
     cloudData.seedAndSyncSixMonthDemo().then(() => {
-      this.setData({ messages: store.get('chats') || [] })
+      this.setData({ messages: this.formatMessages(store.get('chats') || []) })
       this.scrollBottom()
     })
     cloudData.syncBreedKnowledge()
     const pet = store.get('pet')
     this.setData({
       pet,
+      rootTopicLabel: wx.getStorageSync('paw_chat_root_label') || '日常咨询',
       rootQuestionCategory: wx.getStorageSync('paw_chat_root_category') || 'general',
-      messages: store.get('chats') || [],
+      messages: this.formatMessages(store.get('chats') || []),
       quickQuestions: [
         `${pet.name}今天状态怎么样？`,
         `${pet.name}喝水和喂食达标吗？`,
         `${pet.breed}今天运动怎么安排？`,
         '便便偏软要不要担心？'
       ],
-      advisorQuestions: [
-          { label: '查看档案建议', text: '结合我的宠物档案给今天的照护建议' },
-          { label: '今日状态', text: `${pet.name}今天状态怎么样？` },
-          { label: '运动安排', text: `${pet.breed}今天运动怎么安排？` },
-          { label: '食物判断', text: '苹果、鸡胸肉和酸奶能不能吃？' },
-          { label: '根据宠物推荐', text: '根据我家宠物推荐主粮、零食和玩具' },
-          { label: '主粮筛选', text: '帮我筛选适合我家宠物的主粮' },
-          { label: '零食筛选', text: '帮我筛选适合训练的零食' },
-          { label: '商品对比', text: '帮我对比两款主粮应该看什么' },
-          { label: '营养/配料解释', text: '宠物粮的蛋白、脂肪和配料表怎么看' }
-      ]
+      advisorQuestions: suggestions.allTopics(pet)
     })
     this.refreshFollowUps()
     this.scheduleQuestionReset()
     this.scrollBottom()
+  },
+
+
+  formatMessages(messages) {
+    return messages.map(message => {
+      if (message.role !== 'ai') return message
+      const lines = String(message.text || '').split('\n').map(line => line.trim()).filter(Boolean)
+      const title = /^【.*】$/.test(lines[0] || '') ? lines.shift().slice(1, -1) : ''
+      return { ...message, answerTitle: title, answerLines: lines, needsRecord: /没有.{0,8}记录|暂无.{0,8}记录|还没.{0,8}记录|尚未.{0,8}记录|记录不足/.test(message.text) }
+    })
+  },
+
+  openRecords() {
+    wx.navigateTo({ url: '/pages/feed/feed' })
   },
 
   questionDay() {
@@ -93,7 +99,7 @@ Page({
     const messages = this.data.messages || []
     const lastAi = [...messages].reverse().find(item => item && item.role === 'ai')
     const followUps = suggestions.followUps(lastAi && lastAi.text, this.data.pet)
-    if (lastAi) followUps.push({ label: '返回全部问题', action: 'back' })
+
     this.setData({ followUps, followUpCategory: this.data.rootQuestionCategory, followUpHeading: '你还可以继续问' })
     this.refreshQuestionVisits()
   },
@@ -110,6 +116,10 @@ Page({
     // 只有最外层入口会切换大类目，后续回答和追问始终沿用它。
     const root = category === 'welcome' || category === 'topics' ? text : this.data.rootQuestionCategory
     this.setData({ rootQuestionCategory: root })
+    if (category === 'welcome' || category === 'topics') {
+      this.setData({ rootTopicLabel: label })
+      wx.setStorageSync('paw_chat_root_label', label)
+    }
     wx.setStorageSync('paw_chat_root_category', root)
     const key = this.questionVisitKey(root, label, text)
     if (!texts.includes(key)) texts.push(key)
@@ -149,7 +159,7 @@ Page({
       time: this.now(),
       source: 'local-knowledge'
     }]
-    this.setData({ messages: next, thinking: false })
+    this.setData({ messages: this.formatMessages(next), thinking: false })
     this.refreshFollowUps()
     store.set('chats', next)
     this.replyTimer = null
@@ -174,7 +184,7 @@ Page({
   scrollBottom() {
     setTimeout(() => {
       const showFollowUps = this.data.messages.length && this.data.followUps.length && !this.data.thinking
-      this.setData({ scrollTo: showFollowUps ? 'followups-end' : `msg-${Math.max(0, this.data.messages.length - 1)}` })
+      this.setData({ scrollTo: showFollowUps ? (this.data.followUpCategory === 'topics' ? 'followups-start' : 'followups-end') : `msg-${Math.max(0, this.data.messages.length - 1)}` })
     }, 50)
   },
 

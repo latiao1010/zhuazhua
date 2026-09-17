@@ -60,7 +60,7 @@ const FOLLOW_UPS = [
     items: [
       { label: '最近七天', text: '最近七天喝水够吗' },
       { label: '和之前比', text: '和之前比呢' },
-      { label: '昨天呢', text: '昨天喝了多少' },
+      { label: '不爱喝水怎么办', text: '不爱喝水怎么办' },
       { label: '吃得够吗', text: '最近七天吃的多吗' }
     ]
   },
@@ -223,8 +223,10 @@ function allTopics(pet) {
     { label: '近期用药', text: '最近在吃什么药' },
     { label: '用品余量', text: '狗粮还有多少' },
     { label: '食物安全', text: '苹果、鸡胸肉和酸奶能不能吃？' },
-    { label: '主粮推荐', text: '帮我筛选适合我家宠物的主粮' },
-    { label: '雨天活动', text: '雨天在室内怎么消耗精力' }
+    { label: '身体异常', text: '呕吐要观察什么' },
+    { label: '日常训练', text: '狗狗护食怎么办' },
+    { label: '雨天活动', text: '雨天在室内怎么消耗精力' },
+    { label: '用品推荐', text: '根据我家宠物推荐主粮、零食和玩具' }
   ]
 }
 

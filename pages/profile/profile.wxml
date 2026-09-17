@@ -5,10 +5,6 @@
         <view>{{homeDashboard.greeting}}，铲屎官 👋</view>
         <text>今天也和{{pet.name}}好好生活</text>
       </view>
-      <view class="score-pill {{homeDashboard.scoreLevel}}">
-        <text>健康评分</text>
-        <view>{{homeDashboard.healthScore}}<text>分</text></view>
-      </view>
     </view>
     <view class="pet-row">
       <image src="{{pet.avatar}}" mode="aspectFill"></image>
@@ -20,18 +16,18 @@
 
   <view class="home-block next-block">
     <view class="next-task-card">
-      <view class="next-card-head"><view><text>📍</text>下一件事</view><text>最重要</text></view>
+      <view class="next-card-head"><view><text>📍</text>当前待办</view><text>优先查看</text></view>
       <view class="next-task-main">
         <view class="next-time"><text>{{homeDashboard.nextTask.time}}</text><view>{{homeDashboard.nextTask.waitText}}</view></view>
         <view class="next-task-copy"><view><text>{{homeDashboard.nextTask.icon}}</text>{{homeDashboard.nextTask.label}}</view><text>{{homeDashboard.nextTask.detail}}</text></view>
         <button bindtap="goNextTask">{{homeDashboard.nextTask.actionText}}</button>
       </view>
-      <view class="next-ai-note"><text>AI</text><view>{{homeDashboard.healthSummary}}</view></view>
+      <view class="next-ai-note"><text>提示</text><view>{{homeDashboard.healthSummary}}</view></view>
     </view>
   </view>
 
   <view class="home-block status-block">
-    <view class="home-block-title"><view><text>🐶</text>今日状态</view><text>{{homeDashboard.completedCount}}/{{homeDashboard.totalTasks}} 已完成</text></view>
+    <view class="home-block-title"><view><text>🐶</text>今日记录</view><text>{{homeDashboard.completedCount}}/{{homeDashboard.totalTasks}} 已完成</text></view>
     <view class="status-panel">
       <view class="home-progress">
         <text>今日进度</text>
@@ -49,7 +45,7 @@
   </view>
 
   <view class="home-block insight-block">
-    <view class="home-block-title"><view><text>🤖</text>AI 今日发现</view></view>
+    <view class="home-block-title"><view><text>✦</text>值得关注</view></view>
     <view class="finding-list count-{{homeDashboard.findings.length}}">
       <view class="finding-row {{item.tone}}" wx:for="{{homeDashboard.findings}}" wx:key="id">
         <text>{{item.icon}}</text>

@@ -663,7 +663,7 @@ async function main() {
     assert.ok(calls.toasts.some(item => item.title.includes('移除')))
 
     const accountWxml = fs.readFileSync(path.join(ROOT, 'pages/account/account.wxml'), 'utf8')
-    assert.ok(accountWxml.includes('家庭成员共享管理'))
+    assert.ok(accountWxml.includes('家庭共享'))
     assert.ok(accountWxml.includes('open-type="share"'))
   })
 
@@ -889,6 +889,21 @@ async function main() {
     context.data.thinking = true
     context.askQuick({ currentTarget: { dataset: { text: '被阻止的问题' } } })
     assert.ok(!context.readQuestionVisits().includes('被阻止的问题'))
+  })
+
+  await scenario('顾问回答分段展示，缺少记录时提供补记入口', () => {
+    const state = makeState()
+    const { wx, calls } = makeWx()
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page)
+    const text = '【今日状态】\n今天饮水还没有记录，暂时不能判断。\n先补充记录。'
+    const result = context.formatMessages([{ role: 'ai', text }])[0]
+    assert.strictEqual(result.text, text)
+    assert.strictEqual(result.answerTitle, '今日状态')
+    assert.strictEqual(result.answerLines.length, 2)
+    assert.strictEqual(result.needsRecord, true)
+    context.openRecords()
+    assert.ok(calls.navigations.includes('/pages/feed/feed'))
   })
 
   await scenario('清空聊天会取消尚未返回的本地知识库回复', () => withTimers(flush => {
@@ -1481,10 +1496,16 @@ async function main() {
     const context = pageContext(profile)
     profile.refresh.call(context)
     assert.strictEqual(context.data.homeDashboard.tasks.length, 6)
-    assert.strictEqual(context.data.homeDashboard.findings.length, 3)
+    assert.strictEqual(context.data.homeDashboard.findings.length, 2)
     assert.strictEqual(context.data.todayFeedCount, 0)
     assert.strictEqual(context.data.todayStoolCount, 0)
     assert.strictEqual(context.data.weightTrend.history.length, 1)
+    state.waters = [{ dayKey: TODAY, amount: 100 }]
+    profile.refresh.call(context)
+    assert.strictEqual(context.data.homeDashboard.tasks.find(item => item.key === 'water').done, false)
+    state.waters = [{ dayKey: TODAY, amount: 1000 }]
+    profile.refresh.call(context)
+    assert.strictEqual(context.data.homeDashboard.tasks.find(item => item.key === 'water').done, true)
   })
 
   await scenario('天气定位和网络都失败时会回退到离线提示', async () => {

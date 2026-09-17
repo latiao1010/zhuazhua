@@ -127,8 +127,9 @@ function buildCareView(schedule) {
       nextDate: schedule[key],
       cycle: schedule[config.cycleKey],
       unitText: config.unit === 'month' ? '个月' : '天',
-      countdown: days === 0 ? '就是今天' : days > 0 ? `还有 ${days} 天` : `已超期 ${Math.abs(days)} 天`,
-      countdownClass: days === 0 ? 'today' : days > 0 ? 'upcoming' : 'overdue',
+      needsAttention: isValidDateKey(schedule[key]) && days <= 3 && schedule[config.lastKey] !== today,
+      countdown: schedule[config.lastKey] === today ? '今日已完成' : !isValidDateKey(schedule[key]) ? (key === 'medicine' ? '暂无用药计划' : '未设置提醒') : days === 0 ? '就是今天' : days > 0 ? `还有 ${days} 天` : `已超期 ${Math.abs(days)} 天`,
+      countdownClass: schedule[config.lastKey] === today || !isValidDateKey(schedule[key]) ? 'upcoming' : days === 0 ? 'today' : days > 0 ? 'upcoming' : 'overdue',
       doneToday: schedule[config.lastKey] === today,
       actionText: config.actionText
     }

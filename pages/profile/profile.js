@@ -472,7 +472,7 @@ function buildAIPredictions({ now, pet, todayWater, todayWaters, stools, weather
     stoolText = `依据最近 ${recentStools.length} 次记录，其中 ${abnormalCount} 次出现异常。`
     stoolTone = 'orange'
   } else {
-    stoolTitle = '下一次排便仍偏向正常'
+    stoolTitle = `最近 ${recentStools.length} 次排便记录正常`
     stoolBadge = '趋势稳定'
     stoolText = `最近 ${recentStools.length} 次记录均正常，短期内暂未发现明显波动。`
   }
@@ -480,7 +480,11 @@ function buildAIPredictions({ now, pet, todayWater, todayWaters, stools, weather
   let walkTitle
   let walkBadge
   let walkText
-  if (weather && weather.rainTime) {
+  if (now.getHours() >= 22 || now.getHours() < 6) {
+    walkTitle = '夜间以休息为主'
+    walkBadge = '夜间提醒'
+    walkText = '如需外出排便，按平时习惯短时出门，避免额外增加运动。'
+  } else if (weather && weather.rainTime) {
     const start = clockToMinutes(rainWalkTime) || 19 * 60
     walkTitle = `${rainWalkTime}–${minutesToClock(start + 90)} 更适合散步`
     walkBadge = '天气预测'
@@ -535,7 +539,7 @@ function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, c
   const walkMinutes = walkParts ? Number(walkParts[1]) * 60 + Number(walkParts[2]) : 19 * 60
   const tasks = [
     { key: 'breakfast', icon: '🥣', label: '早餐', detail: todayFeeds.some(item => item.type === '早餐') ? '已记录' : '等待记录', done: todayFeeds.some(item => item.type === '早餐'), action: 'feed', time: '08:00', plannedMinutes: 480 },
-    { key: 'water', icon: '💧', label: `喝水 ${todayWater}ml`, detail: waterTarget ? `建议 ${waterTarget}ml` : '记录饮水量', done: todayWater > 0, action: 'water', time: '12:00', plannedMinutes: 720 },
+    { key: 'water', icon: '💧', label: `喝水 ${todayWater}ml`, detail: waterTarget ? `建议 ${waterTarget}ml` : '记录饮水量', done: waterTarget > 0 && todayWater >= waterTarget, action: 'water', time: '12:00', plannedMinutes: 720 },
     { key: 'stool', icon: '💩', label: `排便 ${todayStools.length} 次`, detail: todayStools.some(item => item.abnormal) ? '有异常需留意' : todayStools.length ? '状态正常' : '等待记录', done: todayStools.length > 0, action: 'stool', time: '13:00', plannedMinutes: 780 },
     { key: 'dinner', icon: '🍚', label: '晚餐', detail: todayFeeds.some(item => item.type === '晚餐') ? '已记录' : '18:00', done: todayFeeds.some(item => item.type === '晚餐'), action: 'feed', time: '18:00', plannedMinutes: 1080 },
     { key: 'walk', icon: '🐾', label: '散步', detail: todayWalks.length ? `${todayWalks.reduce((sum, item) => sum + numberFromText(item.duration), 0)} 分钟` : rainWalkTime, done: todayWalks.length > 0, action: 'walk', time: rainWalkTime, plannedMinutes: walkMinutes },
@@ -544,7 +548,7 @@ function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, c
   const completedCount = tasks.filter(item => item.done).length
   const nextTask = tasks.filter(item => !item.done).sort((a, b) => a.plannedMinutes - b.plannedMinutes)[0]
   const next = nextTask
-    ? { ...nextTask, waitText: formatTaskWait(nextTask.plannedMinutes, now), actionText: '去记录' }
+    ? { ...nextTask, waitText: nextTask.plannedMinutes < now.getHours() * 60 + now.getMinutes() ? '待确认记录' : formatTaskWait(nextTask.plannedMinutes, now), actionText: '去记录' }
     : { key: 'done', icon: '🎉', label: '今天的任务都完成啦', detail: '做得真棒', time: '今日', waitText: '全部完成', actionText: '查看', action: 'feed', done: true }
   const laterTasks = tasks
     .filter(item => !item.done && item.key !== next.key)
@@ -605,7 +609,7 @@ function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, c
     greeting: getGreeting(now.getHours()),
     healthScore,
     scoreLevel: healthScore >= 90 ? 'good' : healthScore >= 80 ? 'watch' : 'attention',
-    healthSummary: `${healthScore >= 90 ? '今天状态不错' : '今天有几项需要留意'}，${weatherAdvice}`,
+    healthSummary: nextTask ? '已完成但还没记录？补记后会同步更新今日进度。' : '今天的日常安排已完成，好好休息吧。',
     tasks,
     completedCount,
     totalTasks: tasks.length,
@@ -618,7 +622,7 @@ function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, c
       { icon: '🌿', label: '肠胃', action: 'stool', ...stomachStatus },
       { icon: '🐾', label: '活力', action: 'walk', ...activityStatus }
     ],
-    findings: aiPredictions.slice(0, 3),
+    findings: [aiPredictions[0], todayStools.some(item => item.abnormal) || (now.getHours() >= 6 && now.getHours() < 22) ? aiPredictions[1] : aiPredictions[2]],
     knowledge: getPersonalizedKnowledge({
       now,
       pet,

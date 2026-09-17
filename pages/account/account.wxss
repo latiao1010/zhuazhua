@@ -147,3 +147,64 @@
   .family-share-panel{align-items:flex-start;flex-direction:column}
   .family-share-actions{flex-direction:row;margin:18rpx 0 0}
 }
+
+/* 与首页统一：内容自然撑开，紧急状态才使用强调色。 */
+.account-page{height:auto;min-height:100vh;overflow:visible;background:#faf7f3;padding:24rpx}
+.account-page .display-profile-card{height:auto;min-height:180rpx;padding:24rpx;border:1rpx solid #eee2d9;border-radius:26rpx;background:#fff;box-shadow:none}
+.account-page .cover-glow{display:none}
+.account-page .display-name-line{display:flex;align-items:flex-start;flex-direction:column;gap:12rpx}
+.account-page .birthday-chip{margin:0;padding:0;background:transparent;text-align:left}
+.account-page .birthday-chip>view{font-size:22rpx;letter-spacing:0}
+.account-page .pet-meta{flex-wrap:wrap;gap:8rpx}
+.account-page>.growth-album-entry{margin:16rpx 0 0;padding:20rpx;border:1rpx solid #eee2d9;background:#fff;box-shadow:none;flex:none}
+.account-page>.growth-album-entry>view{flex:1;margin-left:16rpx}
+.account-page>.growth-album-entry>view>text{font-size:24rpx}
+.account-page>.growth-album-entry>view>view{font-size:21rpx;margin-top:6rpx}
+.account-page .family-share-entry{box-shadow:none;background:#fff}
+.account-page .care-heading{margin-top:26rpx}
+.account-page .care-section-note{font-size:21rpx;line-height:1.6;margin-bottom:14rpx}
+.account-page .care-dashboard{flex:none;grid-template-columns:1fr;grid-template-rows:none;gap:0;background:#fff;border:1rpx solid #eee2d9;border-radius:26rpx;padding:0 20rpx}
+.account-page .care-dashboard .care-plan-row{display:flex;align-items:center;min-height:140rpx;padding:20rpx 0;border-radius:0;background:#fff;box-shadow:none;overflow:visible}
+.account-page .care-dashboard .care-plan-row:not(:last-child){border-bottom:1rpx solid #f0e9e3}
+.account-page .care-dashboard .care-plan-icon{flex:none;background:#f7f2ed;box-shadow:none;margin-right:16rpx}
+.account-page .care-dashboard .care-plan-copy{flex:1;margin:0;min-width:0}
+.account-page .care-plan-copy>view{font-size:25rpx;font-weight:600}
+.account-page .care-meta{display:block;margin-top:6rpx;color:#8a7b70;font-size:20rpx;line-height:1.5}
+.account-page .care-dashboard .care-countdown{flex:none;margin:0 10rpx;padding:8rpx;background:#f7f4f0;color:#88796e;font-size:20rpx}
+.account-page .care-dashboard .care-countdown.today,.account-page .care-dashboard .care-countdown.overdue{background:#fff0e6;color:#b95d35}
+.account-page .supply-inline-head{margin:26rpx 0 14rpx;padding:0;border:0;gap:12rpx;flex-wrap:wrap}
+.account-page .privacy-note{margin:24rpx 8rpx;color:#97897e;font-size:20rpx;line-height:1.6;white-space:normal}
+.upcoming-section{flex:none}.upcoming-list{margin-top:12rpx;padding:0 20rpx;border-radius:24rpx;background:#fff3e9}
+.upcoming-row{display:flex;justify-content:space-between;gap:12rpx;padding:18rpx 0;border-bottom:1rpx solid #efdfd2;font-size:24rpx;color:#6c4d36}
+.upcoming-row>text:last-child{color:#b45f38;font-size:22rpx}.upcoming-note{padding:16rpx 0;color:#917b69;font-size:20rpx;line-height:1.6}
+
+/* 紧凑总览：详情留在项目内，双列提高浏览效率。 */
+.account-page{padding:18rpx 24rpx}
+.account-page>.topbar{margin-bottom:12rpx}
+.account-page .display-profile-card{padding:18rpx;min-height:150rpx}
+.account-page .display-name-line{gap:6rpx}
+.account-shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:12rpx;margin-top:12rpx;flex:none}
+.account-shortcuts .growth-album-entry,.account-shortcuts .family-share-entry{height:auto;min-height:84rpx;margin:0;padding:14rpx 12rpx;border:1rpx solid #eee2d9;border-radius:20rpx;background:#fff;box-shadow:none}
+.account-shortcuts .growth-album-entry>view{flex:1;margin-left:8rpx}
+.account-shortcuts .growth-album-entry>view>text,.account-shortcuts .family-share-copy>view{font-size:23rpx}
+.account-shortcuts .growth-album-entry>view>view,.account-shortcuts .family-share-copy>text{font-size:19rpx;margin-top:4rpx}
+.account-shortcuts .family-share-avatars{display:none}
+.account-shortcuts .family-share-icon{width:38rpx;height:38rpx;margin-right:8rpx;font-size:22rpx}
+.account-page .care-heading{margin-top:18rpx}
+.account-page .care-section-note{margin-bottom:10rpx;font-size:19rpx}
+.account-page .upcoming-list{display:flex;flex-wrap:wrap;gap:8rpx;margin-top:8rpx;padding:0;background:transparent}
+.account-page .upcoming-row{gap:10rpx;padding:10rpx 14rpx;border:0;border-radius:14rpx;background:#fff0e4;font-size:21rpx}
+.account-page .upcoming-row>text:last-child{font-size:20rpx}
+.account-page .care-dashboard{grid-template-columns:repeat(2,minmax(0,1fr));gap:10rpx;padding:0;border:0;background:transparent}
+.account-page .care-dashboard .care-plan-row{display:grid;grid-template-columns:34rpx 1fr 16rpx;grid-template-rows:auto auto;gap:8rpx;min-height:130rpx;padding:14rpx;border:1rpx solid #eee2d9;border-radius:20rpx;background:#fff}
+.account-page .care-dashboard .care-plan-row:not(:last-child){border:1rpx solid #eee2d9}
+.account-page .care-dashboard .care-plan-icon{grid-column:1;grid-row:1;width:32rpx;height:32rpx;margin:0;border-radius:10rpx;font-size:19rpx}
+.account-page .care-dashboard .care-plan-copy{grid-column:2;grid-row:1;margin:0}
+.account-page .care-plan-copy>view{font-size:23rpx}
+.account-page .care-dashboard .care-arrow{grid-column:3;grid-row:1;font-size:24rpx}
+.account-page .care-dashboard .care-countdown{grid-column:1/4;grid-row:2;margin:0;padding:4rpx 8rpx;font-size:19rpx;justify-self:start}
+.account-page .care-meta{font-size:17rpx;margin-top:5rpx}
+.account-page .care-dashboard:not(.supply-dashboard) .care-meta:first-of-type{display:none}
+.account-page .supply-inline-head{margin:18rpx 0 10rpx}
+.account-page .privacy-note{margin:14rpx 4rpx;font-size:18rpx}
+@media screen and (max-width:360px){.account-page .care-dashboard .care-plan-row{padding:10rpx;gap:5rpx}.account-page .care-plan-copy>view{font-size:22rpx}}
