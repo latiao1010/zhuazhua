@@ -140,7 +140,7 @@ function applyRemoteChanges(changes = []) {
     })
   } finally { syncing = false }
   setStatus(skipped.length ? 'pending' : 'success')
-  return Promise.resolve({ ok:!skipped.length, applied:applied.length, skipped:skipped.length })
+  return Promise.resolve({ ok:!skipped.length, applied:applied.length, skipped:skipped.length, appliedChanges:applied, skippedChanges:skipped })
 }
 function retryPending() {
   if (store.isDemoMode && store.isDemoMode()) return Promise.resolve({ ok: true, skipped: true })

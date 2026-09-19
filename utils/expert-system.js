@@ -1,7 +1,6 @@
 // V3 本地专家系统适配层：运行时不请求任何模型或网络接口。
 const knowledgeData = require('./expert-data/pet_knowledge_expert.json')
 const queryBankData = require('./expert-data/query_bank.json')
-const synonyms = require('./expert-data/synonyms.json')
 const riskRuleData = require('./expert-data/risk_rules.json')
 
 const knowledge = knowledgeData.items || []

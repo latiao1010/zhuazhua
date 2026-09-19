@@ -1,6 +1,37 @@
-<view class="manage-page">
-  <view class="section shared-preview" wx:if="{{previewLoading || remoteChanges.length}}"><view class="title">共享成员的最新修改</view><view class="hint" wx:if="{{previewLoading}}">正在检查云端变化…</view><block wx:else><view class="hint">逐条选择要应用的内容；未选择的修改会继续保留在云端。</view><view class="remote-change {{item.selected ? 'selected' : ''}}" wx:for="{{remoteChanges}}" wx:key="recordId" data-index="{{index}}" bindtap="toggleRemoteChange"><view class="change-check">{{item.selected ? '✓' : ''}}</view><view class="change-main"><text>{{item.actor}}{{item.role ? ' · ' + item.role : ''}}</text><view>{{item.typeText}}了{{item.label}}记录</view><view class="change-compare" wx:if="{{item.type === 'updated'}}"><text>本机：{{item.localText}}</text><text>云端：{{item.remoteText}}</text></view></view><text>{{item.timeText}}</text></view><button class="apply-selected" loading="{{syncing}}" bindtap="applySelectedChanges">应用选中的修改</button></block></view>
+<view class="manage-page" hidden="{{!pageVisible}}">
+  <view class="section shared-preview" wx:if="{{previewLoading || remoteChanges.length}}"><view class="title">共享成员的最新修改 <text wx:if="{{remoteChangeCount}}">（{{remoteChangeCount}} 条）</text></view><view class="hint" wx:if="{{previewLoading}}">正在检查云端变化…</view><block wx:else><view class="hint">逐条选择要应用的内容；未选择或暂时冲突的修改会保留在列表中。</view><view class="remote-change {{item.selected ? 'selected' : ''}}" wx:for="{{renderedRemoteChanges}}" wx:key="recordId" data-index="{{index}}" bindtap="toggleRemoteChange"><view class="change-check">{{item.selected ? '✓' : ''}}</view><view class="change-main"><text>{{item.actor}}{{item.role ? ' · ' + item.role : ''}}</text><view>{{item.typeText}}了{{item.label}}记录</view><view class="change-compare" wx:if="{{item.type === 'updated'}}"><text>本机：{{item.localText}}</text><text>云端：{{item.remoteText}}</text></view></view><text>{{item.timeText}}</text></view><button class="load-more" wx:if="{{renderedRemoteChanges.length < remoteChangeCount}}" bindtap="loadMoreRemoteChanges">加载更多（还剩 {{remoteChangeCount - renderedRemoteChanges.length}} 条）</button><button class="apply-selected" loading="{{syncing}}" bindtap="applySelectedChanges">应用选中的修改</button></block></view>
   <view class="section"><view class="title">数据保存状态</view><view class="row"><view>{{syncText}}<text wx:if="{{pendingCount}}"> · {{pendingCount}} 项待处理</text></view><button size="mini" loading="{{syncing}}" disabled="{{demo || syncing}}" bindtap="retrySync">重新同步</button></view><view class="hint">{{syncDetail}}</view><view class="conflict-tip" wx:if="{{syncText === '发现记录冲突'}}">云端不会直接覆盖其他成员的新版本。<button size="mini" bindtap="useCloudVersion">使用云端最新版本</button></view><view class="row" wx:if="{{showDemoSwitch}}"><text>演示数据</text><switch checked="{{demo}}" bindchange="switchMode" color="#ef835c" /></view><view class="hint" wx:if="{{showDemoSwitch}}">演示记录和正式记录分开保存。</view></view>
   <view class="section"><view class="title">护理通知</view><view class="hint">{{reminderMessage}}</view><block wx:if="{{reminderReady}}"><picker mode="time" value="{{reminderTime}}" bindchange="onReminderTime"><view class="row">通知时间（北京时间）<text>{{reminderTime}} ›</text></view></picker><view class="row" wx:for="{{careItems}}" wx:key="key"><view>{{item.label}}<view class="hint">{{item.date}}</view></view><button size="mini" disabled="{{reminderBusy || item.date === '未设置'}}" data-key="{{item.key}}" bindtap="subscribeCare">订阅一次</button></view></block><view class="row" wx:for="{{reminderJobs}}" wx:key="_id"><view>{{item.label}} · {{item.date}} {{item.time}}<view class="hint">{{item.statusText}}</view></view><button wx:if="{{item.status === 'pending'}}" size="mini" data-id="{{item._id}}" bindtap="pauseReminder">暂停</button></view></view>
-  <view class="section"><view class="title">生成就诊资料</view><view class="hint">选择时间范围，整理饮食、排便、运动、护理用药和体重，方便就诊时出示。</view><view class="row"><picker mode="date" value="{{start}}" end="{{end}}" bindchange="onStart">{{start}} ›</picker><text>至</text><picker mode="date" value="{{end}}" start="{{start}}" end="{{today}}" bindchange="onEnd">{{end}} ›</picker></view><view class="row"><text>隐藏宠物昵称和性别</text><switch checked="{{redact}}" bindchange="onRedact" color="#ef835c" /></view><button bindtap="generateSummary">生成摘要</button><block wx:if="{{summaryText}}"><scroll-view class="summary-preview" scroll-y><text selectable>{{summaryText}}</text></scroll-view><view class="row"><button size="mini" bindtap="copySummary">复制文本</button><button size="mini" bindtap="shareSummary">分享文件</button></view></block></view>
+  <view class="section visit-section">
+    <view class="visit-heading"><view class="visit-mark"><view></view><view></view><view></view></view><view><view class="title">就诊资料</view><view class="visit-subtitle">把日常记录，整理成一份安心</view></view></view>
+    <view class="visit-description">汇总饮食、排便、运动、护理和体重，方便就诊时出示。</view>
+    <view class="date-range-label">记录时间范围</view>
+    <view class="visit-range-presets">
+      <button class="{{activeRange === '7' ? 'selected' : ''}}" data-range="7" bindtap="selectVisitRange">近7天</button>
+      <button class="{{activeRange === '30' ? 'selected' : ''}}" data-range="30" bindtap="selectVisitRange">近30天</button>
+      <button class="{{activeRange === 'halfYear' ? 'selected' : ''}}" data-range="halfYear" bindtap="selectVisitRange">近半年</button>
+    </view>
+    <view class="visit-date-range">
+      <picker mode="date" value="{{start}}" end="{{end}}" bindchange="onStart"><view class="visit-date"><text class="date-caption">开始日期</text><view>{{start}}<text>⌄</text></view></view></picker>
+      <text class="date-connector">—</text>
+      <picker mode="date" value="{{end}}" start="{{start}}" end="{{today}}" bindchange="onEnd"><view class="visit-date"><text class="date-caption">结束日期</text><view>{{end}}<text>⌄</text></view></view></picker>
+    </view>
+    <view class="visit-record-count {{recordCount ? '' : 'empty'}}">{{rangeError || (recordCount ? '已选时段共 ' + recordCount + ' 条记录' : '该时间段暂无记录，请选择其他日期')}}</view>
+    <view class="visit-privacy"><view><view>隐藏昵称与性别</view><text>生成的摘要仅保留就诊所需信息</text></view><switch checked="{{redact}}" bindchange="onRedact" color="#ef835c" /></view>
+    <button class="visit-generate" hover-class="visit-pressed" bindtap="generateSummary">生成就诊摘要 <text>→</text></button>
+    <block wx:if="{{summaryText}}">
+      <view class="visit-preview-title">摘要预览<text>展开查看明细</text></view>
+      <view class="summary-header"><text selectable>{{summaryHeader}}</text></view>
+      <view class="summary-module" wx:for="{{summarySections}}" wx:key="key">
+        <button class="summary-module-heading" data-key="{{item.key}}" bindtap="toggleSummarySection"><text>{{item.label}}</text><text>{{item.count}} 条 · {{item.expanded ? '收起' : '展开'}}</text></button>
+        <view wx:if="{{item.expanded}}" class="summary-module-content">
+          <view wx:if="{{!item.count}}" class="hint">该时间段暂无记录</view>
+          <view class="summary-record" wx:for="{{item.entries}}" wx:for-item="entry" wx:for-index="entryIndex" wx:key="entryIndex"><text selectable>{{entry}}</text></view>
+          <button wx:if="{{item.entries.length < item.count}}" class="load-more" data-key="{{item.key}}" bindtap="moreSummaryRecords">再看20条（剩余 {{item.count - item.entries.length}} 条）</button>
+        </view>
+      </view>
+      <view class="visit-share"><button bindtap="copySummary">复制完整摘要</button></view>
+    </block>
+    <button class="visit-export" hover-class="visit-pressed" loading="{{exporting}}" disabled="{{exporting}}" bindtap="exportVisitData">{{exporting ? '正在导出…' : '导出'}}</button>
+  </view>
 </view>

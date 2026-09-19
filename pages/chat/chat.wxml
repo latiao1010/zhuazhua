@@ -8,51 +8,45 @@
     <view class="head-action" bindtap="clearChat">···</view>
   </view>
 
-  <view class="topic-navigation" wx:if="{{messages.length}}">
+  <view class="topic-navigation" wx:if="{{messages.length && !browsingTopics}}">
     <view class="topic-breadcrumb">全部主题<text wx:if="{{followUpCategory !== 'topics'}}"> › {{rootTopicLabel || '日常咨询'}}</text></view>
     <view class="topic-return" wx:if="{{followUpCategory !== 'topics'}}" data-action="back" bindtap="onFollowUpTap">‹ 返回全部问题</view>
   </view>
+  <view class="history-search" wx:if="{{messages.length && !browsingTopics}}"><input value="{{historySearch}}" placeholder="搜索聊天记录" bindinput="onHistorySearch" /><view class="search-summary" wx:if="{{historySearch}}"><text>匹配 {{searchMatchCount}} 轮问答 · 当前对话始终显示</text><text bindtap="clearHistorySearch">清除搜索</text></view></view>
   <scroll-view class="chat-scroll" scroll-y enhanced show-scrollbar="false" scroll-into-view="{{scrollTo}}">
 
-    <view class="welcome" wx:if="{{!messages.length}}">
+    <view id="welcome-start" class="welcome" wx:if="{{!messages.length || browsingTopics}}">
       <view class="welcome-title">有什么能帮到你？</view>
       <view class="welcome-sub">根据宠物资料、喂食、饮水、散步和健康记录给日常建议</view>
     </view>
-    <view class="advisor-group unified-prompts" wx:if="{{messages.length === 0}}">
-      <view class="followup-heading"><text class="prompt-spark">✦</text>从一个问题开始</view>
-      <view class="followup-subtitle">点选你关心的问题，聊聊爱宠的日常</view>
-      <view class="welcome-topic-groups">
-        <view class="welcome-topic-group" wx:for="{{advisorGroups}}" wx:for-item="group" wx:key="category">
-          <view class="welcome-topic-title">{{group.category}}</view>
-          <view class="welcome-topic-grid">
-            <view class="welcome-topic-item {{item.visited ? 'visited' : ''}}" hover-class="prompt-pressed" wx:for="{{group.items}}" wx:key="label" data-text="{{item.text}}" data-label="{{item.label}}" data-category="welcome" bindtap="askQuick"><text>{{item.label}}</text><text class="visited-note" wx:if="{{item.visited}}">✓</text><text class="advisor-arrow">›</text></view>
-          </view>
-        </view>
-      </view>
+    <view class="advisor-group unified-prompts" wx:if="{{!messages.length || browsingTopics}}">
+      <block wx:if="{{!showAllTopics}}">
+        <view class="followup-heading"><text class="prompt-spark">✦</text>从一个问题开始</view>
+        <view class="followup-subtitle">点选你关心的问题，聊聊爱宠的日常</view>
+        <view class="welcome-topic-grid featured-topics"><view class="welcome-topic-item {{item.visited ? 'visited' : ''}}" hover-class="prompt-pressed" wx:for="{{featuredTopics}}" wx:key="label" data-text="{{item.text}}" data-label="{{item.label}}" data-category="welcome" bindtap="askQuick"><text>{{item.label}}</text><text class="visited-note" wx:if="{{item.visited}}">✓</text><text class="advisor-arrow">›</text></view></view>
+      </block>
+      <view class="all-topic-groups" wx:if="{{showAllTopics}}"><view class="welcome-topic-group" wx:for="{{advisorGroups}}" wx:for-item="group" wx:key="category"><view class="welcome-topic-title">{{group.category}}</view><view class="welcome-topic-grid"><view class="welcome-topic-item {{item.visited ? 'visited' : ''}}" hover-class="prompt-pressed" wx:for="{{group.items}}" wx:key="label" data-text="{{item.text}}" data-label="{{item.label}}" data-category="welcome" bindtap="askQuick"><text>{{item.label}}</text><text class="visited-note" wx:if="{{item.visited}}">✓</text><text class="advisor-arrow">›</text></view></view></view></view>
+      <view class="expand-topics" bindtap="toggleAllTopics">{{showAllTopics ? '收起全部问题' : '浏览全部问题'}} <text>{{showAllTopics ? '⌃' : '⌄'}}</text></view>
     </view>
-    <view class="messages">
-      <view id="msg-{{index}}" class="message-row {{item.role}}" wx:for="{{messages}}" wx:key="id">
+    <button class="resume-conversation" wx:if="{{browsingTopics && messages.length}}" bindtap="returnToConversation">返回聊天记录</button>
+    <view class="messages" wx:if="{{!browsingTopics}}">
+      <block wx:for="{{messages}}" wx:key="id">
+        <view class="date-chip" wx:if="{{item.currentConversation}}">当前对话</view>
+        <view class="date-chip" wx:if="{{item.showDate && item.visible}}">{{item.dateLabel}}</view>
+        <view id="msg-{{index}}" class="message-row {{item.role}}" wx:if="{{item.visible}}">
         <view class="bubble-avatar" wx:if="{{item.role === 'ai'}}">🐾</view>
         <view class="bubble {{item.role}}-bubble"><block wx:if="{{item.role === 'ai' && item.answerLines}}"><view class="answer-title" wx:if="{{item.answerTitle}}">{{item.answerTitle}}</view><view class="answer-paragraph {{lineIndex === 0 ? 'answer-lead' : ''}}" wx:for="{{item.answerLines}}" wx:for-item="line" wx:for-index="lineIndex" wx:key="index">{{line}}</view><view class="record-link" wx:if="{{item.needsRecord}}" bindtap="openRecords">去补充日常记录 ›</view></block><block wx:else>{{item.text}}</block><view class="msg-time">{{item.time}}</view></view>
-      </view>
+        </view>
+      </block>
       <view class="message-row ai" wx:if="{{thinking}}"><view class="bubble-avatar">🐾</view><view class="bubble ai-bubble typing"><text></text><text></text><text></text></view></view>
-      <view id="followups-start" class="followup-thread" wx:if="{{messages.length && !thinking}}">
+      <view id="reply-error" class="reply-error" wx:if="{{replyError}}"><text>{{replyError}}</text><button bindtap="retryReply">重新回答</button></view>
+      <view id="followups-start" class="followup-thread" wx:if="{{messages.length && !thinking && !replyError}}">
         <view class="message-row ai followup-row">
           <view class="bubble-avatar">🐾</view>
-          <view class="bubble ai-bubble followup-panel {{followUpCategory === 'topics' ? 'topics-mode' : ''}}">
+          <view class="bubble ai-bubble followup-panel">
             <view class="followup-heading"><text class="prompt-spark">✦</text>{{followUpHeading}}</view>
-            <view class="followup-subtitle">{{followUpCategory === 'topics' ? '选择一个方向开始，灰色表示今日已问' : '围绕当前回答继续了解'}}</view>
-            <block wx:if="{{followUpCategory === 'topics'}}">
-              <view class="topic-group-card" wx:for="{{topicGroups}}" wx:for-item="group" wx:key="category">
-                <view class="topic-group-head">{{group.category}}</view>
-                <view class="topic-group-grid">
-                  <view class="topic-item {{item.visited ? 'visited' : ''}}" hover-class="prompt-pressed" wx:for="{{group.items}}" wx:key="label" data-text="{{item.text}}" data-label="{{item.label}}" data-category="topics" bindtap="onFollowUpTap">
-                    <text>{{item.label}}</text><text class="visited-note" wx:if="{{item.visited}}">✓</text><text class="followup-arrow">›</text>
-                  </view>
-                </view>
-              </view>
-            </block>
-            <block wx:else>
+            <view class="followup-subtitle">围绕当前回答继续了解</view>
+            <block>
               <view class="followup-option {{item.action === 'back' ? 'back' : ''}} {{item.visited ? 'visited' : ''}}" hover-class="prompt-pressed" wx:for="{{followUps}}" wx:key="label" data-text="{{item.text}}" data-label="{{item.label}}" data-category="{{followUpCategory}}" data-action="{{item.action}}" bindtap="onFollowUpTap">
                 <text class="followup-label">{{item.label}}</text><text class="visited-note" wx:if="{{item.visited}}">✓ 今日已问</text><text class="followup-arrow">{{item.action === 'back' ? '‹' : '›'}}</text>
               </view>
@@ -61,7 +55,7 @@
         </view>
         <view id="followups-end"></view>
       </view>
-      <view class="medical-tip" wx:if="{{messages.length}}">本地知识库建议仅供日常参考，如有持续不适请及时咨询专业兽医。</view>
+      <view class="medical-tip" wx:if="{{messages.length && !browsingTopics}}">本地知识库建议仅供日常参考，如有持续不适请及时咨询专业兽医。</view>
     </view>
   </scroll-view>
 

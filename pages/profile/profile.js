@@ -2,6 +2,11 @@ const store = require('../../utils/store')
 const { getWeather } = require('../../utils/weather')
 const cloudData = require('../../utils/cloud-data')
 
+const QUICK_RECORDS = [
+  { type: 'feed', label: '＋ 喂食' }, { type: 'water', label: '＋ 饮水' },
+  { type: 'stool', label: '＋ 排便' }, { type: 'walk', label: '＋ 散步' }
+]
+
 function getBirthdayInfo(birthday) {
   const birth = new Date(`${birthday}T00:00:00`)
   if (!Number.isFinite(birth.getTime())) return { birthdayDays: null, nextAge: '', birthdayLabel: '生日待完善', birthdayItems: [] }
@@ -644,10 +649,24 @@ Page({
     todayFeeds: [], todayFeedCount: 0, todayFeedTotal: 0, todayStools: [], todayStoolCount: 0, todayStoolAbnormalCount: 0, todayStoolStatus: '等待记录', waterTarget: 0, birthdayDays: 0, nextAge: 0, birthdayLabel: '',
     weatherLoading: true, weather: { icon: '🌤️', temperature: '--', apparent: '--', condition: '加载天气', location: '正在定位', rainText: '正在获取逐小时降雨预报', rainTime: '', live: false },
     seasonName: '', seasonTip: '', lifeStage: '', healthTips: [],
-    homeDashboard: { greeting: '', healthScore: 100, healthSummary: '', tasks: [], statusCards: [], completedCount: 0, totalTasks: 6, progress: 0, nextTask: {}, laterTasks: [], findings: [], knowledge: { detail: [] } }
+    homeDashboard: { greeting: '', healthScore: 100, healthSummary: '', tasks: [], statusCards: [], completedCount: 0, totalTasks: 6, progress: 0, nextTask: {}, laterTasks: [], findings: [], knowledge: { detail: [] } }, quickRecords: QUICK_RECORDS
   },
   quickRecord(e) { wx.navigateTo({ url: '/pages/feed/feed?type=' + e.currentTarget.dataset.type + '&add=1' }) },
+  customizeQuickRecords() {
+    wx.showActionSheet({ itemList: QUICK_RECORDS.map(item => `优先 ${item.label.slice(2)}`), success:result => {
+      const first = QUICK_RECORDS[result.tapIndex]
+      const quickRecords = [first, ...QUICK_RECORDS.filter(item => item.type !== first.type)]
+      wx.setStorageSync('paw_quick_record_order', quickRecords.map(item => item.type))
+      this.setData({ quickRecords })
+      wx.showToast({ title:`已将${first.label.slice(2)}放在第一位`, icon:'none' })
+    } })
+  },
   onShow() {
+    const savedOrder = wx.getStorageSync('paw_quick_record_order')
+    const quickRecords = Array.isArray(savedOrder) && savedOrder.length === QUICK_RECORDS.length
+      ? savedOrder.map(type => QUICK_RECORDS.find(item => item.type === type)).filter(Boolean)
+      : QUICK_RECORDS
+    this.setData({ quickRecords })
     this.refresh()
     cloudData.syncOnResume().then(() => this.refresh())
     this.loadWeather()

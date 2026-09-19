@@ -17,7 +17,7 @@ function mergePhotos(remotePhotos, localPhotos) {
   ;[...(remotePhotos || []), ...(localPhotos || [])].forEach(item => {
     const photo = normalizePhoto(item)
     if (!photo) return
-    const key = photo.path || photo.id
+    const key = String(photo.id)
     if (known.has(key)) return
     known.add(key)
     merged.push(photo)

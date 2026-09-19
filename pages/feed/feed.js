@@ -10,6 +10,12 @@ const TYPES = {
 
 const FEED_GOAL = 260
 
+function isReadOnlyMember() {
+  if (store.isDemoMode && store.isDemoMode()) return false
+  const share = wx.getStorageSync && wx.getStorageSync('paw_share_status')
+  return !!(share && share.shared && share.role === 'viewer')
+}
+
 function parseNumber(value) {
   const match = String(value === undefined || value === null ? '' : value).match(/[\d.]+/)
   return match ? Number(match[0]) || 0 : 0
@@ -61,10 +67,12 @@ function getTrendDayValue(type, dayRecords) {
   return Math.round(dayRecords.reduce((sum, item) => sum + parseNumber(item[valueKey]), 0))
 }
 
-function buildTrend(type, records, endDate, selectedDate, pet, feedGoal, waterGoal) {
+function buildTrend(type, records, endDate, selectedDate, pet, feedGoal, waterGoal, range = 30) {
   const config = getTrendConfig(type, pet, feedGoal, waterGoal)
-  const days = Array.from({ length: 30 }, (_, index) => {
-    const dayKey = offsetDateKey(endDate, index - 29)
+  // 周对比始终覆盖完整的两个七天窗口，不受图表展示范围影响。
+  const historyLength = Math.max(range, 14)
+  const historyDays = Array.from({ length: historyLength }, (_, index) => {
+    const dayKey = offsetDateKey(endDate, index - (historyLength - 1))
     const dayRecords = (records || []).filter(item => item && item.dayKey === dayKey)
     const total = getTrendDayValue(type, dayRecords)
     const abnormal = type === 'stool' ? dayRecords.filter(item => item.abnormal).length : 0
@@ -79,22 +87,28 @@ function buildTrend(type, records, endDate, selectedDate, pet, feedGoal, waterGo
         ? type === 'stool' && abnormal ? `${abnormal}异常` : `${dayRecords.length}${config.eventUnit}`
         : '—',
       dateLabel: parts[2] === 1 ? `${parts[1]}/1` : String(parts[2]),
-      isLatest: index === 29,
+      isLatest: index === historyLength - 1,
       selected: dayKey === selectedDate
     }
   })
+  const days = historyDays.slice(-range)
   const maxValue = Math.max(config.goal, ...days.map(item => item.total), 1)
   const activeDays = days.filter(item => item.total > 0)
   const totalEvents = days.reduce((sum, item) => sum + item.count, 0)
   const average = activeDays.length ? Math.round(activeDays.reduce((sum, item) => sum + item.total, 0) / activeDays.length) : 0
-  const latest7 = days.slice(-7)
-  const previous7 = days.slice(-14, -7)
+  const latest7 = historyDays.slice(-7)
+  const previous7 = historyDays.slice(-14, -7)
   const latest7Average = Math.round(latest7.reduce((sum, item) => sum + item.total, 0) / 7)
   const previous7Average = Math.round(previous7.reduce((sum, item) => sum + item.total, 0) / 7)
   const change = latest7Average - previous7Average
   let changeText = '近两周基本稳定'
   let changeClass = 'stable'
-  if (type === 'stool') {
+  const latestRecordedDays = latest7.filter(item => item.count > 0).length
+  const previousRecordedDays = previous7.filter(item => item.count > 0).length
+  if (latestRecordedDays < 7 || previousRecordedDays < 7) {
+    changeClass = 'insufficient'
+    changeText = `记录不足，暂不作周对比（近 7 天 ${latestRecordedDays}/7 天，前 7 天 ${previousRecordedDays}/7 天）`
+  } else if (type === 'stool') {
     const latestAbnormal = latest7.reduce((sum, item) => sum + item.abnormal, 0)
     const previousAbnormal = previous7.reduce((sum, item) => sum + item.abnormal, 0)
     const abnormalChange = latestAbnormal - previousAbnormal
@@ -127,8 +141,8 @@ function buildTrend(type, records, endDate, selectedDate, pet, feedGoal, waterGo
       barHeight: item.total ? Math.max(14, Math.round(item.total / maxValue * 132)) : 0
     })),
     theme: type,
-    title: config.title,
-    metrics: config.metricLabels.map((label, index) => ({ label, value: metricValues[index] })),
+    title: config.title.replace('30', range),
+    metrics: config.metricLabels.map((label, index) => ({ label: label.replace('30 天', `${range} 天`), value: metricValues[index] })),
     chartWidth: days.length * 70,
     scrollLeft: days.length * 70,
     endLabel: `${Number(endDate.slice(5, 7))}月${Number(endDate.slice(8, 10))}日`,
@@ -211,14 +225,14 @@ function buildSummary(type, records, pet, isToday, feedGoal = FEED_GOAL, savedWa
 
 Page({
   data: {
-    pet: {}, day: '', month: '', today: '', selectedDate: '', trendEndDate: '', dateFilterText: '今天', emptyText: '', currentType: 'feed', singleMode: true, detailTitle: '喂食详情', detailEyebrow: 'FEEDING DETAIL',
+    pet: {}, day: '', month: '', today: '', selectedDate: '', trendEndDate: '', dateFilterText: '今天', emptyText: '', currentType: 'feed', singleMode: true, detailTitle: '喂食详情', detailEyebrow: 'FEEDING DETAIL', trendRange: 30,
     tabs: Object.keys(TYPES).map(key => ({ key, tab: TYPES[key].tab, icon: TYPES[key].icon })),
     rows: [], summary: {}, typeMeta: {}, feedTrend: { days: [], scrollLeft: 0, activeDays: 0, totalMeals: 0, average: 0, latest7Average: 0 },
     adding: false, editingRecordId: null,
     editingFeedGoal: false, feedGoal: FEED_GOAL, feedGoalDraft: String(FEED_GOAL),
     editingWaterGoal: false, waterGoal: 600, waterGoalDraft: '600',
     mealTypes: ['早餐', '午餐', '晚餐', '零食'],
-    stoolConditions: ['正常成形', '偏软', '稀便', '便秘/干硬'], stoolColors: ['棕色', '黄色', '黑色', '红色'], draft: {}
+    stoolConditions: ['正常成形', '偏软', '稀便', '便秘/干硬'], stoolColors: ['棕色', '黄色', '黑色', '红色'], draft: {}, recordSearch: '', authorFilter: 'all', authorOptions: [{ value: 'all', label: '全部成员' }], selectingRecords: false, selectedRecordIds: []
   },
   onLoad(options) {
     const targetType = options && TYPES[options.type] ? options.type : 'feed'
@@ -249,42 +263,92 @@ Page({
     const feedGoal = Number(store.get('feedGoal')) || FEED_GOAL
     const waterGoal = Number(store.get('waterGoal')) || Math.round((Number(pet.weight) || 0) * 55) || 600
     const typeRecords = store.get(TYPES[type].storeKey)
+    const keyword = String(this.data.recordSearch || '').trim().toLowerCase()
+    const authorFilter = this.data.authorFilter || 'all'
+    const authorOptions = [{ value: 'all', label: '全部成员' }, ...Array.from(new Map(typeRecords.filter(item => item && item.recordedBy).map(item => [item.recordedBy, { value:item.recordedBy, label:item.recordedByName || '家庭成员' }])).values())]
     const records = typeRecords
-      .filter(item => item && item.dayKey === selectedDate)
+      .filter(item => item && item.dayKey === selectedDate && (authorFilter === 'all' || item.recordedBy === authorFilter))
+      .filter(item => !keyword || JSON.stringify(item).toLowerCase().includes(keyword))
       .sort((a, b) => String(b.time || '').localeCompare(String(a.time || '')))
+    const selectedRecordIds = this.data.selectedRecordIds || []
     const rows = records.map(item => toRow(type, {
       ...item,
       date: dateFilterText
-    }))
+    })).map(item => ({ ...item, selected:selectedRecordIds.includes(String(item.id)) }))
     const selected = new Date(`${selectedDate}T00:00:00`)
     const isToday = selectedDate === today
     this.setData({
       pet, today, selectedDate, day: selected.getDate(), month: selected.getMonth() + 1, dateFilterText,
-      emptyText: isToday ? TYPES[type].empty : `${dateFilterText}没有${TYPES[type].tab}记录。`,
+      emptyText: keyword || authorFilter !== 'all' ? '当前日期没有符合筛选条件的记录，请调整搜索或成员筛选。' : isToday ? TYPES[type].empty : `${dateFilterText}没有${TYPES[type].tab}记录。`,
       typeMeta: TYPES[type],
       detailTitle: `${pet.name}的${TYPES[type].tab}`,
       detailEyebrow: { feed: 'FEEDING DETAIL', stool: 'STOOL DETAIL', water: 'WATER DETAIL', walk: 'WALK DETAIL' }[type],
       rows,
       feedGoal, waterGoal,
       summary: buildSummary(type, records, pet, isToday, feedGoal, waterGoal),
-      feedTrend: buildTrend(type, typeRecords, trendEndDate, selectedDate, pet, feedGoal, waterGoal)
+      feedTrend: buildTrend(type, typeRecords, trendEndDate, selectedDate, pet, feedGoal, waterGoal, this.data.trendRange || 30),
+      authorOptions,
+      authorFilterLabel: (authorOptions.find(item => item.value === authorFilter) || authorOptions[0]).label,
+      readOnly: isReadOnlyMember()
     })
   },
   onRecordDate(e) {
-    this.setData({ selectedDate: e.detail.value, trendEndDate: e.detail.value })
+    this.setData({ selectedDate: e.detail.value, trendEndDate: e.detail.value, selectedRecordIds: [], selectingRecords: false })
     this.refresh()
   },
   onTrendDay(e) {
     const selectedDate = e.currentTarget.dataset.date
     if (!selectedDate) return
-    this.setData({ selectedDate })
+    this.setData({ selectedDate, selectedRecordIds: [], selectingRecords: false })
     this.refresh()
   },
+  setTrendRange(e) {
+    const trendRange = Number(e.currentTarget.dataset.range)
+    if (![7, 30, 180].includes(trendRange)) return
+    this.setData({ trendRange })
+    this.refresh()
+  },
+  onRecordSearch(e) {
+    this.setData({ recordSearch:e.detail.value, selectedRecordIds: [] })
+    this.refresh()
+  },
+  onAuthorFilter(e) {
+    const option = this.data.authorOptions[Number(e.detail.value)] || this.data.authorOptions[0]
+    this.setData({ authorFilter:option.value, selectedRecordIds: [] })
+    this.refresh()
+  },
+  toggleRecordSelectionMode() {
+    if (isReadOnlyMember()) return
+    this.setData({ selectingRecords:!this.data.selectingRecords, selectedRecordIds:[] })
+    this.refresh()
+  },
+  toggleSelectedRecord(e) {
+    const id = String(e.currentTarget.dataset.id)
+    const selectedRecordIds = this.data.selectedRecordIds.includes(id)
+      ? this.data.selectedRecordIds.filter(value => value !== id)
+      : [...this.data.selectedRecordIds, id]
+    this.setData({ selectedRecordIds })
+    this.refresh()
+  },
+  removeSelectedRecords() {
+    if (isReadOnlyMember()) return wx.showToast({ title:'只读成员不能删除记录', icon:'none' })
+    const ids = this.data.selectedRecordIds
+    if (!ids.length) return wx.showToast({ title:'请先选择记录', icon:'none' })
+    const key = TYPES[this.data.currentType].storeKey
+    wx.showModal({ title:'删除所选记录', content:`将删除 ${ids.length} 条记录。`, confirmText:'删除', success:result => {
+      if (!result.confirm) return
+      if (isReadOnlyMember()) return wx.showToast({ title:'权限已变化，不能删除', icon:'none' })
+      store.set(key, store.get(key).filter(item => !ids.includes(String(item.id))))
+      this.setData({ selectingRecords:false, selectedRecordIds:[] })
+      this.refresh()
+    } })
+  },
   switchType(e) {
-    this.setData({ currentType: e.currentTarget.dataset.type, adding: false })
+    this.setData({ currentType: e.currentTarget.dataset.type, adding: false, selectedRecordIds: [], selectingRecords: false, authorFilter: 'all', recordSearch: '' })
     this.refresh()
   },
   openAdd() {
+    if (isReadOnlyMember()) return wx.showToast({ title: '只读成员不能新增记录', icon: 'none' })
     const now = new Date()
     const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
     const drafts = {
@@ -298,8 +362,7 @@ Page({
   },
   onDraftDate(e) { this.setData({ 'draft.dayKey': e.detail.value }) },
   persistRecord(key, record) {
-    const share = wx.getStorageSync && wx.getStorageSync('paw_share_status')
-    if (share && share.shared && share.role === 'viewer' && !(store.isDemoMode && store.isDemoMode())) { wx.showToast({ title: '只读成员不能修改记录', icon: 'none' }); return false }
+    if (isReadOnlyMember()) { wx.showToast({ title: '只读成员不能修改记录', icon: 'none' }); return false }
     const dayKey = this.data.draft.dayKey || store.todayKey()
     const date = new Date(`${dayKey}T00:00:00`)
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dayKey) || !Number.isFinite(date.getTime()) || dayKey > store.todayKey() || offsetDateKey(dayKey, 0) !== dayKey) {
@@ -312,7 +375,8 @@ Page({
       wx.showToast({ title: '记录已变化，请刷新后重试', icon: 'none' })
       return false
     }
-    const next = { ...record, dayKey, date: dayKey, id: id == null ? record.id : id }
+    const previous = id == null ? {} : records.find(item => item.id === id)
+    const next = { ...previous, ...record, dayKey, date: dayKey, id: id == null ? record.id : id }
     store.set(key, id == null ? [next, ...records] : records.map(item => item.id === id ? next : item))
     if (wx.setStorageSync) {
       const { dayKey: ignoredDate, time: ignoredTime, note: ignoredNote, ...defaults } = this.data.draft
@@ -321,6 +385,7 @@ Page({
     return true
   },
   editRecord(e) {
+    if (isReadOnlyMember()) return wx.showToast({ title: '只读成员不能编辑记录', icon: 'none' })
     const item = store.get(TYPES[this.data.currentType].storeKey).find(record => record.id === e.currentTarget.dataset.id)
     if (!item) return
     const draft = { ...item }
@@ -330,6 +395,7 @@ Page({
   closeAdd() { this.setData({ adding: false }) },
   openFeedGoalEditor() {
     if (this.data.currentType !== 'feed') return
+    if (isReadOnlyMember()) return wx.showToast({ title: '只读成员不能修改目标', icon: 'none' })
     this.setData({ editingFeedGoal: true, feedGoalDraft: String(this.data.feedGoal || FEED_GOAL) })
   },
   closeFeedGoalEditor() { this.setData({ editingFeedGoal: false }) },
@@ -339,13 +405,23 @@ Page({
     if (!Number.isFinite(goal) || goal <= 0 || goal > 5000) {
       return wx.showToast({ title: '请输入 1～5000 克的目标值', icon: 'none' })
     }
-    store.set('feedGoal', goal)
+    const previousGoal = this.data.feedGoal
+    const saved = store.set('feedGoal', goal)
     this.setData({ editingFeedGoal: false, feedGoal: goal, feedGoalDraft: String(goal) })
     this.refresh()
-    wx.showToast({ title: '喂食目标已更新', icon: 'success' })
+    Promise.resolve(saved).then(result => {
+      if (result && result.ok === false) {
+        this.setData({ feedGoal: previousGoal, feedGoalDraft: String(previousGoal) })
+        this.refresh()
+        wx.showToast({ title: '喂食目标未保存', icon: 'none' })
+        return
+      }
+      wx.showToast({ title: '喂食目标已更新', icon: 'success' })
+    })
   },
   openWaterGoalEditor() {
     if (this.data.currentType !== 'water') return
+    if (isReadOnlyMember()) return wx.showToast({ title: '只读成员不能修改目标', icon: 'none' })
     this.setData({ editingWaterGoal: true, waterGoalDraft: String(this.data.waterGoal || 600) })
   },
   closeWaterGoalEditor() { this.setData({ editingWaterGoal: false }) },
@@ -355,10 +431,19 @@ Page({
     if (!Number.isFinite(goal) || goal <= 0 || goal > 10000) {
       return wx.showToast({ title: '请输入 1～10000 毫升的目标值', icon: 'none' })
     }
-    store.set('waterGoal', goal)
+    const previousGoal = this.data.waterGoal
+    const saved = store.set('waterGoal', goal)
     this.setData({ editingWaterGoal: false, waterGoal: goal, waterGoalDraft: String(goal) })
     this.refresh()
-    wx.showToast({ title: '饮水目标已更新', icon: 'success' })
+    Promise.resolve(saved).then(result => {
+      if (result && result.ok === false) {
+        this.setData({ waterGoal: previousGoal, waterGoalDraft: String(previousGoal) })
+        this.refresh()
+        wx.showToast({ title: '饮水目标未保存', icon: 'none' })
+        return
+      }
+      wx.showToast({ title: '饮水目标已更新', icon: 'success' })
+    })
   },
   noop() {},
   chooseType(e) { this.setData({ 'draft.type': e.currentTarget.dataset.value }) },
@@ -412,8 +497,20 @@ Page({
     wx.showToast({ title, icon: 'none' })
   },
   removeRecord(e) {
+    if (isReadOnlyMember()) return wx.showToast({ title: '只读成员不能删除记录', icon: 'none' })
     const key = TYPES[this.data.currentType].storeKey
     const id = e.currentTarget.dataset.id
     wx.showActionSheet({ itemList: ['删除这条记录'], success: () => { store.set(key, store.get(key).filter(item => item.id !== id)); this.refresh() } })
+  },
+  openRecordActions(e) {
+    if (isReadOnlyMember()) return wx.showToast({ title: '只读成员不能修改记录', icon: 'none' })
+    const id = e.currentTarget.dataset.id
+    wx.showActionSheet({
+      itemList: ['编辑记录', '删除记录'],
+      success: result => {
+        if (result.tapIndex === 0) this.editRecord({ currentTarget: { dataset: { id } } })
+        else this.removeRecord({ currentTarget: { dataset: { id } } })
+      }
+    })
   }
 })

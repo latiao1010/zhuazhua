@@ -215,7 +215,7 @@ function withTimers(run) {
 }
 
 async function main() {
-  await scenario('空存储能初始化覆盖八个月的全部模块假数据', () => {
+  await scenario('空存储能初始化覆盖六个月的全部模块假数据', () => {
     const backing = { paw_data_mode: 'demo' }
     const storage = new Proxy(backing, { get(target, key) { return target[key] }, set(target, key, value) { target[key] = value; if (String(key).startsWith('demo_')) target[String(key).slice(5)] = value; return true } })
     const storePath = path.join(ROOT, 'utils/store.js')
@@ -234,17 +234,17 @@ async function main() {
       .forEach(key => assert.ok(Array.isArray(storage[key]), `${key} should be an array`))
     assert.ok(storage.paw_feeds.every(item => /^\d{4}-\d{2}-\d{2}$/.test(item.dayKey)))
     assert.ok(storage.paw_feeds.some(item => item.dayKey === store.todayKey()))
-    assert.ok(storage.paw_feeds.length > 600)
-    assert.ok(storage.paw_stools.length > 500)
-    assert.ok(storage.paw_water_records.length > 980)
-    assert.ok(storage.paw_walk_records.length > 420)
+    assert.ok(storage.paw_feeds.length > 450)
+    assert.ok(storage.paw_stools.length > 380)
+    assert.ok(storage.paw_water_records.length > 740)
+    assert.ok(storage.paw_walk_records.length > 300)
     const feedDays = [...new Set(storage.paw_feeds.map(item => item.dayKey))].sort()
-    assert.ok(feedDays.length >= 240)
-    assert.ok((new Date(`${feedDays[feedDays.length - 1]}T00:00:00`) - new Date(`${feedDays[0]}T00:00:00`)) / 86400000 >= 240)
-    assert.ok(storage.paw_weight_records.length >= 35)
+    assert.ok(feedDays.length >= 182)
+    assert.ok((new Date(`${feedDays[feedDays.length - 1]}T00:00:00`) - new Date(`${feedDays[0]}T00:00:00`)) / 86400000 >= 182)
+    assert.ok(storage.paw_weight_records.length >= 26)
     assert.deepStrictEqual([...new Set(storage.paw_care_records.map(item => item.key))].sort(), ['bath', 'dental', 'deworming', 'medicine', 'nail', 'vaccine'])
-    assert.ok(storage.paw_care_records.length >= 58)
-    assert.ok(storage.paw_growth_photos.length >= 24)
+    assert.ok(storage.paw_care_records.length >= 40)
+    assert.ok(storage.paw_growth_photos.length >= 19)
     assert.ok(storage.paw_diaries.length >= 14)
     assert.ok(storage.paw_chats.length >= 12)
     assert.ok(storage.paw_chats.some(item => item.source === 'local-knowledge'))
@@ -258,10 +258,13 @@ async function main() {
       return counts
     }, {})
     assert.ok(Math.max(...Object.values(feedCounts)) >= 6)
+    assert.deepStrictEqual(storage.paw_family_members.map(item => item.role), ['owner', 'admin', 'viewer'])
+    assert.ok(storage.paw_feeds.some(item => item.recordedByRole === 'owner'))
+    assert.ok(storage.paw_feeds.some(item => item.recordedByRole === 'admin'))
     assert.strictEqual(storage.paw_feed_trend_demo_v1, true)
     assert.strictEqual(storage.paw_daily_trend_demo_v1, true)
     assert.strictEqual(storage.paw_two_month_demo_v1, true)
-    assert.strictEqual(storage.paw_six_month_demo_v1, 'eight-month-v1')
+    assert.strictEqual(storage.paw_six_month_demo_v1, 'six-month-v2')
     assert.ok(storage.paw_supply_records.dogFood.openedDate)
     assert.ok(storage.paw_supply_records.snack.openedDate)
     assert.ok(storage.paw_supply_records.dogFood.history.length >= 4)
@@ -387,6 +390,50 @@ async function main() {
     assert.strictEqual(context.data.feedTrend.days[29].count, 2)
     page.onTrendDay.call(context, { currentTarget: { dataset: { date: '2026-07-20' } } })
     assert.strictEqual(context.data.summary.count, 2)
+  })
+
+  await scenario('周对比独立读取十四天，切换图表范围不改变结论，缺失记录不视为零', () => {
+    const { wx } = makeWx()
+    const state = makeState({ feeds: Array.from({ length:14 }, (_, index) => ({ id:index + 1, dayKey:offsetDayKey(index), amount:index < 7 ? 200 : 100 })) })
+    const page = loadPage('pages/feed/feed.js', makeStore(state), wx)
+    const context = pageContext(page, { currentType:'feed', selectedDate:TODAY, trendEndDate:TODAY })
+    for (const range of [7, 30, 180]) {
+      context.setTrendRange({ currentTarget:{ dataset:{ range } } })
+      assert.strictEqual(context.data.feedTrend.days.length, range)
+      assert.strictEqual(context.data.feedTrend.changeText, '近 7 天日均增加 100g')
+      assert.strictEqual(context.data.feedTrend.days[range - 1].isLatest, true)
+    }
+    state.feeds = state.feeds.slice(0, 7)
+    context.refresh()
+    assert.ok(context.data.feedTrend.changeText.includes('记录不足'))
+    state.feeds = []
+    context.refresh()
+    assert.ok(context.data.feedTrend.changeText.includes('记录不足'))
+    context.data.currentType = 'stool'
+    context.refresh()
+    assert.ok(context.data.feedTrend.changeText.includes('记录不足'))
+  })
+
+  await scenario('记录筛选清除隐藏选择，编辑保留作者和同步版本', () => {
+    const state = makeState({ waters:[{ id:77, dayKey:TODAY, amount:120, recordedBy:'owner', recordedByName:'我', _syncUpdatedAt:12345 }] })
+    const { wx } = makeWx()
+    const page = loadPage('pages/feed/feed.js', makeStore(state), wx)
+    const context = pageContext(page, { currentType:'water', selectedDate:TODAY, selectedRecordIds:['77'], selectingRecords:true })
+    context.onRecordSearch({ detail:{ value:'不存在的备注' } })
+    assert.deepStrictEqual(context.data.selectedRecordIds, [])
+    assert.ok(context.data.emptyText.includes('筛选'))
+    context.onRecordDate({ detail:{ value:offsetDayKey(1) } })
+    assert.strictEqual(context.data.selectingRecords, false)
+    context.data.editingRecordId = 77
+    context.data.draft = { dayKey:TODAY }
+    context.persistRecord('waters', { id:999, amount:180 })
+    assert.strictEqual(state.waters[0].recordedBy, 'owner')
+    assert.strictEqual(state.waters[0]._syncUpdatedAt, 12345)
+    assert.strictEqual(state.waters[0].amount, 180)
+    wx.setStorageSync('paw_share_status', { shared:true, role:'viewer' })
+    context.data.selectedRecordIds = ['77']
+    context.removeSelectedRecords()
+    assert.strictEqual(state.waters.length, 1)
   })
 
   await scenario('非法喂食、饮水、散步数值不会写入记录', () => {
@@ -519,7 +566,7 @@ async function main() {
     assert.ok(calls.toasts.some(item => item.title.includes('1～10000')))
   })
 
-  await scenario('我的页全屏入口和所有生命周期都会正确恢复 Tab', () => {
+  await scenario('我的页离开时隐藏内容且不修改下一页底栏，返回时恢复', () => {
     const state = makeState()
     const { wx, calls } = makeWx()
     const page = loadPage('pages/account/account.js', makeStore(state), wx)
@@ -532,9 +579,13 @@ async function main() {
     assert.strictEqual(context.data.careDetailOpen, true)
     page.closeCareDetail.call(context)
     page.onHide.call(context)
+    assert.strictEqual(context.data.pageVisible, false)
     page.onUnload.call(context)
     assert.strictEqual(calls.tabHides, 2)
-    assert.strictEqual(calls.tabShows, 5)
+    assert.strictEqual(calls.tabShows, 3)
+    page.onShow.call(context)
+    assert.strictEqual(context.data.pageVisible, true)
+    assert.strictEqual(calls.tabShows, 4)
   })
 
   await scenario('体重与护理周期拒绝非数字并保留原档案', () => {
@@ -803,6 +854,26 @@ async function main() {
     assert.ok(calls.toasts.length >= 2)
   })
 
+  await scenario('半年每日护理记录新增后完整保留，旧月份日历可查且历史可分页', () => {
+    const careRecords = Array.from({ length:182 }, (_, index) => ({ id:`care-${index}`, key:'dental', date:offsetDayKey(index + 1), nextDate:offsetDayKey(index) }))
+    const state = makeState({ careRecords })
+    const { wx } = makeWx()
+    const context = pageContext(loadPage('pages/account/account.js', makeStore(state), wx))
+    context.onShow()
+    context.openCareDetail({ currentTarget:{ dataset:{ key:'dental' } } })
+    assert.strictEqual(context.data.selectedCareRecords.length, 182)
+    const oldest = careRecords[181].date
+    context.onCareMonth({ detail:{ value:oldest } })
+    assert.ok(context.data.careCalendar.some(day => day.key === oldest && day.recorded))
+    context.showCareHistory()
+    assert.strictEqual(context.data.renderedCareRecords.length, 20)
+    context.loadMoreCareHistory()
+    assert.strictEqual(context.data.renderedCareRecords.length, 40)
+    context.markCareDone({ currentTarget:{ dataset:{ key:'dental' } } })
+    assert.strictEqual(state.careRecords.length, 183)
+    assert.ok(state.careRecords.some(record => record.id === 'care-181'))
+  })
+
   await scenario('护理历史日期会自动计算下次提醒', () => {
     const state = makeState()
     const { wx } = makeWx()
@@ -859,7 +930,7 @@ async function main() {
     })
   })
 
-  await scenario('体重历史超过 100 条不会影响旧成长照片', () => {
+  await scenario('体重历史超过 100 条完整保留旧记录与成长照片', async () => {
     const records = Array.from({ length: 100 }, (_, index) => ({
       id: index + 1,
       createdAt: 1000 - index,
@@ -877,9 +948,41 @@ async function main() {
       careDraft: defaultCare(),
       today: TODAY
     })
-    page.savePet.call(context)
-    assert.strictEqual(state.weightRecords.length, 100)
+    await page.savePet.call(context)
+    assert.strictEqual(state.weightRecords.length, 101)
+    assert.ok(state.weightRecords.some(record => record.id === 100))
     assert.ok(!calls.removed.includes('wxfile://oldest-growth.jpg'))
+  })
+
+  await scenario('资料保存区分拒绝、异常和本机待同步，失败保留编辑内容', async () => {
+    for (const failure of ['readonly', 'throw', 'reject', 'pending']) {
+      const state = makeState()
+      const store = makeStore(state)
+      const { wx, calls } = makeWx()
+      store.set = (key, value) => {
+        if (failure === 'throw') throw new Error('disk full')
+        if (failure === 'reject') return Promise.reject(new Error('failed'))
+        if (failure === 'pending') state[key] = value
+        return Promise.resolve({ ok:false, error:failure })
+      }
+      const context = pageContext(loadPage('pages/account/account.js', store, wx), { pet:clone(state.pet), profileFieldEditOpen:true, profileFieldSaving:true, profileFieldValue:'新名字' })
+      await context.saveProfilePatch({ name:'新名字' })
+      assert.strictEqual(context.data.profileFieldSaving, false)
+      assert.strictEqual(context.data.profileFieldEditOpen, failure !== 'pending')
+      assert.ok(!calls.toasts.some(item => item.title === '资料已保存'))
+      if (failure === 'pending') assert.ok(calls.toasts.some(item => item.title.includes('本机')))
+      else assert.strictEqual(context.data.profileFieldValue, '新名字')
+    }
+  })
+
+  await scenario('单项体重编辑保留超过 100 条的历史', async () => {
+    const records = Array.from({ length:150 }, (_, id) => ({ id, weight:11, dayKey:TODAY }))
+    const state = makeState({ weightRecords:records })
+    const { wx } = makeWx()
+    const context = pageContext(loadPage('pages/account/account.js', makeStore(state), wx), { pet:clone(state.pet) })
+    await context.saveProfilePatch({ weight:12 })
+    assert.strictEqual(state.weightRecords.length, 151)
+    assert.strictEqual(state.weightRecords[150].id, 149)
   })
 
   await scenario('提问卡片点击状态当天保留，跨日恢复且返回按钮不变灰', () => {
@@ -887,10 +990,10 @@ async function main() {
     const { wx } = makeWx()
     const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
     const question = { label: '今日状态', text: '今天状态怎么样？' }
-    const context = pageContext(page, { advisorQuestions: [question], followUps: [question, { action: 'back' }] })
+    const context = pageContext(page, { featuredTopics: [question], followUps: [question, { action: 'back' }] })
     context.send = () => {}
     context.askQuick({ currentTarget: { dataset: { text: question.text, label: question.label, category: 'welcome' } } })
-    assert.strictEqual(context.data.advisorQuestions[0].visited, true)
+    assert.strictEqual(context.data.featuredTopics[0].visited, true)
     assert.strictEqual(context.data.followUps[0].visited, false)
     context.data.followUpCategory = question.text
     context.refreshQuestionVisits()
@@ -905,15 +1008,244 @@ async function main() {
     context.refreshQuestionVisits()
     assert.strictEqual(context.data.followUps[0].visited, false)
     assert.strictEqual(context.data.followUps[1].visited, false)
-    const reopened = pageContext(page, { advisorQuestions: [question] })
+    const reopened = pageContext(page, { featuredTopics: [question] })
     reopened.refreshQuestionVisits()
-    assert.strictEqual(reopened.data.advisorQuestions[0].visited, true)
+    assert.strictEqual(reopened.data.featuredTopics[0].visited, true)
     reopened.questionDay = () => 'next-day'
     reopened.refreshQuestionVisits()
-    assert.strictEqual(reopened.data.advisorQuestions[0].visited, false)
+    assert.strictEqual(reopened.data.featuredTopics[0].visited, false)
     context.data.thinking = true
     context.askQuick({ currentTarget: { dataset: { text: '被阻止的问题' } } })
     assert.ok(!context.readQuestionVisits().includes('被阻止的问题'))
+  })
+
+  await scenario('数据页只保留现用导出入口，旧备份处理和主题面板已移除', () => {
+    const { wx } = makeWx()
+    const page = loadPage('pages/manage/manage.js', makeStore(makeState()), wx)
+    for (const method of ['exportCsv', 'exportBackup', 'importBackup']) assert.strictEqual(page[method], undefined)
+    assert.strictEqual(typeof page.exportVisitData, 'function')
+    const markup = fs.readFileSync(path.join(ROOT, 'pages/manage/manage.wxml'), 'utf8')
+    assert.ok(markup.includes('bindtap="exportVisitData"'))
+    assert.ok(!/exportCsv|exportBackup|importBackup|summary-preview/.test(markup))
+    const chat = fs.readFileSync(path.join(ROOT, 'pages/chat/chat.wxml'), 'utf8')
+    assert.ok(!/topics-mode|topic-group-card/.test(chat))
+    assert.ok(chat.includes('browsingTopics'))
+  })
+
+  await scenario('单按钮导出生成所选资料，处理保存、分享、取消、失败和重复点击', () => {
+    const { wx, calls } = makeWx()
+    wx.env = { USER_DATA_PATH:'/test' }
+    const modals = []
+    wx.showModal = options => modals.push(options)
+    let pending, file, saves = 0
+    wx.getFileSystemManager = () => ({ writeFile:options => { file = options; pending = options } })
+    wx.getDeviceInfo = () => ({ platform:'ios' })
+    wx.shareFileMessage = options => { assert.strictEqual(options.filePath, file.filePath); options.success() }
+    const context = pageContext(loadPage('pages/manage/manage.js', makeStore(makeState({ waters:[{ dayKey:TODAY, amount:120 }] })), wx), { start:TODAY, end:TODAY, redact:true })
+    const summary = require('../utils/visit-summary')
+    const original = summary.buildSummary
+    summary.buildSummary = (start, end, options) => {
+      assert.strictEqual(start, TODAY)
+      assert.strictEqual(end, TODAY)
+      assert.strictEqual(options.redact, true)
+      return '就诊资料测试'
+    }
+    try { context.exportVisitData() } finally { summary.buildSummary = original }
+    assert.strictEqual(file.data, '就诊资料测试')
+    assert.ok(file.filePath.endsWith('.txt'))
+    assert.strictEqual(file.encoding, 'utf8')
+    context.shareTextFile('duplicate.txt', 'ignored')
+    assert.strictEqual(file.data, '就诊资料测试')
+    pending.success()
+    assert.strictEqual(context.data.exporting, false)
+    assert.ok(calls.toasts.some(item => item.title === '导出成功'))
+    wx.getDeviceInfo = () => ({ platform:'devtools' })
+    wx.saveFileToDisk = options => { saves++; options.success() }
+    context.shareTextFile('test.txt', 'text'); pending.success()
+    assert.strictEqual(saves, 1)
+    wx.saveFileToDisk = options => options.fail({ errMsg:'cancel' })
+    context.shareTextFile('test.txt', 'text'); pending.success()
+    assert.strictEqual(context.data.exporting, false)
+    assert.strictEqual(modals.length, 0)
+    wx.saveFileToDisk = options => options.fail({ errMsg:'unavailable' })
+    context.shareTextFile('test.txt', 'text'); pending.success()
+    assert.strictEqual(modals.pop().title, '导出未完成')
+    context.shareTextFile('test.txt', 'text'); pending.fail({ errMsg:'disk full' })
+    assert.strictEqual(modals.pop().title, '文件生成失败')
+    assert.strictEqual(context.data.exporting, false)
+  })
+
+  await scenario('就诊快捷日期按自然日包含今天，统计六类记录并阻止空导出', () => {
+    const { wx, calls } = makeWx()
+    const state = makeState({ waters:[{ dayKey:TODAY }, { dayKey:'2026-07-23' }], careRecords:[{ date:TODAY }], weightRecords:[] })
+    const context = pageContext(loadPage('pages/manage/manage.js', makeStore(state), wx))
+    const choose = range => context.selectVisitRange({ currentTarget:{ dataset:{ range } } })
+    choose('7')
+    assert.strictEqual(context.data.start, '2026-07-24')
+    assert.strictEqual(context.data.end, TODAY)
+    assert.strictEqual(context.data.recordCount, 2)
+    choose('30')
+    assert.strictEqual(context.data.start, '2026-07-01')
+    assert.strictEqual(context.data.recordCount, 3)
+    choose('halfYear')
+    assert.strictEqual(context.data.start, '2026-01-31')
+    context.data.summaryText = '旧预览'
+    context.onStart({ detail:{ value:TODAY } })
+    assert.strictEqual(context.data.summaryText, '')
+    assert.strictEqual(context.data.activeRange, '')
+    state.waters = []; state.careRecords = []
+    context.shareTextFile = () => { throw new Error('空记录不得写文件') }
+    context.exportVisitData()
+    assert.strictEqual(context.data.recordCount, 0)
+    assert.ok(calls.toasts.some(item => item.title.includes('暂无记录')))
+  })
+
+  await scenario('就诊快捷范围跨天滚动，手选日期保留且错误优先于空记录', () => {
+    const { wx, calls } = makeWx()
+    const store = makeStore(makeState())
+    let today = TODAY
+    store.todayKey = () => today
+    store.isDemoMode = () => true
+    const context = pageContext(loadPage('pages/manage/manage.js', store, wx))
+    context.refreshSync = () => context.refreshVisitData()
+    context.loadRemoteChanges = () => {}
+    context.loadReminder = () => {}
+    context.onShow()
+    assert.strictEqual(context.data.start, '2026-07-24')
+    today = '2026-07-31'
+    context.onShow()
+    assert.strictEqual(context.data.start, '2026-07-25')
+    assert.strictEqual(context.data.end, today)
+    context.onStart({ detail:{ value:'2026-07-01' } })
+    today = '2026-08-01'
+    context.onShow()
+    assert.strictEqual(context.data.start, '2026-07-01')
+    assert.strictEqual(context.data.end, '2026-07-31')
+    context.onStart({ detail:{ value:'2026-08-01' } })
+    context.exportVisitData()
+    assert.strictEqual(calls.toasts.at(-1).title, '开始日期不能晚于结束日期')
+    context.onEnd({ detail:{ value:'2026-08-02' } })
+    context.generateSummary()
+    assert.strictEqual(calls.toasts.at(-1).title, '结束日期不能晚于今天')
+    context.onStart({ detail:{ value:'2026-02-30' } })
+    context.exportVisitData()
+    assert.strictEqual(calls.toasts.at(-1).title, '日期无效，请重新选择')
+  })
+
+  await scenario('应用共享修改后同步刷新数量与预览，记录清空后移除旧摘要', async () => {
+    const { wx } = makeWx()
+    const state = makeState({ weightRecords:[] })
+    const context = pageContext(loadPage('pages/manage/manage.js', makeStore(state), wx), { start:TODAY, end:TODAY, summaryText:'旧内容', remoteChanges:[{ key:'waters', recordId:'new', selected:true }] })
+    const cloudData = require('../utils/cloud-data')
+    const summary = require('../utils/visit-summary')
+    const originalApply = cloudData.applyRemoteChanges
+    const originalStatus = cloudData.getSyncStatus
+    const originalBuild = summary.buildSummary
+    cloudData.applyRemoteChanges = async changes => {
+      state.waters.push({ dayKey:TODAY, amount:'120ml' })
+      return { applied:1, appliedChanges:changes }
+    }
+    cloudData.getSyncStatus = () => ({ status:'success' })
+    summary.buildSummary = () => `最新记录：${state.waters.length}`
+    try {
+      await context.applySelectedChanges()
+      assert.strictEqual(context.data.recordCount, 1)
+      assert.strictEqual(context.data.summaryText, '最新记录：1')
+      state.waters = []
+      context.refreshSync()
+      assert.strictEqual(context.data.recordCount, 0)
+      assert.strictEqual(context.data.summaryText, '')
+    } finally {
+      cloudData.applyRemoteChanges = originalApply
+      cloudData.getSyncStatus = originalStatus
+      summary.buildSummary = originalBuild
+    }
+  })
+
+  await scenario('摘要模块按20条展开，加载和折叠不影响完整复制', () => {
+    const { wx, calls } = makeWx()
+    const context = pageContext(loadPage('pages/manage/manage.js', makeStore(makeState()), wx))
+    const summary = require('../utils/visit-summary')
+    const buildReport = summary.buildReport, buildSummary = summary.buildSummary
+    const entries = Array.from({ length:45 }, (_, index) => `记录${index}`)
+    summary.buildReport = () => ({ header:'资料', sections:[{ key:'waters', label:'饮水', count:45, entries }] })
+    summary.buildSummary = () => entries.join('\n')
+    const event = { currentTarget:{ dataset:{ key:'waters' } } }
+    try {
+      context.updateSummaryPreview()
+      assert.strictEqual(context.data.summarySections[0].entries.length, 0)
+      context.toggleSummarySection(event)
+      assert.strictEqual(context.data.summarySections[0].entries.length, 20)
+      context.moreSummaryRecords(event)
+      assert.strictEqual(context.data.summarySections[0].entries.length, 40)
+      context.moreSummaryRecords(event)
+      assert.strictEqual(context.data.summarySections[0].entries.length, 45)
+      context.toggleSummarySection(event)
+      assert.strictEqual(context.data.summarySections[0].entries.length, 0)
+      context.copySummary()
+      assert.strictEqual(calls.clipboard[0], entries.join('\n'))
+    } finally { summary.buildReport = buildReport; summary.buildSummary = buildSummary }
+  })
+
+  await scenario('导出缓存仅清理7天前的就诊文件，保留当前分享和其他资料', () => {
+    const { wx } = makeWx()
+    global.wx = wx
+    wx.env = { USER_DATA_PATH:'/test' }
+    const cache = require('../utils/export-cache')
+    const prefix = '/test/就诊记录_2026-07-01_'
+    const old = prefix + '2026-07-10.txt', active = prefix + '2026-07-11.txt', fresh = prefix + '2026-07-12.txt'
+    const legacy = prefix + '2026-07-13.csv'
+    const expired = Date.now() - 8 * 86400000
+    const removed = []
+    wx.setStorageSync('paw_visit_export_cache_v1', [old, active, '/test/avatar.jpg', '/test/爪爪日常备份_2026-07-01.json'].map(path => ({ path, createdAt:expired })))
+    cache.remember(fresh)
+    wx.getFileSystemManager = () => ({
+      readdirSync:()=>[legacy.slice(6), 'avatar.jpg'],
+      statSync:()=>({ lastModifiedTime:expired / 1000 }),
+      unlinkSync:path=>removed.push(path)
+    })
+    cache.begin(active)
+    try {
+      cache.cleanup()
+      assert.deepStrictEqual(removed.sort(), [old, legacy].sort())
+      assert.ok(wx.getStorageSync('paw_visit_export_cache_v1').some(item => item.path === fresh))
+    } finally { cache.end(active) }
+  })
+
+  await scenario('返回全部问题复用欢迎卡片，保留记录并能继续提问', () => withTimers(flush => {
+    const chats = [{ id:1, role:'user', text:'旧问题' }, { id:2, role:'ai', text:'旧回答' }]
+    const state = makeState({ chats })
+    const { wx } = makeWx()
+    const context = pageContext(loadPage('pages/chat/chat.js', makeStore(state), wx), { messages:chats, showAllTopics:true, historySearch:'筛选词' })
+    context.scrollBottom()
+    context.onFollowUpTap({ currentTarget:{ dataset:{ action:'back' } } })
+    flush()
+    assert.strictEqual(context.data.browsingTopics, true)
+    assert.strictEqual(context.data.showAllTopics, false)
+    assert.strictEqual(context.data.historySearch, '')
+    assert.strictEqual(context.data.messages.length, 2)
+    assert.strictEqual(state.chats.length, 2)
+    assert.ok(!context.data.scrollTo.startsWith('msg-'))
+    context.returnToConversation()
+    assert.strictEqual(context.data.browsingTopics, false)
+    context.onFollowUpTap({ currentTarget:{ dataset:{ action:'back' } } })
+    context.generateReply = () => {}
+    context.askQuick({ currentTarget:{ dataset:{ category:'welcome', label:'饮水记录', text:'今天喝水多少' } } })
+    assert.strictEqual(context.data.browsingTopics, false)
+    assert.strictEqual(context.data.messages.length, 3)
+    assert.strictEqual(context.data.rootTopicLabel, '饮水记录')
+    flush()
+  }))
+
+  await scenario('取消清空聊天后保留原始记录', () => {
+    const state = makeState({ chats:[{ id:1, role:'user', text:'保留问题' }] })
+    const { wx } = makeWx()
+    wx.showModal = options => options.success({ confirm:false })
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { messages:state.chats })
+    context.clearChat()
+    assert.strictEqual(state.chats.length, 1)
+    assert.strictEqual(context.data.messages.length, 1)
   })
 
   await scenario('顾问回答分段展示，缺少记录时提供补记入口', () => {
@@ -930,6 +1262,45 @@ async function main() {
     context.openRecords()
     assert.ok(calls.navigations.includes('/pages/feed/feed'))
   })
+
+  await scenario('聊天搜索保留完整问答和最新一轮，重新加载后保持筛选', () => {
+    const state = makeState()
+    const { wx } = makeWx()
+    const page = loadPage('pages/chat/chat.js', makeStore(state), wx)
+    const context = pageContext(page, { historySearch: '饮水' })
+    const raw = [{ role:'user', text:'饮水多少' }, { role:'ai', text:'600ml' }, { role:'user', text:'散步多久' }, { role:'ai', text:'30分钟' }, { role:'user', text:'最新问题' }]
+    context.data.messages = context.formatMessages(raw)
+    context.applyHistoryFilters()
+    assert.deepStrictEqual(context.data.messages.map(item => item.visible), [true, true, false, false, true])
+    context.data.messages = context.formatMessages(raw)
+    context.applyHistoryFilters()
+    assert.strictEqual(context.data.messages[3].visible, false)
+    context.data.historySearch = '600ml'
+    context.applyHistoryFilters()
+    assert.strictEqual(context.data.messages[0].visible, true)
+  })
+
+  await scenario('顾问异常解除等待，重试不重复提问并定位回答开头', () => withTimers(flush => {
+    const state = makeState()
+    const { wx } = makeWx()
+    const store = makeStore(state)
+    const originalGet = store.get
+    const page = loadPage('pages/chat/chat.js', store, wx)
+    const context = pageContext(page, { pet:state.pet, input:'今天喝多少水？' })
+    context.setData = function(update, callback) { Object.assign(this.data, update); if (callback) callback() }
+    store.get = () => { throw new Error('模拟知识库读取失败') }
+    context.send()
+    flush()
+    assert.strictEqual(context.data.thinking, false)
+    assert.ok(context.data.replyError)
+    store.get = originalGet
+    context.retryReply()
+    context.retryReply()
+    flush()
+    assert.strictEqual(state.chats.length, 2)
+    assert.strictEqual(context.data.replyError, '')
+    assert.strictEqual(context.data.scrollTo, 'msg-1')
+  }))
 
   await scenario('清空聊天会取消尚未返回的本地知识库回复', () => withTimers(flush => {
     const state = makeState()

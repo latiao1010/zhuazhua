@@ -13,8 +13,8 @@
   <view class="summary card" wx:if="{{summary.kind === 'progress'}}">
     <view class="summary-top">
       <view><view class="summary-label">{{summary.label}}</view><view><text class="summary-num">{{summary.value}}</text><text class="summary-unit"> {{summary.unit}}</text></view></view>
-      <view class="goal editable" wx:if="{{currentType === 'feed'}}" bindtap="openFeedGoalEditor">{{summary.goalText}}<text> ✎</text></view>
-      <view class="goal editable" wx:elif="{{currentType === 'water'}}" bindtap="openWaterGoalEditor">{{summary.goalText}}<text> ✎</text></view>
+      <view class="goal editable" wx:if="{{currentType === 'feed' && !readOnly}}" bindtap="openFeedGoalEditor">{{summary.goalText}}<text> ✎</text></view>
+      <view class="goal editable" wx:elif="{{currentType === 'water' && !readOnly}}" bindtap="openWaterGoalEditor">{{summary.goalText}}<text> ✎</text></view>
       <view class="goal" wx:else>{{summary.goalText}}</view>
     </view>
     <view class="progress"><view class="progress-inner" style="width: {{summary.progress}}%"></view></view>
@@ -26,53 +26,40 @@
     <view class="stool-count"><text class="count-number">{{summary.count}}</text><text>{{summary.countUnit}}</text></view>
   </view>
 
-  <view class="feed-trend-card card {{feedTrend.theme}}" wx:if="{{feedTrend.days.length}}">
-    <view class="feed-trend-head">
-      <view><view>{{feedTrend.title}}</view><text>截至 {{feedTrend.endLabel}} · 每天合并显示</text></view>
-      <view class="feed-trend-change {{feedTrend.changeClass}}">{{feedTrend.changeText}}</view>
-    </view>
-    <view class="feed-trend-metrics">
-      <view wx:for="{{feedTrend.metrics}}" wx:key="label"><text>{{item.value}}</text><view>{{item.label}}</view></view>
-    </view>
-    <scroll-view class="feed-trend-scroll" scroll-x enhanced show-scrollbar="false" scroll-left="{{feedTrend.scrollLeft}}">
-      <view class="feed-trend-chart" style="width:{{feedTrend.chartWidth}}rpx">
-        <view class="feed-trend-column {{item.selected ? 'selected' : ''}}" wx:for="{{feedTrend.days}}" wx:key="dayKey" data-date="{{item.dayKey}}" bindtap="onTrendDay">
-          <text class="feed-trend-value">{{item.total || ''}}</text>
-          <view class="feed-trend-bar-track">
-            <view class="feed-trend-goal" style="bottom:{{feedTrend.goalBottom}}%"></view>
-            <view class="feed-trend-bar {{item.warning ? 'warning' : ''}} {{item.isLatest ? 'latest' : ''}}" style="height:{{item.barHeight}}rpx"></view>
-          </view>
-          <text class="feed-trend-date">{{item.dateLabel}}</text>
-          <text class="feed-trend-count">{{item.countText}}</text>
-        </view>
-      </view>
-    </scroll-view>
-    <view class="feed-trend-foot"><view><text class="feed-trend-legend-line"></text><text>{{feedTrend.goalText}}</text></view><text>{{feedTrend.footText}}</text></view>
-  </view>
-
-  <view class="section-row"><view class="section-title">{{typeMeta.title}}</view><view class="filter">{{dateFilterText}}</view></view>
+  <view class="section-row"><view class="section-title">{{typeMeta.title}}</view><view class="filter">{{dateFilterText}}<text wx:if="{{!readOnly}}" class="select-records" bindtap="toggleRecordSelectionMode">{{selectingRecords ? '取消选择' : '批量删除'}}</text></view></view>
+  <view class="record-filters"><input value="{{recordSearch}}" placeholder="搜索食物、备注或状态" bindinput="onRecordSearch" /><picker mode="selector" range="{{authorOptions}}" range-key="label" bindchange="onAuthorFilter"><view>{{authorFilterLabel}} ›</view></picker></view>
 
   <view class="timeline" wx:if="{{rows.length}}">
     <view class="feed-row" wx:for="{{rows}}" wx:key="id">
       <view class="time"><text>{{item.time}}</text><text class="date">{{item.date}}</text></view>
       <view class="rail"><view class="dot {{item.dotClass}}"></view><view class="line" wx:if="{{index < rows.length - 1}}"></view></view>
       <view class="feed-card card">
+        <view class="record-select {{item.selected ? 'selected' : ''}}" wx:if="{{selectingRecords}}" data-id="{{item.id}}" bindtap="toggleSelectedRecord">{{item.selected ? '✓' : ''}}</view>
         <view class="food-icon {{item.iconClass}}">{{item.icon}}</view>
         <view class="food-copy"><view class="food-head"><text>{{item.title}}</text><text class="{{item.metaClass}}">{{item.meta}}</text></view><view class="food-name" wx:if="{{item.sub}}">{{item.sub}}</view><view class="record-author" wx:if="{{item.authorText}}">{{item.authorText}}</view></view>
-        <view class="more" data-id="{{item.id}}" bindtap="editRecord">编辑</view>
-        <view class="more" data-id="{{item.id}}" bindtap="removeRecord">···</view>
+        <view class="more" wx:if="{{!readOnly && !selectingRecords}}" data-id="{{item.id}}" bindtap="openRecordActions">···</view>
       </view>
     </view>
   </view>
   <view class="empty card" wx:else>{{emptyText}}</view>
+  <button class="batch-delete" wx:if="{{selectingRecords}}" bindtap="removeSelectedRecords">删除已选 {{selectedRecordIds.length}} 条</button>
 
-  <button class="add-btn" bindtap="openAdd"><text>＋</text> {{typeMeta.addText}}</button>
+  <view class="feed-trend-card card {{feedTrend.theme}}" wx:if="{{feedTrend.days.length}}">
+    <view class="trend-range"><view class="trend-range-item {{trendRange === 7 ? 'active' : ''}}" data-range="7" bindtap="setTrendRange">7 天</view><view class="trend-range-item {{trendRange === 30 ? 'active' : ''}}" data-range="30" bindtap="setTrendRange">30 天</view><view class="trend-range-item {{trendRange === 180 ? 'active' : ''}}" data-range="180" bindtap="setTrendRange">半年</view></view>
+    <view class="feed-trend-head"><view><view>{{feedTrend.title}}</view><text>截至 {{feedTrend.endLabel}} · 每天合并显示</text></view><view class="feed-trend-change {{feedTrend.changeClass}}">{{feedTrend.changeText}}</view></view>
+    <view class="feed-trend-metrics"><view wx:for="{{feedTrend.metrics}}" wx:key="label"><text>{{item.value}}</text><view>{{item.label}}</view></view></view>
+    <scroll-view class="feed-trend-scroll" scroll-x enhanced show-scrollbar="false" scroll-left="{{feedTrend.scrollLeft}}"><view class="feed-trend-chart" style="width:{{feedTrend.chartWidth}}rpx"><view class="feed-trend-column {{item.selected ? 'selected' : ''}}" wx:for="{{feedTrend.days}}" wx:key="dayKey" data-date="{{item.dayKey}}" bindtap="onTrendDay"><text class="feed-trend-value">{{item.total || ''}}</text><view class="feed-trend-bar-track"><view class="feed-trend-goal" style="bottom:{{feedTrend.goalBottom}}%"></view><view class="feed-trend-bar {{item.warning ? 'warning' : ''}} {{item.isLatest ? 'latest' : ''}}" style="height:{{item.barHeight}}rpx"></view></view><text class="feed-trend-date">{{item.dateLabel}}</text><text class="feed-trend-count">{{item.countText}}</text></view></view></scroll-view>
+    <view class="feed-trend-foot"><view><text class="feed-trend-legend-line"></text><text>{{feedTrend.goalText}}</text></view><text>{{feedTrend.footText}}</text></view>
+  </view>
+
+  <button class="add-btn" wx:if="{{!readOnly}}" bindtap="openAdd"><text>＋</text> {{typeMeta.addText}}</button>
+  <view class="readonly-hint" wx:else>只读共享成员可查看记录，不能修改</view>
 </view>
 
 <view class="overlay" wx:if="{{editingWaterGoal}}" catchtap="closeWaterGoalEditor">
   <view class="sheet goal-sheet" catchtap="noop">
     <view class="sheet-head"><text>修改每日饮水目标</text><text class="close" bindtap="closeWaterGoalEditor">×</text></view>
-    <view class="goal-editor-copy">设置后，今日剩余饮水量、完成进度和近 30 天目标线会立即更新。</view>
+    <view class="goal-editor-copy">设置后，今日剩余饮水量、完成进度和趋势图目标线会立即更新。</view>
     <view class="goal-editor-field">
       <input type="number" focus maxlength="5" value="{{waterGoalDraft}}" bindinput="onWaterGoalInput" bindconfirm="saveWaterGoal" />
       <text>毫升 / 天</text>
@@ -85,7 +72,7 @@
 <view class="overlay" wx:if="{{editingFeedGoal}}" catchtap="closeFeedGoalEditor">
   <view class="sheet goal-sheet" catchtap="noop">
     <view class="sheet-head"><text>修改每日喂食目标</text><text class="close" bindtap="closeFeedGoalEditor">×</text></view>
-    <view class="goal-editor-copy">设置后，今日剩余克数、完成进度和近 30 天目标线会立即更新。</view>
+    <view class="goal-editor-copy">设置后，今日剩余克数、完成进度和趋势图目标线会立即更新。</view>
     <view class="goal-editor-field">
       <input type="number" focus maxlength="4" value="{{feedGoalDraft}}" bindinput="onFeedGoalInput" bindconfirm="saveFeedGoal" />
       <text>克 / 天</text>

@@ -17,18 +17,34 @@ function topicGroups(items) {
   return TOPIC_CATEGORIES.map(category => ({ category, items: categorized.filter(item => item.category === category) }))
 }
 
+function dateLabel(message) {
+  const timestamp = Number(message && message.createdAt)
+  const date = Number.isFinite(timestamp) && timestamp > 0 ? new Date(timestamp) : new Date()
+  const today = new Date()
+  const day = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+  if (day === todayKey) return '今天'
+  const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1)
+  const yesterdayKey = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`
+  if (day === yesterdayKey) return '昨天'
+  return `${date.getMonth() + 1}月${date.getDate()}日`
+}
+
 Page({
   data: {
     pet: {},
     input: '',
     thinking: false,
+    replyError: '',
     messages: [],
     scrollTo: '',
-    quickQuestions: [],
-    advisorQuestions: [],
     advisorGroups: [],
+    featuredTopics: [],
+    showAllTopics: false,
+    browsingTopics: false,
+    historySearch: '',
+    searchMatchCount: 0,
     followUps: [],
-    topicGroups: [],
     rootTopicLabel: '',
     followUpCategory: 'general',
     rootQuestionCategory: 'general',
@@ -37,8 +53,12 @@ Page({
 
   onShow() {
     if (!Number.isFinite(this.replyVersion)) this.replyVersion = 0
+    const shownReplyVersion = this.replyVersion
     cloudData.seedAndSyncSixMonthDemo().then(() => {
+      if (this.data.thinking || shownReplyVersion !== this.replyVersion) return
       this.setData({ messages: this.formatMessages(store.get('chats') || []) })
+      this.applyHistoryFilters()
+      this.refreshFollowUps()
       this.scrollBottom()
     })
     cloudData.syncBreedKnowledge()
@@ -48,30 +68,67 @@ Page({
       rootTopicLabel: wx.getStorageSync('paw_chat_root_label') || '日常咨询',
       rootQuestionCategory: wx.getStorageSync('paw_chat_root_category') || 'general',
       messages: this.formatMessages(store.get('chats') || []),
-      quickQuestions: [
-        `${pet.name}今天状态怎么样？`,
-        `${pet.name}喝水和喂食达标吗？`,
-        `${pet.breed}今天运动怎么安排？`,
-        '便便偏软要不要担心？'
-      ],
-      advisorQuestions: suggestions.allTopics(pet),
-      advisorGroups: topicGroups(suggestions.allTopics(pet))
+      advisorGroups: topicGroups(suggestions.allTopics(pet)),
+      featuredTopics: suggestions.allTopics(pet).slice(0, 6),
+      showAllTopics: false
     })
     this.refreshFollowUps()
+    this.applyHistoryFilters()
     this.scheduleQuestionReset()
     this.scrollBottom()
   },
 
 
   formatMessages(messages) {
+    let previousDate = ''
     return messages.map(message => {
-      if (message.role !== 'ai') return message
+      const currentDate = dateLabel(message)
+      const base = { ...message, dateLabel: currentDate, showDate: currentDate !== previousDate }
+      previousDate = currentDate
+      if (message.role !== 'ai') return { ...base, visible:true }
       const lines = String(message.text || '').split('\n').map(line => line.trim()).filter(Boolean)
       const title = /^【.*】$/.test(lines[0] || '') ? lines.shift().slice(1, -1) : ''
-      return { ...message, answerTitle: title, answerLines: lines, needsRecord: /没有.{0,8}记录|暂无.{0,8}记录|还没.{0,8}记录|尚未.{0,8}记录|记录不足/.test(message.text) }
+      return { ...base, visible:true, answerTitle: title, answerLines: lines, needsRecord: /没有.{0,8}记录|暂无.{0,8}记录|还没.{0,8}记录|尚未.{0,8}记录|记录不足/.test(message.text) }
     })
   },
 
+  toggleAllTopics() {
+    this.setData({ showAllTopics: !this.data.showAllTopics })
+  },
+
+  applyHistoryFilters() {
+    const keyword = String(this.data.historySearch || '').trim().toLowerCase()
+    const groups = []
+    this.data.messages.forEach((message, index) => {
+      if (message.role === 'user' || !groups.length) groups.push([])
+      groups[groups.length - 1].push(index)
+    })
+    const visibleIndices = new Set()
+    let searchMatchCount = 0
+    groups.forEach((indices, groupIndex) => {
+      const matched = indices.some(index => String(this.data.messages[index].text || '').toLowerCase().includes(keyword))
+      if (keyword && matched) searchMatchCount += 1
+      if (!keyword || groupIndex === groups.length - 1 || matched) {
+        indices.forEach(index => visibleIndices.add(index))
+      }
+    })
+    let previousVisibleDate = ''
+    const messages = this.data.messages.map((message, index) => {
+      // 当前提问和回答不能被历史搜索隐藏，否则用户会误以为顾问没有回复。
+      const visible = visibleIndices.has(index)
+      const showDate = visible && message.dateLabel !== previousVisibleDate
+      if (visible) previousVisibleDate = message.dateLabel
+      return { ...message, visible, showDate, currentConversation: !!keyword && groups.length > 0 && index === groups[groups.length - 1][0] }
+    })
+    this.setData({ messages, searchMatchCount })
+  },
+  clearHistorySearch() { this.onHistorySearch({ detail: { value: '' } }) },
+  onHistorySearch(e) {
+    this.setData({ historySearch:e.detail.value })
+    this.applyHistoryFilters()
+    const first = this.data.messages.findIndex(message => message.visible)
+    this.setData({ scrollTo: '' }, () => this.setData({ scrollTo: `msg-${Math.max(0, first)}` }))
+  },
   openRecords() {
     wx.navigateTo({ url: '/pages/feed/feed' })
   },
@@ -94,8 +151,8 @@ Page({
     const texts = this.readQuestionVisits()
     const decorate = (items, category) => items.map(item => ({ ...item, visited: item.action !== 'back' && texts.includes(this.questionVisitKey(category === 'welcome' || category === 'topics' ? item.text : category, item.label, item.text)) }))
     this.setData({
-      advisorQuestions: decorate(this.data.advisorQuestions, 'welcome'),
       advisorGroups: this.data.advisorGroups.map(group => ({ ...group, items: decorate(group.items, 'welcome') })),
+      featuredTopics: decorate(this.data.featuredTopics, 'welcome'),
       followUps: decorate(this.data.followUps, this.data.followUpCategory)
     })
   },
@@ -149,24 +206,23 @@ Page({
 
   onFollowUpTap(e) {
     if (e.currentTarget.dataset.action === 'back') {
-      const groups = topicGroups(suggestions.allTopics(this.data.pet))
-      const topics = groups.flatMap(group => group.items)
-      const visitedKeys = this.readQuestionVisits()
-      topics.forEach(item => { item.visited = visitedKeys.includes(this.questionVisitKey(item.text, item.label, item.text)) })
-      groups.forEach(group => group.items.forEach(item => { item.visited = visitedKeys.includes(this.questionVisitKey(item.text, item.label, item.text)) }))
       this.setData({
-        followUps: topics,
-        topicGroups: groups,
-        followUpCategory: 'topics',
-        followUpHeading: '选择一个提问主题',
+        browsingTopics: true,
+        showAllTopics: false,
+        historySearch: '',
         scrollTo: ''
       }, () => {
-        this.setData({ scrollTo: 'followups-start' })
+        this.setData({ scrollTo: 'welcome-start' })
       })
       this.refreshQuestionVisits()
       return
     }
     this.askQuick(e)
+  },
+  returnToConversation() {
+    this.setData({ browsingTopics:false })
+    this.applyHistoryFilters()
+    this.scrollBottom()
   },
 
   now() {
@@ -181,9 +237,11 @@ Page({
       role: 'ai',
       text: answer,
       time: this.now(),
+      createdAt: Date.now(),
       source: 'local-knowledge'
     }]
-    this.setData({ messages: this.formatMessages(next), thinking: false })
+    this.setData({ messages: this.formatMessages(next), thinking: false, replyError: '' })
+    this.applyHistoryFilters()
     this.refreshFollowUps()
     store.set('chats', next)
     this.replyTimer = null
@@ -195,20 +253,44 @@ Page({
     if (!text || this.data.thinking) return
     const replyVersion = (this.replyVersion || 0) + 1
     this.replyVersion = replyVersion
-    const messages = [...this.data.messages, { id: Date.now(), role: 'user', text, time: this.now() }]
-    this.setData({ messages, input: '', thinking: true })
+    const messages = this.formatMessages([...this.data.messages, { id: Date.now(), role: 'user', text, time: this.now(), createdAt: Date.now() }])
+    this.setData({ messages, browsingTopics:false, input: '', thinking: true, replyError: '' })
+    this.applyHistoryFilters()
     store.set('chats', messages)
     this.scrollBottom()
+    this.generateReply(replyVersion, text, messages)
+  },
+
+  generateReply(replyVersion, text, messages) {
     this.replyTimer = setTimeout(() => {
-      const answer = knowledge.createReply(text, store.get('pet'), { history: messages })
-      this.finishReply(replyVersion, answer)
+      try {
+        const answer = knowledge.createReply(text, store.get('pet'), { history: messages })
+        if (typeof answer !== 'string' || !answer.trim()) throw new Error('empty_reply')
+        this.finishReply(replyVersion, answer)
+      } catch (error) {
+        if (replyVersion !== this.replyVersion) return
+        this.replyTimer = null
+        this.setData({ thinking: false, replyError: '这次回答未能生成，请点击重试。' })
+        this.scrollBottom()
+      }
     }, 260)
   },
 
+  retryReply() {
+    if (this.data.thinking) return
+    const last = this.data.messages[this.data.messages.length - 1]
+    if (!last || last.role !== 'user') return
+    this.replyVersion = (this.replyVersion || 0) + 1
+    this.setData({ thinking: true, replyError: '' })
+    this.generateReply(this.replyVersion, last.text, this.data.messages)
+  },
+
   scrollBottom() {
+    if (this.data.browsingTopics) return
     setTimeout(() => {
-      const showFollowUps = this.data.messages.length && this.data.followUps.length && !this.data.thinking
-      this.setData({ scrollTo: showFollowUps ? (this.data.followUpCategory === 'topics' ? 'followups-start' : 'followups-end') : `msg-${Math.max(0, this.data.messages.length - 1)}` })
+      if (this.data.browsingTopics) return
+      const target = this.data.replyError ? 'reply-error' : `msg-${Math.max(0, this.data.messages.length - 1)}`
+      this.setData({ scrollTo: '' }, () => this.setData({ scrollTo: target }))
     }, 50)
   },
 
@@ -216,12 +298,28 @@ Page({
     wx.showActionSheet({
       itemList: ['清空聊天记录'],
       success: () => {
+        if (cloudData.isReadOnly()) return wx.showToast({ title: '只读成员不能清空聊天', icon: 'none' })
+        wx.showModal({ title: '清空聊天记录？', content: '全部聊天记录将被清空，无法撤销。', confirmText: '清空', success: result => {
+        if (!result.confirm) return
+        let saved
+        try { saved = store.set('chats', []) } catch (error) {
+          wx.showToast({ title: '清空失败，请重试', icon: 'none' })
+          return
+        }
         this.replyVersion = (this.replyVersion || 0) + 1
         if (this.replyTimer) clearTimeout(this.replyTimer)
         this.replyTimer = null
-        store.set('chats', [])
-        this.setData({ messages: [], scrollTo: '', thinking: false })
+        this.setData({ messages: [], scrollTo: '', thinking: false, replyError: '', historySearch: '' })
         this.refreshFollowUps()
+        Promise.resolve(saved).then(result => {
+          if (result && result.ok === false) {
+            this.setData({ messages: this.formatMessages(store.get('chats') || []) })
+            this.applyHistoryFilters()
+            this.refreshFollowUps()
+            wx.showToast({ title: result.error === 'readonly' ? '只读成员不能清空聊天' : '本机已清空，云端待同步', icon: 'none' })
+          }
+        }).catch(() => wx.showToast({ title: '请检查数据保存状态', icon: 'none' }))
+        } })
       }
     })
   },

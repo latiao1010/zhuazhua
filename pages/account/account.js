@@ -3,6 +3,19 @@ const cloudAlbum = require('../../utils/cloud-album')
 const cloud = require('../../utils/cloud')
 const cloudData = require('../../utils/cloud-data')
 
+function saveProfileEntries(entries) {
+  const tasks = entries.map(([key, value]) => {
+    try { return Promise.resolve(store.set(key, value)) }
+    catch (error) { return Promise.reject(error) }
+  })
+  return Promise.allSettled(tasks).then(results => {
+    if (results.some(result => result.status === 'fulfilled' && result.value && result.value.error === 'readonly')) throw new Error('只读成员不能修改共享档案')
+    const pending = results.some(result => result.status === 'rejected' || (result.value && result.value.ok === false))
+    if (pending && !entries.every(([key, value]) => JSON.stringify(store.get(key)) === JSON.stringify(value))) throw new Error('资料未完整保存，请重试')
+    return pending
+  })
+}
+
 function showNativeTabBar() {
   if (!wx.showTabBar) return
   wx.showTabBar({ animation: false, fail() {} })
@@ -266,6 +279,7 @@ function sameGrowthPhoto(left, right) {
 
 Page({
   data: {
+    pageVisible: true,
     pet: {}, draft: {}, profileEditOpen: false, careDraft: {}, careView: {}, careRecords: [],
     careDetailOpen: false, careMenuOpen: false, careSubView: '', selectedCare: {}, selectedCareRecords: [],
     selectedRecordDate: '', selectedMonth: '', selectedMonthText: '', careCalendar: [], weekNames: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
@@ -287,6 +301,7 @@ Page({
   },
   openDataManager() { wx.navigateTo({ url: '/pages/manage/manage' }) },
   onShow() {
+    this.setData({ pageVisible:true })
     showNativeTabBar()
     if (store.ensureSeedData) store.ensureSeedData()
     const pet = store.get('pet')
@@ -305,10 +320,10 @@ Page({
     if (pendingShareCode) this.promptAcceptShare(pendingShareCode)
   },
   onHide() {
-    showNativeTabBar()
+    this.setData({ pageVisible:false })
   },
   onUnload() {
-    showNativeTabBar()
+    // 底栏由即将显示的页面恢复，离开的页面不再修改导航状态。
   },
   openFamilyManager() {
     hideNativeTabBar()
@@ -716,7 +731,7 @@ Page({
   },
   saveProfilePatch(patch, options = {}) {
     const pet = { ...this.data.pet, ...patch }
-    const tasks = [store.set('pet', pet)]
+    const entries = [['pet', pet]]
     const weightChanged = patch.weight !== undefined && Number(patch.weight) !== Number(this.data.pet.weight)
     if (weightChanged) {
       const capturedAt = Date.now()
@@ -724,9 +739,9 @@ Page({
       const dayKey = store.todayKey()
       const time = `${String(capturedDate.getHours()).padStart(2, '0')}:${String(capturedDate.getMinutes()).padStart(2, '0')}`
       const weightRecord = { id: capturedAt, createdAt: capturedAt, dayKey, time, weight: Number(pet.weight) }
-      tasks.push(store.set('weightRecords', [weightRecord, ...store.get('weightRecords')].slice(0, 100)))
+      entries.push(['weightRecords', [weightRecord, ...store.get('weightRecords')]])
     }
-    return Promise.all(tasks).finally(() => {
+    return saveProfileEntries(entries).then(pending => {
       this.setData({
         pet,
         draft: { ...pet, togetherSince: pet.togetherSince || pet.birthday, sex: pet.sex || '男孩' },
@@ -740,7 +755,10 @@ Page({
       })
       const oldAvatar = options.oldAvatar
       if (oldAvatar && oldAvatar.indexOf('wxfile://') === 0 && oldAvatar !== pet.avatar && wx.removeSavedFile) wx.removeSavedFile({ filePath: oldAvatar })
-      wx.showToast({ title: options.toast || '资料已保存', icon: 'none' })
+      wx.showToast({ title: pending ? '已保存在本机，云端尚未同步' : options.toast || '资料已保存', icon: 'none' })
+    }).catch(error => {
+      this.setData({ profileFieldSaving:false })
+      wx.showToast({ title:error.message || '资料保存失败，请重试', icon:'none' })
     })
   },
   saveProfileFieldEdit() {
@@ -789,7 +807,7 @@ Page({
     if (!selectedCare) return
     const selectedRecordDate = store.todayKey()
     const selectedMonth = selectedRecordDate.slice(0, 7)
-    const selectedCareRecords = this.data.careRecords.filter(item => item.key === key).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 50)
+    const selectedCareRecords = this.data.careRecords.filter(item => item.key === key).sort((a, b) => b.date.localeCompare(a.date))
     hideNativeTabBar()
     this.setData({
       careDetailOpen: true,
@@ -800,6 +818,8 @@ Page({
       selectedMonth,
       selectedMonthText: monthText(selectedMonth),
       selectedCareRecords,
+      renderedCareRecords: selectedCareRecords.slice(0, 20),
+      careHistoryVisibleCount: 20,
       careCalendar: buildCalendar(selectedMonth, selectedRecordDate, selectedCareRecords)
     })
   },
@@ -815,7 +835,11 @@ Page({
     this.setData({ careMenuOpen: !this.data.careMenuOpen })
   },
   showCareHistory() {
-    this.setData({ careSubView: 'history', careMenuOpen: false })
+    this.setData({ careSubView: 'history', careMenuOpen: false, careHistoryVisibleCount:20, renderedCareRecords:this.data.selectedCareRecords.slice(0, 20) })
+  },
+  loadMoreCareHistory() {
+    const careHistoryVisibleCount = Math.min(this.data.selectedCareRecords.length, this.data.careHistoryVisibleCount + 20)
+    this.setData({ careHistoryVisibleCount, renderedCareRecords:this.data.selectedCareRecords.slice(0, careHistoryVisibleCount) })
   },
   showCareSettings() {
     this.setData({ careSubView: 'settings', careMenuOpen: false })
@@ -881,17 +905,18 @@ Page({
           [key]: calculatedNextDate
         } : { ...this.data.careDraft, [config.cycleKey]: cycle }
         const record = { id: Date.now(), key, label: config.label, icon: config.icon, date: recordDate, nextDate: calculatedNextDate }
-        const careRecords = [record, ...store.get('careRecords')].slice(0, 100)
+        const careRecords = [record, ...store.get('careRecords')]
         store.set('care', careDraft)
         store.set('careRecords', careRecords)
         const careView = buildCareView(careDraft)
-        const selectedCareRecords = careRecords.filter(item => item.key === key).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 50)
+        const selectedCareRecords = careRecords.filter(item => item.key === key).sort((a, b) => b.date.localeCompare(a.date))
         this.setData({
           careDraft,
           careView,
           careRecords,
           selectedCare: careView[key],
           selectedCareRecords,
+          renderedCareRecords: selectedCareRecords.slice(0, this.data.careHistoryVisibleCount || 20),
           careCalendar: buildCalendar(this.data.selectedMonth, recordDate, selectedCareRecords)
         })
         wx.showToast({ title: isLatestRecord ? `已记录，下次 ${calculatedNextDate}` : '历史记录已补充', icon: 'none' })
@@ -919,7 +944,7 @@ Page({
     const commit = avatar => {
       const oldAvatar = this.data.pet.avatar
       const pet = { ...draft, avatar }
-      const tasks = [store.set('pet', pet), store.set('care', careDraft)]
+      const entries = [['pet', pet], ['care', careDraft]]
       if (weightChanged) {
         const capturedAt = Date.now()
         const capturedDate = new Date(capturedAt)
@@ -927,14 +952,16 @@ Page({
         const time = `${String(capturedDate.getHours()).padStart(2, '0')}:${String(capturedDate.getMinutes()).padStart(2, '0')}`
         const weightRecord = { id: capturedAt, createdAt: capturedAt, dayKey, time, weight: Number(pet.weight) }
         const allWeightRecords = [weightRecord, ...store.get('weightRecords')]
-        const weightRecords = allWeightRecords.slice(0, 100)
-        tasks.push(store.set('weightRecords', weightRecords))
+        entries.push(['weightRecords', allWeightRecords])
       }
-      Promise.all(tasks).finally(() => {
+      return saveProfileEntries(entries).then(pending => {
         this.setData({ pet, draft: { ...pet }, profileEditOpen: false, careDraft: { ...careDraft }, newAvatarTemp: '', saving: false, changed: false })
         showNativeTabBar()
         if (oldAvatar && oldAvatar.indexOf('wxfile://') === 0 && oldAvatar !== avatar && wx.removeSavedFile) wx.removeSavedFile({ filePath: oldAvatar })
-        wx.showToast({ title: '资料已保存', icon: 'none' })
+        wx.showToast({ title: pending ? '已保存在本机，云端尚未同步' : '资料已保存', icon: 'none' })
+      }).catch(error => {
+        this.setData({ saving:false })
+        wx.showToast({ title:error.message || '资料保存失败，请重试', icon:'none' })
       })
     }
 

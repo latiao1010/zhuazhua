@@ -1,5 +1,6 @@
 const cloud = require('wx-server-sdk')
 const https = require('https')
+const { assertRecordMutationAllowed } = require('./permissions')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
@@ -13,7 +14,7 @@ const RECORD_COLLECTION = 'pet_shared_records'
 const EXTERNAL_KNOWLEDGE_COLLECTION = 'pet_external_knowledge'
 // 必须和 utils/store.js 的 SIX_MONTH_DEMO_VERSION 保持一致。
 // 不一致时云端会认为「已播种且完整」，把旧数据回灌覆盖客户端刚生成的新数据。
-const DEMO_VERSION = 'eight-month-v1'
+const DEMO_VERSION = 'six-month-v2'
 const META_KEY = '__demo_version'
 const BREED_KNOWLEDGE_KEY = 'breedKnowledge'
 const BREED_SYNC_INTERVAL = 7 * 24 * 60 * 60 * 1000
@@ -482,9 +483,7 @@ async function mutateDataRecord(openid, event) {
   const mutationId = cleanText(event.mutationId, 160)
   if (existing && mutationId && existing.mutationId === mutationId) return { ok: true, record: existing.record || null, idempotent: true }
   const baseUpdatedAt = Number(event.baseUpdatedAt) || 0
-  if (existing && existing.actorOpenid && existing.actorOpenid !== openid && scope.role !== 'owner' && (event.operation === 'update' || event.operation === 'delete')) {
-    throw new Error('共同照护成员只能修改或删除自己提交的记录')
-  }
+  assertRecordMutationAllowed({ scope, existing, openid, operation: event.operation })
   if (event.operation === 'update' && existing && baseUpdatedAt && Number(existing.updatedAt) > baseUpdatedAt) throw new Error('该记录已被其他成员修改，请同步后重试')
   const actor = await actorForScope(scope, openid)
   const updatedAt = Date.now()
@@ -813,13 +812,13 @@ function isCompleteSixMonthData(data) {
   return data && typeof data === 'object' &&
     coversRecentDays(data.feeds) && coversRecentDays(data.stools) &&
     coversRecentDays(data.waters) && coversRecentDays(data.walks) &&
-    Array.isArray(data.feeds) && data.feeds.length > 600 &&
-    Array.isArray(data.stools) && data.stools.length > 500 &&
-    Array.isArray(data.waters) && data.waters.length > 980 &&
-    Array.isArray(data.walks) && data.walks.length > 420 &&
-    Array.isArray(data.weightRecords) && data.weightRecords.length >= 35 &&
-    Array.isArray(data.careRecords) && data.careRecords.length >= 58 &&
-    Array.isArray(data.growthPhotos) && data.growthPhotos.length >= 24 &&
+    Array.isArray(data.feeds) && data.feeds.length > 450 &&
+    Array.isArray(data.stools) && data.stools.length > 380 &&
+    Array.isArray(data.waters) && data.waters.length > 740 &&
+    Array.isArray(data.walks) && data.walks.length > 300 &&
+    Array.isArray(data.weightRecords) && data.weightRecords.length >= 26 &&
+    Array.isArray(data.careRecords) && data.careRecords.length >= 40 &&
+    Array.isArray(data.growthPhotos) && data.growthPhotos.length >= 19 &&
     Array.isArray(data.diaries) && data.diaries.length >= 14 &&
     Array.isArray(data.chats) && data.chats.length >= 12 &&
     Array.isArray(dogFoodHistory) && dogFoodHistory.length >= 4 &&

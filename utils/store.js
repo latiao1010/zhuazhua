@@ -36,9 +36,8 @@ function setDemoMode(enabled) {
   ensureSeedData()
 }
 
-// 演示数据的历史跨度。原来是 182 天（6 个月），散落写死在四处生成器里；
-// 提到 242 天（8 个月）后统一由这里控制，避免各模块跨度再次走偏。
-const DEMO_HISTORY_DAYS = 242
+// 演示数据统一覆盖最近 182 天（约 6 个月）。
+const DEMO_HISTORY_DAYS = 182
 
 const DEFAULT_FEED_GOAL = 260
 const DEFAULT_WATER_GOAL = 600
@@ -83,8 +82,34 @@ const seedFamilyMembers = [
     status: '已加入',
     joinedAt: '2026-01-01',
     lastActive: todayKey()
+  },
+  {
+    id: 'demo-admin',
+    name: '妈妈',
+    relation: '家人',
+    role: 'admin',
+    roleLabel: ROLE_LABELS.admin,
+    status: '已加入',
+    joinedAt: offsetDateKey(-160),
+    lastActive: todayKey()
+  },
+  {
+    id: 'demo-viewer',
+    name: '爸爸',
+    relation: '家人',
+    role: 'viewer',
+    roleLabel: ROLE_LABELS.viewer,
+    status: '已加入',
+    joinedAt: offsetDateKey(-120),
+    lastActive: offsetDateKey(-1)
   }
 ]
+
+function demoActor(seed = 0) {
+  return seed % 3 === 0
+    ? { recordedBy: 'demo-admin', recordedByName: '妈妈', recordedByRole: 'admin' }
+    : { recordedBy: 'owner', recordedByName: '我', recordedByRole: 'owner' }
+}
 
 function todayKey() {
   const d = new Date()
@@ -215,9 +240,9 @@ function normalizeSupplies(supplies) {
 }
 
 const seedTodayFeeds = [
-  { id: 3, dayKey: todayKey(), date: '今天', time: '18:30', type: '晚餐', food: '低敏犬粮', amount: '95g', icon: '🥣' },
-  { id: 2, dayKey: todayKey(), date: '今天', time: '12:15', type: '零食', food: '鸡胸肉干', amount: '18g', icon: '🦴' },
-  { id: 1, dayKey: todayKey(), date: '今天', time: '07:40', type: '早餐', food: '低敏犬粮', amount: '90g', icon: '🥣' }
+  { id: 3, dayKey: todayKey(), date: '今天', time: '18:30', type: '晚餐', food: '低敏犬粮', amount: '95g', icon: '🥣', ...demoActor(3) },
+  { id: 2, dayKey: todayKey(), date: '今天', time: '12:15', type: '零食', food: '鸡胸肉干', amount: '18g', icon: '🦴', ...demoActor(2) },
+  { id: 1, dayKey: todayKey(), date: '今天', time: '07:40', type: '早餐', food: '低敏犬粮', amount: '90g', icon: '🥣', ...demoActor(1) }
 ]
 
 function buildSeedFeedHistory() {
@@ -242,7 +267,8 @@ function buildSeedFeedHistory() {
       ...item,
       id: `demo-feed-${dayKey}-${index}`,
       dayKey,
-      date: `${month}月${day}日`
+      date: `${month}月${day}日`,
+      ...demoActor(daysBack + index)
     }))
   }
   return records
@@ -270,6 +296,7 @@ function buildSeedDiaries() {
       id: `demo-diary-${dayKey}`,
       dayKey,
       date: `${month}月${day}日 · 记录`,
+      ...demoActor(daysBack),
       ...template
     }
   })
@@ -278,17 +305,17 @@ function buildSeedDiaries() {
 const seedDiaries = buildSeedDiaries()
 
 const seedStools = [
-  { id: 2, dayKey: todayKey(), date: '今天', time: '16:40', condition: '正常成形', color: '棕色', note: '状态很好', icon: '💩', abnormal: false },
-  { id: 1, dayKey: todayKey(), date: '今天', time: '08:05', condition: '正常成形', color: '棕色', note: '', icon: '💩', abnormal: false }
+  { id: 2, dayKey: todayKey(), date: '今天', time: '16:40', condition: '正常成形', color: '棕色', note: '状态很好', icon: '💩', abnormal: false, ...demoActor(3) },
+  { id: 1, dayKey: todayKey(), date: '今天', time: '08:05', condition: '正常成形', color: '棕色', note: '', icon: '💩', abnormal: false, ...demoActor(1) }
 ]
 
 const seedWaters = [
-  { id: 2, dayKey: todayKey(), date: '今天', time: '15:20', amount: '160ml', note: '', icon: '💧' },
-  { id: 1, dayKey: todayKey(), date: '今天', time: '09:10', amount: '180ml', note: '散步回来喝的', icon: '💧' }
+  { id: 2, dayKey: todayKey(), date: '今天', time: '15:20', amount: '160ml', note: '', icon: '💧', ...demoActor(3) },
+  { id: 1, dayKey: todayKey(), date: '今天', time: '09:10', amount: '180ml', note: '散步回来喝的', icon: '💧', ...demoActor(1) }
 ]
 
 const seedWalks = [
-  { id: 1, dayKey: todayKey(), date: '今天', time: '08:20', duration: 35, distance: '1.6', note: '小区一圈', icon: '🐾' }
+  { id: 1, dayKey: todayKey(), date: '今天', time: '08:20', duration: 35, distance: '1.6', note: '小区一圈', icon: '🐾', ...demoActor(3) }
 ]
 
 function buildSeedDailyTrendHistory() {
@@ -312,7 +339,8 @@ function buildSeedDailyTrendHistory() {
         color: abnormal && daysBack % 13 === 0 ? '黄色' : '棕色',
         note: abnormal ? '已标记观察' : '',
         icon: '💩',
-        abnormal
+        abnormal,
+        ...demoActor(daysBack + index)
       })
     })
 
@@ -326,7 +354,8 @@ function buildSeedDailyTrendHistory() {
         time,
         amount: `${95 + (daysBack + index * 3) % 6 * 12}ml`,
         note: index === 0 && daysBack % 4 === 0 ? '早餐后主动饮水' : '',
-        icon: '💧'
+        icon: '💧',
+        ...demoActor(daysBack + index)
       })
     })
 
@@ -344,7 +373,8 @@ function buildSeedDailyTrendHistory() {
       id: `demo-walk-${dayKey}-${index}`,
       dayKey,
       date,
-      icon: '🐾'
+      icon: '🐾',
+      ...demoActor(daysBack + index)
     }))
   }
   return histories
@@ -366,7 +396,8 @@ function buildSeedWeightHistory() {
       dayKey,
       time: '08:30',
       weight: Number((10.8 + (DEMO_HISTORY_DAYS - daysBack) / DEMO_HISTORY_DAYS * 0.4 + (daysBack % 3) * 0.06).toFixed(1)),
-      photoPath: ''
+      photoPath: '',
+      ...demoActor(daysBack)
     })
   }
   return records
@@ -384,7 +415,7 @@ function buildSeedCareRecords() {
   ]
   configs.forEach(config => config.days.forEach(daysBack => {
     const date = offsetDateKey(-daysBack)
-    records.push({ id: `demo-care-${config.key}-${date}`, key: config.key, label: config.label, icon: config.icon, date, nextDate: storeNextDemoDate(date, config.key) })
+    if (daysBack <= DEMO_HISTORY_DAYS) records.push({ id: `demo-care-${config.key}-${date}`, key: config.key, label: config.label, icon: config.icon, date, nextDate: storeNextDemoDate(date, config.key), ...demoActor(daysBack) })
   }))
   return records
 }
@@ -399,7 +430,7 @@ function storeNextDemoDate(date, key) {
 function buildSeedGrowthPhotoHistory() {
   const records = []
   const paths = ['/assets/growth-demo-home.jpg', '/assets/growth-demo-lawn.jpg', '/assets/growth-demo-rain.jpg']
-  ;[240, 225, 210, 195, 180, 165, 150, 135, 120, 105, 90, 75, 60, 45, 30, 15, 7, 3].forEach((daysBack, index) => {
+  ;[180, 165, 150, 135, 120, 105, 90, 75, 60, 45, 30, 15, 7, 3].forEach((daysBack, index) => {
     const dayKey = offsetDateKey(-daysBack)
     const time = `${String(8 + index % 4 * 3).padStart(2, '0')}:20`
     records.push({ id: `demo-growth-history-${dayKey}-1`, path: paths[index % paths.length], dayKey, time, createdAt: new Date(`${dayKey}T${time}:00`).getTime() })
@@ -467,7 +498,7 @@ const seedChats = buildSeedChats()
 const seedSupplies = buildSeedSupplies()
 const seedCareSchedule = buildSeedCareSchedule()
 // 跨度变了就要升版本，否则已经播过种的设备不会重新生成
-const SIX_MONTH_DEMO_VERSION = 'eight-month-v1'
+const SIX_MONTH_DEMO_VERSION = 'six-month-v2'
 
 function isDemoRecord(item, key) {
   if (!item || typeof item !== 'object') return true
@@ -539,13 +570,13 @@ function hasCompleteSixMonthDemoData() {
   return wx.getStorageSync(KEYS.sixMonthDemo) === SIX_MONTH_DEMO_VERSION &&
     coversRecentDays(feeds) && coversRecentDays(stools) &&
     coversRecentDays(waters) && coversRecentDays(walks) &&
-    Array.isArray(feeds) && feeds.length > 600 &&
-    Array.isArray(stools) && stools.length > 500 &&
-    Array.isArray(waters) && waters.length > 980 &&
-    Array.isArray(walks) && walks.length > 420 &&
-    Array.isArray(weightRecords) && weightRecords.length >= 35 &&
-    Array.isArray(careRecords) && careRecords.length >= 58 &&
-    Array.isArray(growthPhotos) && growthPhotos.length >= 24 &&
+    Array.isArray(feeds) && feeds.length > 450 &&
+    Array.isArray(stools) && stools.length > 380 &&
+    Array.isArray(waters) && waters.length > 740 &&
+    Array.isArray(walks) && walks.length > 300 &&
+    Array.isArray(weightRecords) && weightRecords.length >= 26 &&
+    Array.isArray(careRecords) && careRecords.length >= 40 &&
+    Array.isArray(growthPhotos) && growthPhotos.length >= 19 &&
     Array.isArray(diaries) && diaries.length >= 14 &&
     Array.isArray(chats) && chats.length >= 12 &&
     Array.isArray(supplies.dogFood.history) && supplies.dogFood.history.length >= 4 &&
@@ -562,6 +593,14 @@ function ensureSeedData() {
     if (!wx.getStorageSync(KEYS.pet)) wx.setStorageSync(KEYS.pet, { name: '我的宠物', breed: '待完善', sex: '未设置', birthday: '', weight: 0, avatar: seedPet.avatar, tags: [] })
   }
   if (isDemoMode() && !wx.getStorageSync(KEYS.sixMonthDemo)) applySixMonthDemoData()
+  // 修复旧版按路径合并相册导致不同日期的演示照片被折叠。
+  if (isDemoMode() && !wx.getStorageSync('demo_paw_album_identity_v1')) {
+    const savedPhotos = wx.getStorageSync(KEYS.growthPhotos)
+    const photos = Array.isArray(savedPhotos) ? savedPhotos : []
+    const ids = new Set(photos.filter(Boolean).map(item => String(item.id)))
+    wx.setStorageSync(KEYS.growthPhotos, [...photos, ...[...seedGrowthPhotoHistory, ...seedGrowthPhotos].filter(item => !ids.has(String(item.id)))])
+    wx.setStorageSync('demo_paw_album_identity_v1', true)
+  }
   const pet = normalizePet(wx.getStorageSync(KEYS.pet))
   wx.setStorageSync(KEYS.pet, pet)
 

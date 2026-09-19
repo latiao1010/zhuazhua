@@ -31,6 +31,10 @@
         "type": "file"
       },
       {
+        "value": "assets/momo-chibi.png",
+        "type": "file"
+      },
+      {
         "value": "Start-AI-Proxy.ps1",
         "type": "file"
       },

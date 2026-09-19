@@ -16,9 +16,8 @@
   <view class="sync-alert" wx:if="{{syncLabel}}" bindtap="goAccount">{{syncLabel}}，点击到“我的”处理 ›</view>
 
   <view class="profile-setup" wx:if="{{!pet.weight || !pet.birthday}}" bindtap="goAccount">完善宠物生日和体重，让记录建议更准确 ›</view>
-  <view class="quick-records">
-    <view data-type="feed" bindtap="quickRecord">＋ 喂食</view><view data-type="water" bindtap="quickRecord">＋ 饮水</view><view data-type="stool" bindtap="quickRecord">＋ 排便</view><view data-type="walk" bindtap="quickRecord">＋ 散步</view>
-  </view>
+  <view class="quick-records" bindlongpress="customizeQuickRecords"><view wx:for="{{quickRecords}}" wx:key="type" data-type="{{item.type}}" bindtap="quickRecord">{{item.label}}</view></view>
+  <view class="quick-record-tip">长按快捷记录可调整常用项目顺序</view>
   <view class="home-block next-block">
     <view class="next-task-card">
       <view class="next-card-head"><view><text>📍</text>当前待办</view><text>优先查看</text></view>

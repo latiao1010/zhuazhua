@@ -1,3 +1,4 @@
+<view hidden="{{!pageVisible}}">
 <view class="page account-page">
   <view class="topbar">
     <view><view class="page-title">我的宠物资料</view></view>
@@ -265,8 +266,9 @@
     <view class="care-subtitle">{{selectedCare.label}}历史</view>
     <view class="history-list-card">
       <view class="history-empty" wx:if="{{!selectedCareRecords.length}}">暂无记录</view>
-      <view class="history-list-row" wx:for="{{selectedCareRecords}}" wx:key="id"><view><text>{{item.date}}</text><view>已完成{{selectedCare.label}}<text wx:if="{{item.recordedByName}}"> · {{item.recordedByName}}{{item.recordedByRole === 'owner' ? '（主人）' : item.recordedByRole === 'admin' ? '（共同照护）' : ''}}</text></view></view><text>下次 {{item.nextDate}}</text></view>
+      <view class="history-list-row" wx:for="{{renderedCareRecords}}" wx:key="id"><view><text>{{item.date}}</text><view>已完成{{selectedCare.label}}<text wx:if="{{item.recordedByName}}"> · {{item.recordedByName}}{{item.recordedByRole === 'owner' ? '（主人）' : item.recordedByRole === 'admin' ? '（共同照护）' : ''}}</text></view></view><text>下次 {{item.nextDate}}</text></view>
     </view>
+    <button class="care-history-more" wx:if="{{renderedCareRecords.length < selectedCareRecords.length}}" bindtap="loadMoreCareHistory">再看20条（剩余 {{selectedCareRecords.length - renderedCareRecords.length}} 条）</button>
   </block>
 
   <block wx:elif="{{careSubView === 'settings'}}">
@@ -282,4 +284,5 @@
     </view>
     <button class="settings-save-btn" bindtap="saveCareSettings">保存设置</button>
   </block>
+</view>
 </view>

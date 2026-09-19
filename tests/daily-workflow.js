@@ -19,11 +19,19 @@ async function main() {
   assert.strictEqual(store.get('care').medicine,'')
   await store.set('feeds',[{ id:1,dayKey:store.todayKey(),amount:'30g' }],{ skipCloud:true })
   store.setDemoMode(true)
-  assert.ok(store.get('feeds').length > 600)
+  assert.ok(store.get('feeds').length > 450)
+  assert.strictEqual(store.get('familyMembers').length,3)
+  assert.ok(store.get('feeds').some(item=>item.recordedByRole==='owner'))
+  assert.ok(store.get('feeds').some(item=>item.recordedByRole==='admin'))
   assert.strictEqual(disk.paw_feeds.length,1)
   store.setDemoMode(false)
   assert.strictEqual(store.get('feeds').length,1)
   console.log('✓ 正式新用户为空记录，演示切换不污染正式档案')
+  const album = load('utils/cloud-album.js', { './cloud':{} })
+  const photos = album.mergePhotos([{ id:'day-1', path:'/same.jpg', createdAt:1 }], [{ id:'day-1', path:'/same.jpg', createdAt:1 }, { id:'day-2', path:'/same.jpg', createdAt:2 }])
+  assert.strictEqual(photos.length, 2)
+  assert.strictEqual(photos[0].id, 'day-2')
+  console.log('✓ 相册相同记录合并，不同日期复用图片仍保留')
 
   let available = false, fail = false
   const calls = []

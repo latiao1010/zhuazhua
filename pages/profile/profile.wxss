@@ -217,6 +217,7 @@
 .home-page .knowledge-copy>text:last-of-type{display:none}
 
 .quick-records{display:grid;grid-template-columns:repeat(4,1fr);gap:10rpx;margin-top:16rpx;flex:none}.quick-records>view{padding:18rpx 4rpx;text-align:center;border-radius:16rpx;background:#fff;border:1rpx solid #efdfd2;color:#996345;font-size:23rpx}
+.quick-record-tip{margin:8rpx 4rpx 0;color:#9c8c80;text-align:right;font-size:17rpx}
 
 .profile-setup{padding:16rpx;margin-top:12rpx;border-radius:16rpx;background:#fff1df;color:#93643d;font-size:23rpx}
 .sync-alert{margin-top:12rpx;padding:14rpx 18rpx;border-radius:16rpx;color:#9b5b38;background:#fff0e5;font-size:21rpx}
