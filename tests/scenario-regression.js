@@ -216,7 +216,8 @@ function withTimers(run) {
 
 async function main() {
   await scenario('空存储能初始化覆盖八个月的全部模块假数据', () => {
-    const storage = {}
+    const backing = { paw_data_mode: 'demo' }
+    const storage = new Proxy(backing, { get(target, key) { return target[key] }, set(target, key, value) { target[key] = value; if (String(key).startsWith('demo_')) target[String(key).slice(5)] = value; return true } })
     const storePath = path.join(ROOT, 'utils/store.js')
     delete require.cache[require.resolve(storePath)]
     const originalWx = global.wx
@@ -306,9 +307,9 @@ async function main() {
     assert.ok(Array.isArray(feeds))
     assert.ok(Array.isArray(waters))
     assert.ok(Array.isArray(careRecords))
-    assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(pet.birthday))
-    assert.ok(Number(pet.weight) > 0)
-    assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(care.dental))
+    assert.strictEqual(pet.birthday, '')
+    assert.strictEqual(Number(pet.weight), 0)
+    assert.strictEqual(care.dental, '')
     assert.ok(Number.isFinite(care.dentalCycle) && care.dentalCycle > 0)
     assert.strictEqual(typeof supplies.dogFood.productName, 'string')
     assert.ok(Array.isArray(supplies.dogFood.history))
@@ -426,6 +427,30 @@ async function main() {
     context.data.draft = { condition: '稀便', color: '红色', note: '观察', time: '19:00' }
     page.saveStool.call(context)
     assert.strictEqual(state.stools[0].abnormal, true)
+  })
+
+  await scenario('日常记录支持补记编辑，移动日期不重复新增，未来日期不保存', () => {
+    const state = makeState({ waters: [] })
+    const { wx } = makeWx()
+    const page = loadPage('pages/feed/feed.js', makeStore(state), wx)
+    const context = pageContext(page, { currentType:'water', editingRecordId:null, selectedDate:TODAY, draft:{ amount:'100', time:'09:00', dayKey:offsetDayKey(1) } })
+    context.saveWater()
+    assert.strictEqual(state.waters.length,1)
+    assert.strictEqual(state.waters[0].dayKey,offsetDayKey(1))
+    assert.strictEqual(context.data.selectedDate,offsetDayKey(1))
+    const id=state.waters[0].id
+    context.editRecord({ currentTarget:{ dataset:{ id } } })
+    context.data.draft.amount='250'
+    context.data.draft.dayKey=TODAY
+    context.saveWater()
+    assert.strictEqual(state.waters.length,1)
+    assert.strictEqual(state.waters[0].id,id)
+    assert.strictEqual(state.waters[0].amount,'250ml')
+    assert.strictEqual(state.waters[0].dayKey,TODAY)
+    context.data.editingRecordId=null
+    context.data.draft.dayKey='2099-01-01'
+    context.saveWater()
+    assert.strictEqual(state.waters.length,1)
   })
 
   await scenario('每日喂食目标可修改、校验并立即更新统计', () => {

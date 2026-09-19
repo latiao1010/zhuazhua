@@ -9,6 +9,7 @@ const DATA_COLLECTION = 'pet_data'
 const SHARE_GROUP_COLLECTION = 'pet_share_groups'
 const SHARE_MEMBER_COLLECTION = 'pet_share_members'
 const SHARE_INVITE_COLLECTION = 'pet_share_invites'
+const RECORD_COLLECTION = 'pet_shared_records'
 const EXTERNAL_KNOWLEDGE_COLLECTION = 'pet_external_knowledge'
 // 必须和 utils/store.js 的 SIX_MONTH_DEMO_VERSION 保持一致。
 // 不一致时云端会认为「已播种且完整」，把旧数据回灌覆盖客户端刚生成的新数据。
@@ -24,6 +25,7 @@ const DATA_KEYS = new Set([
   'familyMembers', 'generatedAvatar', 'avatarGenerationStatus', 'feedGoal', 'waterGoal'
 ])
 const OWNER_ONLY_KEYS = new Set(['familyMembers'])
+const RECORD_KEYS = new Set(['feeds', 'diaries', 'stools', 'waters', 'walks', 'careRecords', 'weightRecords'])
 
 const BREED_ALIAS_RULES = [
   { cn: ['柯基'], en: ['Pembroke Welsh Corgi', 'Cardigan Welsh Corgi', 'Corgi'] },
@@ -89,6 +91,10 @@ async function ensureShareCollections() {
   await ensureNamedCollection(SHARE_GROUP_COLLECTION)
   await ensureNamedCollection(SHARE_MEMBER_COLLECTION)
   await ensureNamedCollection(SHARE_INVITE_COLLECTION)
+}
+
+async function ensureRecordCollection() {
+  await ensureNamedCollection(RECORD_COLLECTION)
 }
 
 async function ensureExternalKnowledgeCollection() {
@@ -449,6 +455,77 @@ async function replaceScopedDataItem(scope, actorOpenid, key, value, options = {
   })
 }
 
+function recordDocumentId(scope, key, recordId) {
+  const crypto = require('crypto')
+  return crypto.createHash('sha1').update(`${scope.scopeId}:${key}:${recordId}`).digest('hex')
+}
+
+async function actorForScope(scope, openid) {
+  if (!scope.shared) return { id: openid, name: '我', role: 'owner' }
+  await ensureShareCollections()
+  const result = await db.collection(SHARE_MEMBER_COLLECTION).where({ groupId: scope.groupId, memberOpenid: openid, status: 'active' }).limit(1).get()
+  const member = result.data && result.data[0] || {}
+  return { id: openid, name: cleanText(member.name || member.relation || '家庭成员', 32), role: member.role || scope.role || 'admin' }
+}
+
+async function mutateDataRecord(openid, event) {
+  const key = cleanKey(event.key)
+  if (!RECORD_KEYS.has(key)) throw new Error('该数据不支持单条同步')
+  const scope = await getActiveScope(openid)
+  assertCanWrite(scope, key)
+  await ensureRecordCollection()
+  const recordId = cleanText(event.recordId || event.record && event.record.id, 160)
+  if (!recordId) throw new Error('记录缺少唯一编号')
+  const documentId = recordDocumentId(scope, key, recordId)
+  const existingResult = await db.collection(RECORD_COLLECTION).doc(documentId).get().catch(() => ({ data: null }))
+  const existing = existingResult && existingResult.data
+  const mutationId = cleanText(event.mutationId, 160)
+  if (existing && mutationId && existing.mutationId === mutationId) return { ok: true, record: existing.record || null, idempotent: true }
+  const baseUpdatedAt = Number(event.baseUpdatedAt) || 0
+  if (existing && existing.actorOpenid && existing.actorOpenid !== openid && scope.role !== 'owner' && (event.operation === 'update' || event.operation === 'delete')) {
+    throw new Error('共同照护成员只能修改或删除自己提交的记录')
+  }
+  if (event.operation === 'update' && existing && baseUpdatedAt && Number(existing.updatedAt) > baseUpdatedAt) throw new Error('该记录已被其他成员修改，请同步后重试')
+  const actor = await actorForScope(scope, openid)
+  const updatedAt = Date.now()
+  const deleted = event.operation === 'delete'
+  const record = deleted ? null : {
+    ...(event.record && typeof event.record === 'object' ? event.record : {}),
+    id: recordId,
+    recordedBy: actor.id,
+    recordedByName: actor.name,
+    recordedByRole: actor.role,
+    _syncUpdatedAt: updatedAt
+  }
+  await db.collection(RECORD_COLLECTION).doc(documentId).set({ data: {
+    scopeId: scope.scopeId, groupId: scope.groupId || '', ownerOpenid: scope.ownerOpenid || openid,
+    key, recordId, record, deleted, actorOpenid: openid, actorName: actor.name,
+    mutationId, updatedAt
+  } })
+  return { ok: true, record, deleted, updatedAt }
+}
+
+async function applyRecordMutations(scope, data) {
+  await ensureRecordCollection()
+  const pageSize = 100
+  for (const key of RECORD_KEYS) {
+    const events = []
+    for (let offset = 0; offset < 5000; offset += pageSize) {
+      const page = await db.collection(RECORD_COLLECTION).where({ scopeId: scope.scopeId, key }).skip(offset).limit(pageSize).get()
+      const rows = page.data || []
+      events.push(...rows)
+      if (rows.length < pageSize) break
+    }
+    if (!events.length) continue
+    const records = new Map((Array.isArray(data[key]) ? data[key] : []).filter(item => item && item.id).map(item => [String(item.id), item]))
+    events.sort((a, b) => Number(a.updatedAt) - Number(b.updatedAt)).forEach(item => {
+      if (item.deleted) records.delete(String(item.recordId))
+      else if (item.record) records.set(String(item.recordId), item.record)
+    })
+    data[key] = Array.from(records.values())
+  }
+}
+
 function assertCanWrite(scope, key) {
   if (!scope || !scope.shared) return
   if (scope.role === 'viewer') throw new Error('你当前是只读成员，不能修改该宠物档案')
@@ -471,6 +548,7 @@ async function getAllData(openid) {
       data[item.key] = item.value
     }
   })
+  await applyRecordMutations(scope, data)
   if (scope.shared) data.familyMembers = await listShareMembers(scope.groupId)
   return { ok: true, data, share: await getShareInfoForScope(scope) }
 }
@@ -753,8 +831,11 @@ async function setDataItem(openid, key, value) {
   return { ok: true }
 }
 
+const careReminders = require('./care-reminders').createService({ cloud, db, ensureCollection: ensureNamedCollection, getAllData })
+
 exports.main = async (event = {}) => {
   try {
+    if (event.Type === 'Timer' && (event.TriggerName === 'careReminderDispatch' || event.triggerName === 'careReminderDispatch')) return await careReminders.dispatch()
     if (
       event.action === 'syncBreedKnowledge' ||
       event.TriggerName === 'weeklyBreedKnowledge' ||
@@ -767,12 +848,14 @@ exports.main = async (event = {}) => {
     const wxContext = cloud.getWXContext()
     const openid = cleanText(wxContext.OPENID, 128)
     if (!openid) throw new Error('无法识别当前微信用户')
+    if (['getCareReminderConfig', 'scheduleCareReminder', 'pauseCareReminder'].includes(event.action)) return await careReminders.handle(event.action, openid, event)
     if (event.action === 'listGrowthPhotos') return await listGrowthPhotos(openid)
     if (event.action === 'addGrowthPhotos') return await addGrowthPhotos(openid, event.photos)
     if (event.action === 'deleteGrowthPhoto') return await deleteGrowthPhoto(openid, event)
-    if (event.action === 'seedSixMonthDemoData') return await seedSixMonthDemoData(openid, event.data)
+    if (event.action === 'seedSixMonthDemoData') return await getAllData(openid)
     if (event.action === 'getAllData') return await getAllData(openid)
     if (event.action === 'setDataItem') return await setDataItem(openid, event.key, event.value)
+    if (event.action === 'mutateDataRecord') return await mutateDataRecord(openid, event)
     if (event.action === 'createShareInvitation') return await createShareInvitation(openid, event)
     if (event.action === 'acceptShareInvitation') return await acceptShareInvitation(openid, event.code, event.profile)
     return { ok: false, error: '不支持的云函数操作' }

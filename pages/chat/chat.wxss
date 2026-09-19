@@ -90,3 +90,41 @@ page{height:100%;overflow:hidden;background:#fff9f2;}
 .answer-paragraph{margin-top:16rpx;line-height:1.75;white-space:pre-wrap}
 .answer-lead{margin-top:0;font-weight:600;color:#433a34}
 .record-link{margin-top:20rpx;padding:16rpx;border-radius:14rpx;background:#fff0e4;color:#9c5c37;font-size:23rpx}
+.chat-page,.chat-scroll{scrollbar-width:none}.chat-page::-webkit-scrollbar,.chat-scroll::-webkit-scrollbar{display:none;width:0;height:0}
+.followup-panel.topics-mode{padding:18rpx}.topics-mode .followup-subtitle{margin-bottom:12rpx}.topics-mode .followup-option{position:relative;min-height:62rpx;margin-top:8rpx;padding:11rpx 14rpx;font-size:21rpx}.topics-mode .followup-option.topic-category-start{margin-top:22rpx}.topics-mode .topic-group-title{position:absolute;left:0;bottom:100%;padding-bottom:5rpx;color:#a87559;font-size:19rpx;font-weight:700}.topics-mode .followup-arrow{width:30rpx;height:30rpx;margin-left:8rpx;font-size:24rpx}.topic-category{display:none;color:#b07a5b;font-size:17rpx;font-weight:700}
+.topic-group-card{margin-top:12rpx;padding:13rpx;border:1rpx solid #f0dfd2;border-radius:18rpx;background:#fffaf6}.topic-group-head{margin-bottom:9rpx;color:#9a6345;font-size:20rpx;font-weight:700}.topic-group-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8rpx}.topic-item{display:flex;align-items:center;min-width:0;min-height:52rpx;padding:8rpx 10rpx;border-radius:13rpx;background:#fff;color:#5f5047;font-size:19rpx}.topic-item>text:first-child{overflow:hidden;min-width:0;flex:1;text-overflow:ellipsis;white-space:nowrap}.topic-item.visited{color:#999;background:#f0f0f0}.topic-item .visited-note{margin-left:5rpx;font-size:16rpx}.topic-item .followup-arrow{width:26rpx;height:26rpx;margin-left:5rpx;font-size:20rpx}
+.welcome-topic-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10rpx}.welcome-topic-group{padding:12rpx;border:1rpx solid #f0dfd2;border-radius:17rpx;background:#fffaf6}.welcome-topic-group:first-child{grid-column:1/-1}.welcome-topic-title{margin-bottom:8rpx;color:#9a6345;font-size:19rpx;font-weight:700}.welcome-topic-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7rpx}.welcome-topic-group:not(:first-child) .welcome-topic-grid{grid-template-columns:1fr}.welcome-topic-item{display:flex;align-items:center;min-width:0;min-height:48rpx;padding:7rpx 9rpx;border-radius:12rpx;background:#fff;color:#5f5047;font-size:18rpx}.welcome-topic-item>text:first-child{overflow:hidden;min-width:0;flex:1;text-overflow:ellipsis;white-space:nowrap}.welcome-topic-item.visited{color:#999;background:#f0f0f0}.welcome-topic-item .advisor-arrow{margin-left:4rpx}.welcome-topic-item .visited-note{margin-left:4rpx;font-size:15rpx}
+
+/* 首屏主题面板：五个轻量分区，共用一个外层卡片。 */
+.unified-prompts{padding:22rpx;border-radius:28rpx;background:linear-gradient(160deg,#fffdfb 0%,#fff8f3 100%);box-shadow:0 12rpx 34rpx rgba(97,68,49,.07)}
+.unified-prompts>.followup-heading{font-size:27rpx}.unified-prompts>.followup-subtitle{margin-bottom:18rpx}
+.welcome-topic-groups{gap:12rpx}
+.welcome-topic-group{position:relative;overflow:hidden;padding:14rpx;border:0;border-radius:20rpx;box-shadow:inset 0 0 0 1rpx rgba(120,89,68,.07)}
+.welcome-topic-group:nth-child(1){background:#fff2e9}.welcome-topic-group:nth-child(2){background:#eef8f3}.welcome-topic-group:nth-child(3){background:#f3f1fb}.welcome-topic-group:nth-child(4){background:#eef6fb}.welcome-topic-group:nth-child(5){background:#fff7df}
+.welcome-topic-title{display:flex;align-items:center;margin-bottom:10rpx;color:#58483e;font-size:21rpx;font-weight:800}
+.welcome-topic-title::before{content:'';width:12rpx;height:12rpx;margin-right:9rpx;border-radius:50%;background:#eb8763;box-shadow:0 0 0 6rpx rgba(235,135,99,.12)}
+.welcome-topic-group:nth-child(2) .welcome-topic-title::before{background:#67aa83;box-shadow:0 0 0 6rpx rgba(103,170,131,.12)}
+.welcome-topic-group:nth-child(3) .welcome-topic-title::before{background:#8f83bf;box-shadow:0 0 0 6rpx rgba(143,131,191,.12)}
+.welcome-topic-group:nth-child(4) .welcome-topic-title::before{background:#699db9;box-shadow:0 0 0 6rpx rgba(105,157,185,.12)}
+.welcome-topic-group:nth-child(5) .welcome-topic-title::before{background:#c99b3f;box-shadow:0 0 0 6rpx rgba(201,155,63,.12)}
+.welcome-topic-grid{gap:8rpx}
+.welcome-topic-item{min-height:52rpx;padding:8rpx 11rpx;border:1rpx solid rgba(255,255,255,.8);border-radius:14rpx;background:rgba(255,255,255,.78);box-shadow:0 3rpx 10rpx rgba(83,58,42,.025);font-size:19rpx;font-weight:600}
+.welcome-topic-item .advisor-arrow{display:flex;align-items:center;justify-content:center;width:27rpx;height:27rpx;border-radius:50%;color:#c77b57;background:rgba(255,255,255,.9);font-size:21rpx}
+.welcome-topic-item.visited{color:#999;border-color:transparent;background:rgba(235,235,235,.76);box-shadow:none}
+.welcome-topic-item.visited .advisor-arrow{color:#aaa;background:rgba(255,255,255,.5)}
+.welcome{padding-top:18rpx}
+
+/* 顾问空白首屏适配一页：保留五组层级，压缩装饰占用。 */
+.chat-page .welcome{padding:15rpx 0 11rpx}
+.chat-page .welcome-title{font-size:32rpx}
+.chat-page .welcome-sub{margin-top:7rpx;font-size:20rpx;line-height:1.4}
+.chat-page .unified-prompts{margin-bottom:12rpx;padding:18rpx 20rpx;border-radius:25rpx}
+.chat-page .unified-prompts>.followup-heading{font-size:25rpx}
+.chat-page .unified-prompts>.followup-subtitle{margin:5rpx 0 12rpx;font-size:19rpx}
+.chat-page .welcome-topic-groups{gap:9rpx}
+.chat-page .welcome-topic-group{padding:11rpx 12rpx;border-radius:17rpx}
+.chat-page .welcome-topic-title{margin-bottom:7rpx;font-size:19rpx}
+.chat-page .welcome-topic-title::before{width:10rpx;height:10rpx;margin-right:8rpx;box-shadow:none}
+.chat-page .welcome-topic-grid{gap:6rpx}
+.chat-page .welcome-topic-item{min-height:46rpx;padding:7rpx 9rpx;border-radius:12rpx;font-size:18rpx}
+.chat-page .welcome-topic-item .advisor-arrow{width:25rpx;height:25rpx;font-size:19rpx}

@@ -1,12 +1,19 @@
 {
   "permissions": {
-    "openapi": []
+    "openapi": [
+      "subscribeMessage.send"
+    ]
   },
   "triggers": [
     {
       "name": "weeklyBreedKnowledge",
       "type": "timer",
       "config": "0 10 4 * * 1 *"
+    },
+    {
+      "name": "careReminderDispatch",
+      "type": "timer",
+      "config": "0 */5 * * * * *"
     }
   ]
 }

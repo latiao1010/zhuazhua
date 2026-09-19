@@ -3,6 +3,20 @@ const knowledge = require('../../utils/pet-knowledge')
 const cloudData = require('../../utils/cloud-data')
 const suggestions = require('../../utils/chat-suggestions')
 
+const TOPIC_CATEGORIES = ['日常记录', '健康观察', '护理提醒', '行为活动', '用品选择']
+function topicCategory(label) {
+  if (/喂食|饮水|运动|排便|体重|状态/.test(label)) return '日常记录'
+  if (/护理|用药/.test(label)) return '护理提醒'
+  if (/食物安全|身体异常/.test(label)) return '健康观察'
+  if (/训练|雨天/.test(label)) return '行为活动'
+  if (/用品|主粮/.test(label)) return '用品选择'
+  return '健康观察'
+}
+function topicGroups(items) {
+  const categorized = items.map(item => ({ ...item, category: topicCategory(item.label) }))
+  return TOPIC_CATEGORIES.map(category => ({ category, items: categorized.filter(item => item.category === category) }))
+}
+
 Page({
   data: {
     pet: {},
@@ -12,7 +26,9 @@ Page({
     scrollTo: '',
     quickQuestions: [],
     advisorQuestions: [],
+    advisorGroups: [],
     followUps: [],
+    topicGroups: [],
     rootTopicLabel: '',
     followUpCategory: 'general',
     rootQuestionCategory: 'general',
@@ -38,7 +54,8 @@ Page({
         `${pet.breed}今天运动怎么安排？`,
         '便便偏软要不要担心？'
       ],
-      advisorQuestions: suggestions.allTopics(pet)
+      advisorQuestions: suggestions.allTopics(pet),
+      advisorGroups: topicGroups(suggestions.allTopics(pet))
     })
     this.refreshFollowUps()
     this.scheduleQuestionReset()
@@ -78,6 +95,7 @@ Page({
     const decorate = (items, category) => items.map(item => ({ ...item, visited: item.action !== 'back' && texts.includes(this.questionVisitKey(category === 'welcome' || category === 'topics' ? item.text : category, item.label, item.text)) }))
     this.setData({
       advisorQuestions: decorate(this.data.advisorQuestions, 'welcome'),
+      advisorGroups: this.data.advisorGroups.map(group => ({ ...group, items: decorate(group.items, 'welcome') })),
       followUps: decorate(this.data.followUps, this.data.followUpCategory)
     })
   },
@@ -131,8 +149,14 @@ Page({
 
   onFollowUpTap(e) {
     if (e.currentTarget.dataset.action === 'back') {
+      const groups = topicGroups(suggestions.allTopics(this.data.pet))
+      const topics = groups.flatMap(group => group.items)
+      const visitedKeys = this.readQuestionVisits()
+      topics.forEach(item => { item.visited = visitedKeys.includes(this.questionVisitKey(item.text, item.label, item.text)) })
+      groups.forEach(group => group.items.forEach(item => { item.visited = visitedKeys.includes(this.questionVisitKey(item.text, item.label, item.text)) }))
       this.setData({
-        followUps: suggestions.allTopics(this.data.pet),
+        followUps: topics,
+        topicGroups: groups,
         followUpCategory: 'topics',
         followUpHeading: '选择一个提问主题',
         scrollTo: ''

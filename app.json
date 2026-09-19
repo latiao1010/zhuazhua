@@ -3,7 +3,8 @@
     "pages/profile/profile",
     "pages/feed/feed",
     "pages/chat/chat",
-    "pages/account/account"
+    "pages/account/account",
+    "pages/manage/manage"
   ],
   "window": {
     "navigationBarTitleText": "爪爪日常",

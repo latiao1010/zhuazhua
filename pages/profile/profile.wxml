@@ -9,11 +9,16 @@
     <view class="pet-row">
       <image src="{{pet.avatar}}" mode="aspectFill"></image>
       <view class="pet-name"><text>🐶</text>{{pet.name}}</view>
-      <view class="pet-chip" bindtap="openWeightTrend">⚖ {{pet.weight}}kg <text>›</text></view>
-      <view class="pet-chip festival-chip" bindtap="openFestivals">🎉 {{daysTogether}}天 <text>›</text></view>
+      <view class="pet-chip" bindtap="openWeightTrend">⚖ {{pet.weight ? pet.weight + 'kg' : '待填写'}} <text>›</text></view>
+      <view class="pet-chip festival-chip" bindtap="openFestivals">🎉 {{daysTogether ? daysTogether + '天' : '待完善'}} <text>›</text></view>
     </view>
   </view>
+  <view class="sync-alert" wx:if="{{syncLabel}}" bindtap="goAccount">{{syncLabel}}，点击到“我的”处理 ›</view>
 
+  <view class="profile-setup" wx:if="{{!pet.weight || !pet.birthday}}" bindtap="goAccount">完善宠物生日和体重，让记录建议更准确 ›</view>
+  <view class="quick-records">
+    <view data-type="feed" bindtap="quickRecord">＋ 喂食</view><view data-type="water" bindtap="quickRecord">＋ 饮水</view><view data-type="stool" bindtap="quickRecord">＋ 排便</view><view data-type="walk" bindtap="quickRecord">＋ 散步</view>
+  </view>
   <view class="home-block next-block">
     <view class="next-task-card">
       <view class="next-card-head"><view><text>📍</text>当前待办</view><text>优先查看</text></view>
@@ -95,7 +100,7 @@
           <view>{{item.conditionText}}<text>{{item.colorText}}</text></view>
           <text>{{item.noteText || item.statusText}}</text>
         </view>
-        <view class="today-stool-meta"><view class="{{item.abnormal ? 'warning' : ''}}">{{item.statusText}}</view><text>{{item.timeText}}</text></view>
+        <view class="today-stool-meta"><view class="{{item.abnormal ? 'warning' : ''}}">{{item.statusText}}</view><text>{{item.timeText}}</text><text wx:if="{{item.attributionText}}">{{item.attributionText}}</text></view>
       </view>
     </scroll-view>
     <view class="stool-empty" wx:else><text>💩</text><view>今天还没有排便记录</view><text>记录状态后，这里会自动同步</text></view>
@@ -116,7 +121,7 @@
       <view class="today-feed-row" wx:for="{{todayFeeds}}" wx:key="id">
         <view class="today-feed-icon">{{item.iconText}}</view>
         <view class="today-feed-copy"><view>{{item.type}}</view><text>{{item.foodText}}</text></view>
-        <view class="today-feed-meta"><view>{{item.amountText}}</view><text>{{item.timeText}}</text></view>
+        <view class="today-feed-meta"><view>{{item.amountText}}</view><text>{{item.timeText}}</text><text wx:if="{{item.attributionText}}">{{item.attributionText}}</text></view>
       </view>
     </scroll-view>
     <view class="feed-empty" wx:else><text>🥣</text><view>今天还没有喂食记录</view><text>去“日常”记录第一餐吧</text></view>

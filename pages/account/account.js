@@ -76,6 +76,23 @@ function initialOf(name) {
   return String(name || '家').trim().slice(0, 1) || '家'
 }
 
+function buildFamilyActivities() {
+  const sources = [
+    ['feeds', item => `记录了${item.type || '喂食'}${item.amount ? ` ${item.amount}` : ''}`],
+    ['waters', item => `记录了饮水${item.amount ? ` ${item.amount}` : ''}`],
+    ['walks', item => `记录了散步${item.duration ? ` ${item.duration}分钟` : ''}`],
+    ['stools', () => '记录了排便情况'],
+    ['careRecords', item => `完成了${item.label || '护理'}`],
+    ['weightRecords', item => `更新体重为 ${item.weight}kg`]
+  ]
+  return sources.flatMap(([key, describe]) => store.get(key)
+    .filter(item => item && item.recordedByName && item._syncUpdatedAt)
+    .map(item => ({ id: `${key}-${item.id}`, name: item.recordedByName, text: describe(item), time: Number(item._syncUpdatedAt) })))
+    .sort((a, b) => b.time - a.time)
+    .slice(0, 5)
+    .map(item => ({ ...item, timeText: new Date(item.time).toLocaleString() }))
+}
+
 function dateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
@@ -119,6 +136,7 @@ function buildCareView(schedule) {
   return Object.keys(CARE_TYPES).reduce((view, key) => {
     const config = CARE_TYPES[key]
     const days = daysUntil(schedule[key])
+    const needsAttention = isValidDateKey(schedule[key]) && days <= 3 && schedule[config.lastKey] !== today
     view[key] = {
       key,
       icon: config.icon,
@@ -127,7 +145,8 @@ function buildCareView(schedule) {
       nextDate: schedule[key],
       cycle: schedule[config.cycleKey],
       unitText: config.unit === 'month' ? '个月' : '天',
-      needsAttention: isValidDateKey(schedule[key]) && days <= 3 && schedule[config.lastKey] !== today,
+      needsAttention,
+      attentionClass: needsAttention ? 'needs-attention' : '',
       countdown: schedule[config.lastKey] === today ? '今日已完成' : !isValidDateKey(schedule[key]) ? (key === 'medicine' ? '暂无用药计划' : '未设置提醒') : days === 0 ? '就是今天' : days > 0 ? `还有 ${days} 天` : `已超期 ${Math.abs(days)} 天`,
       countdownClass: schedule[config.lastKey] === today || !isValidDateKey(schedule[key]) ? 'upcoming' : days === 0 ? 'today' : days > 0 ? 'upcoming' : 'overdue',
       doneToday: schedule[config.lastKey] === today,
@@ -182,7 +201,7 @@ function buildSupplyView(supplies, feeds) {
       view[key] = {
         key, ...config, configured: false, productName: '尚未记录拆封',
         daysText: '去设置', remainingText: '填写包装重量和拆封日期', progress: 0, level: 'unset',
-        countdownClass: SUPPLY_COUNTDOWN_CLASS.unset
+        countdownClass: SUPPLY_COUNTDOWN_CLASS.unset, attentionClass: ''
       }
       return view
     }
@@ -203,7 +222,8 @@ function buildSupplyView(supplies, feeds) {
       remainingText: dailyAverage > 0 ? `剩余约 ${remaining}g · 日均 ${Math.round(dailyAverage)}g` : `剩余 ${remaining}g · 等待喂食记录`,
       consumed, remaining, dailyAverage: Math.round(dailyAverage), daysLeft,
       progress: Math.min(100, Math.round(consumed / packageAmount * 100)), level,
-      countdownClass: SUPPLY_COUNTDOWN_CLASS[level]
+      countdownClass: SUPPLY_COUNTDOWN_CLASS[level],
+      attentionClass: ['low', 'urgent', 'empty'].includes(level) ? 'needs-attention' : ''
     }
     return view
   }, {})
@@ -259,12 +279,13 @@ Page({
     familyEditingIndex: -1, familyRoleOptions: FAMILY_ROLE_OPTIONS, familyRelationOptions: FAMILY_RELATION_OPTIONS,
     familyRoleIndex: 0, familyRelationIndex: 0, familySaving: false, familyInviteLoading: false,
     pendingShareCode: '', shareAccepting: false, shareShared: false, shareRole: 'owner',
-    shareRoleLabel: '主人', shareReadOnly: false
+    shareRoleLabel: '主人', shareReadOnly: false, familyActivities: []
   },
   onLoad(options = {}) {
     const code = options.shareCode ? decodeURIComponent(options.shareCode) : ''
     if (code) this.setData({ pendingShareCode: code })
   },
+  openDataManager() { wx.navigateTo({ url: '/pages/manage/manage' }) },
   onShow() {
     showNativeTabBar()
     if (store.ensureSeedData) store.ensureSeedData()
@@ -292,7 +313,7 @@ Page({
   openFamilyManager() {
     hideNativeTabBar()
     const familyMembers = store.get('familyMembers').map(item => ({ ...item, initial: initialOf(item.name) }))
-    this.setData({ familyOpen: true, familyMembers, familyInviteCode: this.data.familyInviteCode || shortInviteCode(this.data.pet.name), familyDraftOpen: false })
+    this.setData({ familyOpen: true, familyMembers, familyActivities: buildFamilyActivities(), familyInviteCode: this.data.familyInviteCode || shortInviteCode(this.data.pet.name), familyDraftOpen: false })
     if (!this.data.shareShared || this.data.shareRole === 'owner') this.generateFamilyInvite()
   },
   closeFamilyManager() {

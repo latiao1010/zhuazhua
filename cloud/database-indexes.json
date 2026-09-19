@@ -1,0 +1,10 @@
+{
+  "environment": "cloudbase-d3glshm6n124d98a4",
+  "indexes": [
+    { "collection": "pet_shared_records", "name": "scope_key", "unique": false, "fields": [{ "name": "scopeId", "order": "asc" }, { "name": "key", "order": "asc" }] },
+    { "collection": "pet_data", "name": "scope_key", "unique": false, "fields": [{ "name": "scopeId", "order": "asc" }, { "name": "key", "order": "asc" }] },
+    { "collection": "pet_share_members", "name": "member_status_updated", "unique": false, "fields": [{ "name": "memberOpenid", "order": "asc" }, { "name": "status", "order": "asc" }, { "name": "updatedAt", "order": "desc" }] },
+    { "collection": "pet_share_members", "name": "group_status", "unique": false, "fields": [{ "name": "groupId", "order": "asc" }, { "name": "status", "order": "asc" }] },
+    { "collection": "pet_share_invites", "name": "code_status", "unique": false, "fields": [{ "name": "code", "order": "asc" }, { "name": "status", "order": "asc" }] }
+  ]
+}

@@ -4,6 +4,7 @@ const cloudData = require('../../utils/cloud-data')
 
 function getBirthdayInfo(birthday) {
   const birth = new Date(`${birthday}T00:00:00`)
+  if (!Number.isFinite(birth.getTime())) return { birthdayDays: null, nextAge: '', birthdayLabel: '生日待完善', birthdayItems: [] }
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   let next = new Date(today.getFullYear(), birth.getMonth(), birth.getDate())
@@ -34,6 +35,7 @@ function formatDate(date) {
 
 function getFestivalInfo(togetherSince, daysTogether) {
   const start = new Date(`${togetherSince}T00:00:00`)
+  if (!Number.isFinite(start.getTime())) return { togetherLabel: '待完善', nextMilestone: 100, nextMilestoneDays: '', festivalItems: [] }
   const currentHundred = Math.ceil(daysTogether / 100) * 100
   const isMilestoneToday = daysTogether % 100 === 0
   const nextMilestone = isMilestoneToday ? daysTogether : currentHundred
@@ -170,7 +172,8 @@ function buildTodayFeeds(records) {
       foodText: item.food || '未填写食物',
       amountText: item.amount || '--',
       timeText: item.time || '--:--',
-      iconText: item.icon || (item.type === '零食' ? '🦴' : '🥣')
+      iconText: item.icon || (item.type === '零食' ? '🦴' : '🥣'),
+      attributionText: item.recordedByName ? `${item.recordedByName} · ${item.recordedByRole === 'owner' ? '主人' : '共同照护'}` : ''
     }))
   const todayFeedTotal = todayFeeds.reduce((sum, item) => {
     const amount = String(item.amount || '').match(/[\d.]+/)
@@ -188,7 +191,8 @@ function buildTodayStools(records) {
       colorText: item.color || '未填写颜色',
       noteText: item.note || '',
       timeText: item.time || '--:--',
-      statusText: item.abnormal ? '需要留意' : '状态正常'
+      statusText: item.abnormal ? '需要留意' : '状态正常',
+      attributionText: item.recordedByName ? `${item.recordedByName} · ${item.recordedByRole === 'owner' ? '主人' : '共同照护'}` : ''
     }))
   const todayStoolAbnormalCount = todayStools.filter(item => item.abnormal).length
   return {
@@ -410,7 +414,7 @@ function minutesToClock(value) {
 }
 
 function buildAIPredictions({ now, pet, todayWater, todayWaters, stools, weather, rainWalkTime, dogFood, healthScore, statusCards }) {
-  const waterTarget = Math.round((Number(pet.weight) || 0) * 55)
+  const waterTarget = Number(store.get('waterGoal')) || Math.round((Number(pet.weight) || 0) * 55)
   const nowMinutes = now.getHours() * 60 + now.getMinutes()
   const waterRecords = (todayWaters || [])
     .map(item => ({ amount: numberFromText(item.amount), minutes: clockToMinutes(item.time) }))
@@ -532,7 +536,7 @@ function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, c
   const todayWaters = (waters || []).filter(item => item.dayKey === today)
   const todayWalks = (walks || []).filter(item => item.dayKey === today)
   const todayWater = todayWaters.reduce((sum, item) => sum + numberFromText(item.amount), 0)
-  const waterTarget = Math.round((Number(pet.weight) || 0) * 55)
+  const waterTarget = Number(store.get('waterGoal')) || Math.round((Number(pet.weight) || 0) * 55)
   const dentalDone = careSchedule.dentalLast === today || (careRecords || []).some(item => item.key === 'dental' && item.date === today)
   const rainWalkTime = weather && weather.rainTime ? timeAfterRain(weather.rainTime) : '19:00'
   const walkParts = rainWalkTime.match(/(\d{1,2}):(\d{2})/)
@@ -642,9 +646,10 @@ Page({
     seasonName: '', seasonTip: '', lifeStage: '', healthTips: [],
     homeDashboard: { greeting: '', healthScore: 100, healthSummary: '', tasks: [], statusCards: [], completedCount: 0, totalTasks: 6, progress: 0, nextTask: {}, laterTasks: [], findings: [], knowledge: { detail: [] } }
   },
+  quickRecord(e) { wx.navigateTo({ url: '/pages/feed/feed?type=' + e.currentTarget.dataset.type + '&add=1' }) },
   onShow() {
     this.refresh()
-    cloudData.seedAndSyncSixMonthDemo().then(() => this.refresh())
+    cloudData.syncOnResume().then(() => this.refresh())
     this.loadWeather()
   },
   refresh() {
@@ -653,11 +658,11 @@ Page({
     const togetherSince = pet.togetherSince || pet.birthday
     const togetherStart = new Date(`${togetherSince}T00:00:00`)
     const now = new Date()
-    const months = Math.max(1, Math.floor((now - start) / 2629800000))
-    const ageText = months >= 12 ? `${Math.floor(months / 12)}岁${months % 12 ? months % 12 + '个月' : ''}` : `${months}个月`
+    const months = Number.isFinite(start.getTime()) ? Math.max(1, Math.floor((now - start) / 2629800000)) : 0
+    const ageText = !months ? '年龄待完善' : months >= 12 ? `${Math.floor(months / 12)}岁${months % 12 ? months % 12 + '个月' : ''}` : `${months}个月`
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    const daysTogether = Math.max(1, Math.floor((today - togetherStart) / 86400000) + 1)
+    const daysTogether = Number.isFinite(togetherStart.getTime()) ? Math.max(1, Math.floor((today - togetherStart) / 86400000) + 1) : 0
     const dayKey = store.todayKey()
     const feeds = store.get('feeds')
     const stools = store.get('stools')
@@ -669,16 +674,17 @@ Page({
     const todayFeedCount = feedSummary.todayFeeds.length
     const stoolSummary = buildTodayStools(stools)
     const todayStoolCount = stoolSummary.todayStools.length
-    const waterTarget = Math.round((Number(pet.weight) || 0) * 55)
+    const waterTarget = Number(store.get('waterGoal')) || Math.round((Number(pet.weight) || 0) * 55)
     const todayWater = waters.filter(item => item.dayKey === dayKey).reduce((sum, item) => sum + (parseInt(item.amount, 10) || 0), 0)
     const birthday = getBirthdayInfo(pet.birthday)
     const festivals = getFestivalInfo(togetherSince, daysTogether)
     const careSchedule = store.normalizeCareSchedule(store.get('care'))
-    store.set('care', careSchedule)
     const health = getHealthTips(pet, months / 12, careSchedule)
     const weightTrend = buildWeightTrend(store.get('weightRecords'), pet.weight)
     const homeDashboard = buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, careRecords, supplies, weather: this.data.weather })
-    this.setData({ pet: { ...pet, togetherSince }, careSchedule, weightTrend, homeDashboard, ageText, daysTogether, todayFeedCount, ...feedSummary, todayStoolCount, ...stoolSummary, waterTarget, todayWater, ...birthday, ...festivals, ...health })
+    const syncStatus = cloudData.getSyncStatus ? cloudData.getSyncStatus() : {}
+    const syncLabel = syncStatus.status === 'conflict' ? '记录有冲突，点此处理' : syncStatus.status === 'fail' ? '同步异常' : syncStatus.status === 'pending' ? '待同步' : ''
+    this.setData({ pet: { ...pet, togetherSince }, careSchedule, weightTrend, homeDashboard, ageText, daysTogether, todayFeedCount, ...feedSummary, todayStoolCount, ...stoolSummary, waterTarget, todayWater, syncLabel, ...birthday, ...festivals, ...health })
   },
   loadWeather() {
     this.setData({ weatherLoading: true })

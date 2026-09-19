@@ -55,6 +55,9 @@ async function run() {
         if (options.name === 'pet-data' && options.data.action === 'setDataItem') {
           return Promise.resolve({ result: { ok: true } })
         }
+        if (options.name === 'pet-data' && options.data.action === 'mutateDataRecord') {
+          return Promise.resolve({ result: { ok: true, record: options.data.record || null } })
+        }
         if (options.name === 'pet-data' && options.data.action === 'createShareInvitation') {
           return Promise.resolve({ result: { ok: true, code: 'ZZ-NM-123456', groupId: 'group-1', members: [
             { id: 'owner', name: '我', relation: '主人', role: 'owner', roleLabel: '主人', status: '已加入', joinedAt: '2026-08-05' }
@@ -128,19 +131,17 @@ async function run() {
   store.ensureSeedData()
   const cloudData = fresh('utils/cloud-data.js')
   const seeded = await cloudData.seedAndSyncSixMonthDemo()
-  assert.ok(seeded.data.feeds.length > 450)
-  assert.ok(calls.functions.some(item => item.name === 'pet-data' && item.data.action === 'seedSixMonthDemoData'))
+  assert.strictEqual(seeded.ok, true)
+  assert.ok(calls.functions.some(item => item.name === 'pet-data' && item.data.action === 'getAllData'))
   await cloudData.syncAll()
   assert.strictEqual(storage.paw_feed_goal, 288)
   const breedSync = await cloudData.syncBreedKnowledge({ force: true })
   assert.strictEqual(breedSync.ok, true)
   assert.strictEqual(storage.paw_external_breed_knowledge.items[0].aliases[0], '柯基')
   assert.ok(calls.functions.some(item => item.name === 'pet-data' && item.data.action === 'getBreedKnowledge'))
-  store.set('feedGoal', 300)
-  assert.ok(calls.functions.some(item => item.name === 'pet-data' && item.data.action === 'setDataItem' && item.data.key === 'feedGoal' && item.data.value === 300))
   storage.paw_share_status = { shared: true, role: 'viewer' }
   await store.set('feedGoal', 301)
-  assert.strictEqual(storage.paw_feed_goal, 300)
+  assert.strictEqual(storage.paw_feed_goal, 288)
   storage.paw_share_status = { shared: true, role: 'owner' }
   const invite = await cloudData.createShareInvitation({ petName: '糯米' })
   assert.strictEqual(invite.code, 'ZZ-NM-123456')

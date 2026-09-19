@@ -58,7 +58,8 @@
       <view class="rail"><view class="dot {{item.dotClass}}"></view><view class="line" wx:if="{{index < rows.length - 1}}"></view></view>
       <view class="feed-card card">
         <view class="food-icon {{item.iconClass}}">{{item.icon}}</view>
-        <view class="food-copy"><view class="food-head"><text>{{item.title}}</text><text class="{{item.metaClass}}">{{item.meta}}</text></view><view class="food-name" wx:if="{{item.sub}}">{{item.sub}}</view></view>
+        <view class="food-copy"><view class="food-head"><text>{{item.title}}</text><text class="{{item.metaClass}}">{{item.meta}}</text></view><view class="food-name" wx:if="{{item.sub}}">{{item.sub}}</view><view class="record-author" wx:if="{{item.authorText}}">{{item.authorText}}</view></view>
+        <view class="more" data-id="{{item.id}}" bindtap="editRecord">编辑</view>
         <view class="more" data-id="{{item.id}}" bindtap="removeRecord">···</view>
       </view>
     </view>
@@ -96,7 +97,8 @@
 
 <view class="overlay" wx:if="{{adding}}" catchtap="closeAdd">
   <view class="sheet" catchtap="noop">
-    <view class="sheet-head"><text>{{typeMeta.sheetTitle}}</text><text class="close" bindtap="closeAdd">×</text></view>
+    <view class="sheet-head"><text>{{editingRecordId !== null ? '编辑记录' : (draft.dayKey !== today ? '补记记录' : typeMeta.sheetTitle)}}</text><text class="close" bindtap="closeAdd">×</text></view>
+    <picker mode="date" value="{{draft.dayKey}}" end="{{today}}" bindchange="onDraftDate"><view class="record-date-field">记录日期 <text>{{draft.dayKey}} ›</text></view></picker>
     <block wx:if="{{currentType === 'feed'}}">
       <view class="meal-tabs"><view wx:for="{{mealTypes}}" wx:key="*this" class="meal-tab {{draft.type === item ? 'active' : ''}}" data-value="{{item}}" bindtap="chooseType">{{item}}</view></view>
       <view class="field"><text class="label">吃了什么</text><input class="input" placeholder="例如：低敏犬粮" value="{{draft.food}}" data-key="food" bindinput="onInput" /></view>

@@ -15,15 +15,19 @@
   <scroll-view class="chat-scroll" scroll-y enhanced show-scrollbar="false" scroll-into-view="{{scrollTo}}">
 
     <view class="welcome" wx:if="{{!messages.length}}">
-      <view class="welcome-icon">🐶</view>
       <view class="welcome-title">有什么能帮到你？</view>
       <view class="welcome-sub">根据宠物资料、喂食、饮水、散步和健康记录给日常建议</view>
     </view>
     <view class="advisor-group unified-prompts" wx:if="{{messages.length === 0}}">
       <view class="followup-heading"><text class="prompt-spark">✦</text>从一个问题开始</view>
       <view class="followup-subtitle">点选你关心的问题，聊聊爱宠的日常</view>
-      <view class="advisor-group-items">
-        <view class="advisor-item {{item.visited ? 'visited' : ''}}" hover-class="prompt-pressed" wx:for="{{advisorQuestions}}" wx:key="label" data-text="{{item.text}}" data-label="{{item.label}}" data-category="welcome" bindtap="askQuick"><text class="followup-label">{{item.label}}</text><text class="visited-note" wx:if="{{item.visited}}">✓ 今日已问</text><text class="advisor-arrow">›</text></view>
+      <view class="welcome-topic-groups">
+        <view class="welcome-topic-group" wx:for="{{advisorGroups}}" wx:for-item="group" wx:key="category">
+          <view class="welcome-topic-title">{{group.category}}</view>
+          <view class="welcome-topic-grid">
+            <view class="welcome-topic-item {{item.visited ? 'visited' : ''}}" hover-class="prompt-pressed" wx:for="{{group.items}}" wx:key="label" data-text="{{item.text}}" data-label="{{item.label}}" data-category="welcome" bindtap="askQuick"><text>{{item.label}}</text><text class="visited-note" wx:if="{{item.visited}}">✓</text><text class="advisor-arrow">›</text></view>
+          </view>
+        </view>
       </view>
     </view>
     <view class="messages">
@@ -35,14 +39,24 @@
       <view id="followups-start" class="followup-thread" wx:if="{{messages.length && !thinking}}">
         <view class="message-row ai followup-row">
           <view class="bubble-avatar">🐾</view>
-          <view class="bubble ai-bubble followup-panel">
+          <view class="bubble ai-bubble followup-panel {{followUpCategory === 'topics' ? 'topics-mode' : ''}}">
             <view class="followup-heading"><text class="prompt-spark">✦</text>{{followUpHeading}}</view>
             <view class="followup-subtitle">{{followUpCategory === 'topics' ? '选择一个方向开始，灰色表示今日已问' : '围绕当前回答继续了解'}}</view>
-            <view class="followup-option {{item.action === 'back' ? 'back' : ''}} {{item.visited ? 'visited' : ''}}" hover-class="prompt-pressed" wx:for="{{followUps}}" wx:key="label" data-text="{{item.text}}" data-label="{{item.label}}" data-category="{{followUpCategory}}" data-action="{{item.action}}" bindtap="onFollowUpTap">
-              <text class="followup-label">{{item.label}}</text>
-              <text class="visited-note" wx:if="{{item.visited}}">✓ 今日已问</text>
-              <text class="followup-arrow">{{item.action === 'back' ? '‹' : '›'}}</text>
-            </view>
+            <block wx:if="{{followUpCategory === 'topics'}}">
+              <view class="topic-group-card" wx:for="{{topicGroups}}" wx:for-item="group" wx:key="category">
+                <view class="topic-group-head">{{group.category}}</view>
+                <view class="topic-group-grid">
+                  <view class="topic-item {{item.visited ? 'visited' : ''}}" hover-class="prompt-pressed" wx:for="{{group.items}}" wx:key="label" data-text="{{item.text}}" data-label="{{item.label}}" data-category="topics" bindtap="onFollowUpTap">
+                    <text>{{item.label}}</text><text class="visited-note" wx:if="{{item.visited}}">✓</text><text class="followup-arrow">›</text>
+                  </view>
+                </view>
+              </view>
+            </block>
+            <block wx:else>
+              <view class="followup-option {{item.action === 'back' ? 'back' : ''}} {{item.visited ? 'visited' : ''}}" hover-class="prompt-pressed" wx:for="{{followUps}}" wx:key="label" data-text="{{item.text}}" data-label="{{item.label}}" data-category="{{followUpCategory}}" data-action="{{item.action}}" bindtap="onFollowUpTap">
+                <text class="followup-label">{{item.label}}</text><text class="visited-note" wx:if="{{item.visited}}">✓ 今日已问</text><text class="followup-arrow">{{item.action === 'back' ? '‹' : '›'}}</text>
+              </view>
+            </block>
           </view>
         </view>
         <view id="followups-end"></view>

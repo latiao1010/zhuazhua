@@ -25,6 +25,17 @@ const KEYS = {
   sixMonthDemo: 'paw_six_month_demo_v1'
 }
 
+// 演示数据使用独立命名空间，正式数据不会被切换操作覆盖。
+function isDemoMode() { return wx.getStorageSync('paw_data_mode') === 'demo' }
+Object.keys(KEYS).forEach(key => {
+  const original = KEYS[key]
+  Object.defineProperty(KEYS, key, { enumerable: true, get: () => isDemoMode() ? 'demo_' + original : original })
+})
+function setDemoMode(enabled) {
+  wx.setStorageSync('paw_data_mode', enabled ? 'demo' : 'real')
+  ensureSeedData()
+}
+
 // 演示数据的历史跨度。原来是 182 天（6 个月），散落写死在四处生成器里；
 // 提到 242 天（8 个月）后统一由这里控制，避免各模块跨度再次走偏。
 const DEMO_HISTORY_DAYS = 242
@@ -97,16 +108,16 @@ function isValidDateKey(value) {
 function normalizePet(value) {
   const pet = value && typeof value === 'object' && !Array.isArray(value) ? value : {}
   const weight = Number(pet.weight)
-  const birthday = isValidDateKey(pet.birthday) ? pet.birthday : seedPet.birthday
+  const birthday = isValidDateKey(pet.birthday) ? pet.birthday : isDemoMode() ? seedPet.birthday : ''
   return {
     ...seedPet,
     ...pet,
-    name: typeof pet.name === 'string' && pet.name.trim() ? pet.name.trim() : seedPet.name,
-    breed: typeof pet.breed === 'string' && pet.breed.trim() ? pet.breed.trim() : seedPet.breed,
+    name: typeof pet.name === 'string' && pet.name.trim() ? pet.name.trim() : isDemoMode() ? seedPet.name : '我的宠物',
+    breed: typeof pet.breed === 'string' && pet.breed.trim() ? pet.breed.trim() : isDemoMode() ? seedPet.breed : '待完善',
     sex: typeof pet.sex === 'string' && pet.sex ? pet.sex : seedPet.sex,
     birthday,
     togetherSince: isValidDateKey(pet.togetherSince) ? pet.togetherSince : birthday,
-    weight: Number.isFinite(weight) && weight > 0 ? pet.weight : seedPet.weight,
+    weight: Number.isFinite(weight) && weight > 0 ? pet.weight : isDemoMode() ? seedPet.weight : 0,
     avatar: typeof pet.avatar === 'string' && pet.avatar ? pet.avatar : seedPet.avatar,
     tags: Array.isArray(pet.tags) ? pet.tags : seedPet.tags
   }
@@ -152,7 +163,7 @@ function normalizeCareSchedule(schedule) {
   const value = schedule && typeof schedule === 'object' && !Array.isArray(schedule) ? schedule : {}
   const result = { ...defaults }
   ;['deworming', 'vaccine', 'bath', 'dental', 'nail', 'medicine'].forEach(key => {
-    result[key] = isValidDateKey(value[key]) ? value[key] : defaults[key]
+    result[key] = isValidDateKey(value[key]) ? value[key] : isDemoMode() ? defaults[key] : ''
     const lastKey = `${key}Last`
     result[lastKey] = value[lastKey] === '' || value[lastKey] === undefined
       ? ''
@@ -542,6 +553,15 @@ function hasCompleteSixMonthDemoData() {
 }
 
 function ensureSeedData() {
+  if (!isDemoMode()) {
+    const arrays = ['feeds', 'diaries', 'chats', 'stools', 'waters', 'walks', 'careRecords', 'growthPhotos', 'weightRecords']
+    arrays.forEach(key => {
+      const value = wx.getStorageSync(KEYS[key])
+      wx.setStorageSync(KEYS[key], Array.isArray(value) ? value.filter(item => item && typeof item === 'object') : [])
+    })
+    if (!wx.getStorageSync(KEYS.pet)) wx.setStorageSync(KEYS.pet, { name: '我的宠物', breed: '待完善', sex: '未设置', birthday: '', weight: 0, avatar: seedPet.avatar, tags: [] })
+  }
+  if (isDemoMode() && !wx.getStorageSync(KEYS.sixMonthDemo)) applySixMonthDemoData()
   const pet = normalizePet(wx.getStorageSync(KEYS.pet))
   wx.setStorageSync(KEYS.pet, pet)
 
@@ -602,10 +622,10 @@ function ensureSeedData() {
     }
   })
 
-  if (wx.getAccountInfoSync) {
+  if (isDemoMode() && wx.getAccountInfoSync) {
     try {
       const account = wx.getAccountInfoSync()
-      if (account && account.miniProgram && account.miniProgram.envVersion === 'develop') {
+      if (account && account.miniProgram && isDemoMode()) {
         if (!hasCompleteSixMonthDemoData()) {
           applySixMonthDemoData()
         }
@@ -710,7 +730,7 @@ const get = key => {
   return value || []
 }
 const set = (key, value, options = {}) => {
-  if (!options.skipCloud && READ_ONLY_PROTECTED_KEYS.has(key)) {
+  if (!isDemoMode() && !options.skipCloud && READ_ONLY_PROTECTED_KEYS.has(key)) {
     try {
       const status = wx.getStorageSync('paw_share_status')
       if (status && status.shared && status.role === 'viewer') {
@@ -719,13 +739,14 @@ const set = (key, value, options = {}) => {
       }
     } catch (error) {}
   }
+  const previousValue = wx.getStorageSync(KEYS[key])
   wx.setStorageSync(KEYS[key], value)
   if (!options.skipCloud) {
     try {
-      return require('./cloud-data').saveKey(key, value)
+      return require('./cloud-data').saveKey(key, value, { previousValue })
     } catch (error) {}
   }
   return Promise.resolve({ ok: true, skipped: true })
 }
 
-module.exports = { KEYS, ensureSeedData, get, set, todayKey, getDefaultCareSchedule, normalizeCareSchedule, getDefaultSupplies, normalizeSupplies, normalizeFamilyMembers }
+module.exports = { isDemoMode, setDemoMode, KEYS, ensureSeedData, get, set, todayKey, getDefaultCareSchedule, normalizeCareSchedule, getDefaultSupplies, normalizeSupplies, normalizeFamilyMembers }

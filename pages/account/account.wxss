@@ -129,6 +129,7 @@
 .family-member-actions view,.family-member-actions picker view,.family-member-actions text{min-width:70rpx;padding:8rpx 10rpx;border-radius:15rpx;color:#806f65;background:#f7f1ed;text-align:center;font-size:17rpx;font-weight:800}
 .family-member-actions text:last-child{color:#c05d4a;background:#fff0ea}
 .family-note{margin:20rpx 6rpx;color:#9d9188;font-size:19rpx;line-height:1.6}
+.family-activity{margin-top:24rpx}.family-activity .family-section-title{margin-top:0}.family-activity-row{display:flex;align-items:center;justify-content:space-between;padding:17rpx 20rpx;border-bottom:1rpx solid #f0e8e2;background:#fff}.family-activity-row:first-of-type{border-radius:24rpx 24rpx 0 0}.family-activity-row:last-child{border-bottom:0;border-radius:0 0 24rpx 24rpx}.family-activity-row>view>text{font-size:22rpx;font-weight:900}.family-activity-row>view>view{margin-top:4rpx;color:#71655e;font-size:19rpx}.family-activity-row>text{margin-left:16rpx;color:#a4978e;font-size:16rpx;text-align:right}
 .family-draft-sheet picker{display:block;margin-top:16rpx}
 .family-role-desc{margin-top:14rpx;padding:14rpx 16rpx;border-radius:18rpx;color:#8c7c72;background:#f7f1ed;font-size:18rpx;line-height:1.45}
 
@@ -208,3 +209,30 @@
 .account-page .supply-inline-head{margin:18rpx 0 10rpx}
 .account-page .privacy-note{margin:14rpx 4rpx;font-size:18rpx}
 @media screen and (max-width:360px){.account-page .care-dashboard .care-plan-row{padding:10rpx;gap:5rpx}.account-page .care-plan-copy>view{font-size:22rpx}}
+
+.data-manager-entry{display:flex;justify-content:space-between;margin-top:16rpx;padding:20rpx;border:1rpx solid #eee2d9;background:#fff;border-radius:18rpx;font-size:23rpx;flex:none}
+.account-page,.growth-album-page{scrollbar-width:none}
+.account-page::-webkit-scrollbar,.growth-album-page::-webkit-scrollbar{display:none;width:0;height:0}
+.account-section-label{margin-top:22rpx;margin-bottom:8rpx;color:#4c4039;font-size:27rpx;font-weight:700}
+.account-section-label.health-label{margin-top:26rpx}
+.upcoming-empty{padding:14rpx 0;color:#8d7d71;font-size:21rpx}
+.account-page .care-plan-row.needs-attention{border-color:#f1c7b5;background:#fff3eb}
+
+/* “我的”总览统一适配层：一处定义密度、资料卡和小屏行为。 */
+.account-page{height:100vh;min-height:0;overflow:hidden;padding:20rpx 24rpx 18rpx}
+.account-page>.topbar{margin-bottom:12rpx}.account-page .page-title{font-size:34rpx}
+.account-page .display-profile-card{display:flex;align-items:center;min-height:0;height:202rpx;padding:22rpx 24rpx}
+.account-page .display-avatar{flex:none;padding:4rpx}.account-page .display-avatar image{width:112rpx;height:112rpx}
+.account-page .profile-display-info{position:relative;min-width:0;flex:1;margin-left:20rpx;padding-right:150rpx}
+.account-page .display-name-line{display:grid;grid-template-columns:1fr auto;align-items:center;gap:6rpx}
+.account-page .display-name-main>text{font-size:16rpx}.account-page .display-name-main>view{font-size:30rpx}
+.account-page .display-name-main>view{font-size:32rpx}.account-page .birthday-chip{grid-column:1/-1;display:flex;align-items:center;gap:8rpx;margin-top:2rpx}.account-page .birthday-chip>text{font-size:18rpx}.account-page .birthday-chip>view{font-size:20rpx}
+.account-page .pet-meta{position:absolute;right:0;top:50%;display:flex;align-items:flex-end;margin:0;gap:6rpx;flex-direction:column;transform:translateY(-50%)}.account-page .pet-meta view{min-width:0;padding:7rpx 10rpx;font-size:18rpx;white-space:nowrap}
+.account-section-label{margin-top:17rpx;margin-bottom:8rpx;font-size:25rpx}.account-section-label.health-label{margin-top:19rpx}
+.account-shortcuts{gap:12rpx;margin-top:10rpx}.account-shortcuts .growth-album-entry,.account-shortcuts .family-share-entry{min-height:78rpx;padding:14rpx 12rpx;border-radius:17rpx}.account-shortcuts .growth-album-entry>view>text,.account-shortcuts .family-share-copy>view{font-size:21rpx}.account-shortcuts .growth-album-entry>view>view,.account-shortcuts .family-share-copy>text{font-size:17rpx;margin-top:3rpx}
+.account-page .care-heading{margin-top:14rpx}.account-page .care-heading>view:first-child>view{font-size:25rpx}
+.account-page .care-dashboard{gap:10rpx}.account-page .care-dashboard .care-plan-row{min-height:118rpx;padding:14rpx;border-radius:17rpx;gap:6rpx}.account-page .care-dashboard .care-plan-icon{width:30rpx;height:30rpx;font-size:18rpx}.account-page .care-plan-copy>view{font-size:21rpx}.account-page .care-dashboard .care-countdown{font-size:17rpx;padding:4rpx 8rpx}.account-page .care-dashboard .care-arrow{font-size:22rpx}
+.account-page .supply-inline-head{margin:15rpx 0 8rpx}.account-page .supply-inline-head>view{font-size:22rpx}.account-page .supply-inline-head>text{font-size:16rpx}
+.account-page .data-manager-entry{display:flex;margin-top:17rpx;padding:19rpx 20rpx;border-radius:18rpx;font-size:23rpx}
+
+@media screen and (max-height:700px){.account-page{height:100vh;overflow-y:auto;padding-bottom:calc(26rpx + env(safe-area-inset-bottom))}}
