@@ -1,2 +1,2 @@
 const createAccountPage = require('../shared/account-controller')
-Page(createAccountPage())
+Page(createAccountPage({ careOnly: true }))

@@ -26,8 +26,9 @@
     <view class="stool-count"><text class="count-number">{{summary.count}}</text><text>{{summary.countUnit}}</text></view>
   </view>
 
-  <view class="section-row"><view class="section-title">{{typeMeta.title}}</view><view class="filter">{{dateFilterText}}<text wx:if="{{!readOnly}}" class="select-records" bindtap="toggleRecordSelectionMode">{{selectingRecords ? '取消选择' : '批量删除'}}</text></view></view>
-  <view class="record-filters"><input value="{{recordSearch}}" placeholder="搜索食物、备注或状态" bindinput="onRecordSearch" /><picker mode="selector" range="{{authorOptions}}" range-key="label" bindchange="onAuthorFilter"><view>{{authorFilterLabel}} ›</view></picker></view>
+  <view class="section-row"><view class="section-title">{{typeMeta.title}}</view><view class="record-toolbar"><text>{{dateFilterText}}</text><button wx:if="{{selectingRecords}}" bindtap="toggleRecordSelectionMode">取消选择</button><button wx:else bindtap="openRecordTools" aria-label="搜索、筛选与批量管理">管理 ···</button></view></view>
+  <view class="record-filters" wx:if="{{showFilters}}"><input cursor-spacing="24" value="{{recordSearch}}" placeholder="搜索名称、备注或状态" bindinput="onRecordSearch" confirm-type="search" /><picker mode="selector" range="{{authorOptions}}" value="{{authorFilterIndex}}" range-key="label" bindchange="onAuthorFilter"><view>{{authorFilterLabel}} ›</view></picker></view>
+  <view class="filter-state" wx:if="{{filtersActive}}"><text>筛选结果 {{rows.length}} 条 · 上方为当日总计</text><button bindtap="clearRecordFilters">清除筛选</button></view>
 
   <view class="timeline" wx:if="{{rows.length}}">
     <view class="feed-row" wx:for="{{rows}}" wx:key="id">
@@ -41,8 +42,8 @@
       </view>
     </view>
   </view>
-  <view class="empty card" wx:else>{{emptyText}}</view>
-  <button class="batch-delete" wx:if="{{selectingRecords}}" bindtap="removeSelectedRecords">删除已选 {{selectedRecordIds.length}} 条</button>
+  <view class="empty card" wx:else><view class="empty-companion"><view class="warm-icon warm-icon-paw"></view></view><view>{{emptyText}}</view></view>
+  <button class="batch-delete" wx:if="{{selectingRecords}}" disabled="{{!selectedRecordIds.length}}" bindtap="removeSelectedRecords">删除已选 {{selectedRecordIds.length}} 条</button>
 
   <view class="feed-trend-card card {{feedTrend.theme}}" wx:if="{{feedTrend.days.length}}">
     <view class="trend-range"><view class="trend-range-item {{trendRange === 7 ? 'active' : ''}}" data-range="7" bindtap="setTrendRange">7 天</view><view class="trend-range-item {{trendRange === 30 ? 'active' : ''}}" data-range="30" bindtap="setTrendRange">30 天</view><view class="trend-range-item {{trendRange === 180 ? 'active' : ''}}" data-range="180" bindtap="setTrendRange">半年</view></view>
@@ -61,7 +62,7 @@
     <view class="sheet-head"><text>修改每日饮水目标</text><text class="close" bindtap="closeWaterGoalEditor">×</text></view>
     <view class="goal-editor-copy">设置后，今日剩余饮水量、完成进度和趋势图目标线会立即更新。</view>
     <view class="goal-editor-field">
-      <input type="number" focus maxlength="5" value="{{waterGoalDraft}}" bindinput="onWaterGoalInput" bindconfirm="saveWaterGoal" />
+      <input cursor-spacing="24" type="number" focus maxlength="5" value="{{waterGoalDraft}}" bindinput="onWaterGoalInput" bindconfirm="saveWaterGoal" />
       <text>毫升 / 天</text>
     </view>
     <view class="goal-editor-tip">当前建议值根据体重估算；可结合食物含水量、天气、活动量及兽医建议调整。</view>
@@ -74,7 +75,7 @@
     <view class="sheet-head"><text>修改每日喂食目标</text><text class="close" bindtap="closeFeedGoalEditor">×</text></view>
     <view class="goal-editor-copy">设置后，今日剩余克数、完成进度和趋势图目标线会立即更新。</view>
     <view class="goal-editor-field">
-      <input type="number" focus maxlength="4" value="{{feedGoalDraft}}" bindinput="onFeedGoalInput" bindconfirm="saveFeedGoal" />
+      <input cursor-spacing="24" type="number" focus maxlength="4" value="{{feedGoalDraft}}" bindinput="onFeedGoalInput" bindconfirm="saveFeedGoal" />
       <text>克 / 天</text>
     </view>
     <view class="goal-editor-tip">请根据宠物体重、年龄、活动量和所用粮食说明合理设置。</view>
@@ -88,24 +89,24 @@
     <picker mode="date" value="{{draft.dayKey}}" end="{{today}}" bindchange="onDraftDate"><view class="record-date-field">记录日期 <text>{{draft.dayKey}} ›</text></view></picker>
     <block wx:if="{{currentType === 'feed'}}">
       <view class="meal-tabs"><view wx:for="{{mealTypes}}" wx:key="*this" class="meal-tab {{draft.type === item ? 'active' : ''}}" data-value="{{item}}" bindtap="chooseType">{{item}}</view></view>
-      <view class="field"><text class="label">吃了什么</text><input class="input" placeholder="例如：低敏犬粮" value="{{draft.food}}" data-key="food" bindinput="onInput" /></view>
-      <view class="form-grid"><view class="field"><text class="label">分量（g）</text><input class="input" type="number" placeholder="90" value="{{draft.amount}}" data-key="amount" bindinput="onInput" /></view><view class="field"><text class="label">时间</text><picker mode="time" value="{{draft.time}}" bindchange="onTime"><view class="input picker">{{draft.time}}</view></picker></view></view>
+      <view class="field"><text class="label">吃了什么</text><input cursor-spacing="24" class="input" placeholder="例如：低敏犬粮" value="{{draft.food}}" data-key="food" bindinput="onInput" /></view>
+      <view class="form-grid"><view class="field"><text class="label">分量（g）</text><input cursor-spacing="24" class="input" type="number" placeholder="90" value="{{draft.amount}}" data-key="amount" bindinput="onInput" /></view><view class="field"><text class="label">时间</text><picker mode="time" value="{{draft.time}}" bindchange="onTime"><view class="input picker">{{draft.time}}</view></picker></view></view>
     </block>
     <block wx:elif="{{currentType === 'stool'}}">
       <view class="label">便便状态</view>
       <view class="condition-grid"><view wx:for="{{stoolConditions}}" wx:key="*this" class="condition-option {{draft.condition === item ? 'active' : ''}}" data-value="{{item}}" bindtap="chooseCondition">{{item}}</view></view>
       <view class="label">颜色</view>
       <view class="color-list"><view wx:for="{{stoolColors}}" wx:key="*this" class="color-option {{draft.color === item ? 'active' : ''}}" data-value="{{item}}" bindtap="chooseColor">{{item}}</view></view>
-      <view class="form-grid"><view class="field"><text class="label">备注（选填）</text><input class="input" placeholder="气味、异物等" value="{{draft.note}}" data-key="note" bindinput="onInput" /></view><view class="field"><text class="label">时间</text><picker mode="time" value="{{draft.time}}" bindchange="onTime"><view class="input picker">{{draft.time}}</view></picker></view></view>
+      <view class="form-grid"><view class="field"><text class="label">备注（选填）</text><input cursor-spacing="24" class="input" placeholder="气味、异物等" value="{{draft.note}}" data-key="note" bindinput="onInput" /></view><view class="field"><text class="label">时间</text><picker mode="time" value="{{draft.time}}" bindchange="onTime"><view class="input picker">{{draft.time}}</view></picker></view></view>
       <view class="stool-alert" wx:if="{{draft.condition === '稀便' || draft.condition === '便秘/干硬' || draft.color === '黑色' || draft.color === '红色'}}">⚠ 已标记为需观察；若反复出现或伴随精神、食欲异常，请联系兽医。</view>
     </block>
     <block wx:elif="{{currentType === 'water'}}">
-      <view class="form-grid"><view class="field"><text class="label">饮水量（ml）</text><input class="input" type="number" placeholder="150" value="{{draft.amount}}" data-key="amount" bindinput="onInput" /></view><view class="field"><text class="label">时间</text><picker mode="time" value="{{draft.time}}" bindchange="onTime"><view class="input picker">{{draft.time}}</view></picker></view></view>
-      <view class="field"><text class="label">备注（选填）</text><input class="input" placeholder="例如：加了羊奶粉" value="{{draft.note}}" data-key="note" bindinput="onInput" /></view>
+      <view class="form-grid"><view class="field"><text class="label">饮水量（ml）</text><input cursor-spacing="24" class="input" type="number" placeholder="150" value="{{draft.amount}}" data-key="amount" bindinput="onInput" /></view><view class="field"><text class="label">时间</text><picker mode="time" value="{{draft.time}}" bindchange="onTime"><view class="input picker">{{draft.time}}</view></picker></view></view>
+      <view class="field"><text class="label">备注（选填）</text><input cursor-spacing="24" class="input" placeholder="例如：加了羊奶粉" value="{{draft.note}}" data-key="note" bindinput="onInput" /></view>
     </block>
     <block wx:else>
-      <view class="form-grid"><view class="field"><text class="label">时长（分钟）</text><input class="input" type="number" placeholder="30" value="{{draft.duration}}" data-key="duration" bindinput="onInput" /></view><view class="field"><text class="label">距离（km，选填）</text><input class="input" type="digit" placeholder="1.5" value="{{draft.distance}}" data-key="distance" bindinput="onInput" /></view></view>
-      <view class="form-grid"><view class="field"><text class="label">备注（选填）</text><input class="input" placeholder="例如：小区一圈" value="{{draft.note}}" data-key="note" bindinput="onInput" /></view><view class="field"><text class="label">时间</text><picker mode="time" value="{{draft.time}}" bindchange="onTime"><view class="input picker">{{draft.time}}</view></picker></view></view>
+      <view class="form-grid"><view class="field"><text class="label">时长（分钟）</text><input cursor-spacing="24" class="input" type="number" placeholder="30" value="{{draft.duration}}" data-key="duration" bindinput="onInput" /></view><view class="field"><text class="label">距离（km，选填）</text><input cursor-spacing="24" class="input" type="digit" placeholder="1.5" value="{{draft.distance}}" data-key="distance" bindinput="onInput" /></view></view>
+      <view class="form-grid"><view class="field"><text class="label">备注（选填）</text><input cursor-spacing="24" class="input" placeholder="例如：小区一圈" value="{{draft.note}}" data-key="note" bindinput="onInput" /></view><view class="field"><text class="label">时间</text><picker mode="time" value="{{draft.time}}" bindchange="onTime"><view class="input picker">{{draft.time}}</view></picker></view></view>
     </block>
     <button class="primary-btn" bindtap="saveRecord">保存记录</button>
   </view>

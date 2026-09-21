@@ -1,0 +1,31 @@
+<view class="page play-page">
+ <block wx:if="{{!started}}">
+  <view class="play-hero"><view class="play-icon"><view class="warm-icon {{tool === 'age' ? 'warm-icon-paw' : 'warm-icon-companion'}}"></view></view><view class="eyebrow">陪伴，也有新发现</view><view class="page-title">{{tool === 'bingo' ? '这些小习惯\n你家中了几项？' : tool === 'age' ? '它的人类年龄\n比你想的更有趣' : '你家的毛孩子\n藏着哪种小性格？'}}</view><view class="play-sub">{{tool === 'bingo' ? '点亮属于它的日常，拼出一张可爱的小档案。' : tool === 'age' ? '算算年龄、数数相伴的日子，留下一张专属纪念卡。' : '10 道生活小问题，约 2 分钟，发现它独一份的可爱。'}}</view></view>
+  <view class="play-form card">
+   <view class="label">它是</view><view class="species-tabs"><button class="{{species === 'dog' ? 'active' : ''}}" data-value="dog" bindtap="chooseSpecies">狗狗</button><button class="{{species === 'cat' ? 'active' : ''}}" data-value="cat" bindtap="chooseSpecies">猫咪</button></view>
+   <view class="field"><text class="label">它的名字</text><input class="input" maxlength="12" value="{{name}}" data-field="name" bindinput="input" placeholder="例如：可乐" cursor-spacing="24" /></view>
+   <block wx:if="{{tool === 'age'}}">
+    <view class="field"><text class="label">出生日期</text><picker mode="date" value="{{birthday || today}}" end="{{today}}" data-field="birthday" bindchange="chooseDate"><view class="input play-picker">{{birthday || '请选择出生日期'}}<text>›</text></view></picker></view>
+    <view class="field" wx:if="{{species === 'dog'}}"><text class="label">成年后的体型</text><picker range="{{sizeOptions}}" value="{{size}}" bindchange="chooseSize"><view class="input play-picker">{{sizeOptions[size]}}<text>›</text></view></picker><view class="field-note">体型暂按档案体重预选；幼犬请按预计成年体型调整。</view></view>
+    <view class="field"><text class="label">品种（选填）</text><input class="input" maxlength="24" value="{{breed}}" data-field="breed" bindinput="input" placeholder="例如：柯基、布偶或混血" cursor-spacing="24" /><view class="field-note">品种仅作备注，换算依据为猫狗类别与犬只体型。</view></view>
+    <view class="field"><view class="field-label-row"><text class="label">开始相伴的日期（选填）</text><text wx:if="{{togetherSince}}" bindtap="clearTogether">清除</text></view><picker mode="date" value="{{togetherSince || birthday || today}}" start="{{birthday}}" end="{{today}}" data-field="togetherSince" bindchange="chooseDate"><view class="input play-picker">{{togetherSince || '例如：来到你家的那一天'}}<text>›</text></view></picker><view class="field-note">未填写时，卡片展示“来到世界多少天”。</view></view>
+   </block>
+   <block wx:if="{{tool === 'bingo'}}">
+    <view class="bingo-invite" wx:if="{{peer}}">和 {{peer.n}} 比一比<text>先选你家毛孩子的习惯，完成后揭晓共同命中的项目。</text></view>
+    <view class="bingo-heading"><text>点一下勾选，再点取消</text><text bindtap="clearBingo">清空</text></view>
+    <view class="bingo-grid"><button wx:for="{{bingoCells}}" wx:key="id" class="bingo-cell {{item.selected ? 'checked' : ''}} {{item.winning ? 'winning' : ''}}" data-id="{{item.id}}" bindtap="toggleBingo" aria-label="{{item.label + (item.selected ? '，已选' : '，未选')}}"><text class="bingo-check">{{item.selected ? '✓' : '＋'}}</text><text>{{item.label}}</text></button></view>
+    <view class="bingo-summary">已中 {{bingoCount}} / 9 项<text>{{bingoLines ? ' · 连成 ' + bingoLines + ' 条线！' : ' · 横、竖、斜连满三格就是 Bingo'}}</text></view>
+   </block>
+   <view class="form-error" wx:if="{{error}}">{{error}}</view>
+   <button class="primary-btn" wx:if="{{tool === 'age'}}" bindtap="calculate">生成它的年龄卡片 →</button><button class="primary-btn" wx:elif="{{tool === 'bingo'}}" bindtap="finishBingo">{{peer ? '看看我们有多像 →' : '生成我的宾果卡片 →'}}</button><button class="primary-btn" wx:else bindtap="start">开始发现它的性格 →</button>
+  </view>
+  <view class="play-note">{{tool === 'bingo' ? '一项没中也可以生成卡片。按平时观察选择，不用为了凑齐而改变它的习惯。' : tool === 'age' ? '人类年龄为科普估算，个体存在差异；这里的输入不会改动宠物档案。' : '根据平时观察作答，不要刻意刺激或强迫宠物。结果仅供趣味交流，不是行为诊断。'}}</view>
+ </block>
+ <block wx:else>
+  <view class="quiz-top"><text>{{species === 'cat' ? '猫咪' : '狗狗'}}性格小档案</text><text>{{index + 1}} / 10</text></view><view class="quiz-progress"><view style="width:{{progress}}%"></view></view>
+  <view class="quiz-restored" wx:if="{{restored}}">已接上你上次的答案</view>
+  <view class="quiz-card card"><view class="quiz-caption">想想{{name || '它'}}平时的样子</view><view class="quiz-title">{{question.text}}</view><view class="quiz-options"><button wx:for="{{question.options}}" wx:key="*this" class="quiz-option {{selected === index ? 'selected' : ''}}" data-index="{{index}}" bindtap="select"><text class="option-marker">{{selected === index ? '✓' : ''}}</text><text>{{item}}</text></button></view></view>
+  <view class="form-error" wx:if="{{error}}">{{error}}</view><view class="quiz-actions"><button class="ghost-btn" wx:if="{{index > 0}}" bindtap="previous">上一题</button><button class="primary-btn" bindtap="next">{{index === 9 ? '看看它的性格' : '下一题 →'}}</button></view>
+  <view class="quiz-footer"><text>没有标准答案，选最接近的一项就好</text><text bindtap="restart">重新开始</text></view>
+ </block>
+</view>

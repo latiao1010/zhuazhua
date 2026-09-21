@@ -436,6 +436,44 @@ async function main() {
     assert.strictEqual(state.waters.length, 1)
   })
 
+  await scenario('记录管理折叠筛选，筛选不改变当日总计且只读成员没有批量入口', () => {
+    const state = makeState({ waters: [
+      { id: 1, dayKey: TODAY, amount: 120, recordedBy: 'owner', recordedByName: '我' },
+      { id: 2, dayKey: TODAY, amount: 80, recordedBy: 'admin', recordedByName: '妈妈' }
+    ] })
+    const { wx } = makeWx()
+    const page = loadPage('pages/feed/feed.js', makeStore(state), wx)
+    const context = pageContext(page, { currentType: 'water', selectedDate: TODAY })
+    context.refresh()
+    const summary = clone(context.data.summary)
+    assert.strictEqual(context.data.showFilters, false)
+    context.openRecordTools()
+    assert.strictEqual(context.data.showFilters, true)
+    context.onAuthorFilter({ detail: { value: 2 } })
+    assert.strictEqual(context.data.rows.length, 1)
+    assert.deepStrictEqual(context.data.summary, summary)
+    context.onRecordSearch({ detail: { value: '不存在' } })
+    assert.strictEqual(context.data.rows.length, 0)
+    assert.strictEqual(context.data.filtersActive, true)
+    assert.deepStrictEqual(context.data.summary, summary)
+    context.clearRecordFilters()
+    assert.strictEqual(context.data.rows.length, 2)
+    assert.strictEqual(context.data.filtersActive, false)
+    assert.strictEqual(context.data.authorFilterIndex, 0)
+    context.data.authorFilter = 'removed-member'
+    context.refresh()
+    assert.strictEqual(context.data.authorFilter, 'all')
+    wx.showActionSheet = options => {
+      assert.strictEqual(options.itemList.length, 2)
+      options.success({ tapIndex: 1 })
+    }
+    context.openRecordTools()
+    assert.strictEqual(context.data.selectingRecords, true)
+    wx.setStorageSync('paw_share_status', { shared: true, role: 'viewer' })
+    wx.showActionSheet = options => assert.deepStrictEqual(options.itemList, ['搜索与筛选'])
+    context.openRecordTools()
+  })
+
   await scenario('非法喂食、饮水、散步数值不会写入记录', () => {
     const state = makeState()
     const { wx, calls } = makeWx()
@@ -1919,17 +1957,17 @@ async function main() {
     assert.ok(weather.rainText.includes('审核版暂不获取定位'))
   })
 
-  await scenario('页面清单和三个 Tab 路由都指向真实文件', () => {
+  await scenario('页面清单和四个 Tab 路由都指向真实文件', () => {
     const appConfig = JSON.parse(fs.readFileSync(path.join(ROOT, 'app.json'), 'utf8'))
-    assert.strictEqual(appConfig.tabBar.list.length, 3)
+    assert.strictEqual(appConfig.tabBar.list.length, 4)
     const routes = [...appConfig.pages, ...appConfig.tabBar.list.map(item => item.pagePath)]
     routes.forEach(route => {
       assert.ok(fs.existsSync(path.join(ROOT, `${route}.js`)), `${route}.js is missing`)
       assert.ok(fs.existsSync(path.join(ROOT, `${route}.wxml`)), `${route}.wxml is missing`)
       assert.ok(fs.existsSync(path.join(ROOT, `${route}.wxss`)), `${route}.wxss is missing`)
     })
-    assert.strictEqual(new Set(appConfig.tabBar.list.map(item => item.pagePath)).size, 3)
-    assert.strictEqual(appConfig.tabBar.list.find(item => item.pagePath === 'pages/chat/chat').text, '宠物顾问')
+    assert.strictEqual(new Set(appConfig.tabBar.list.map(item => item.pagePath)).size, 4)
+    assert.deepStrictEqual(appConfig.tabBar.list.map(item => item.text), ['今天', '记录', '照护', '我的'])
   })
 
   await scenario('审核版前端包不包含大模型接口或密钥', () => {
@@ -2210,7 +2248,14 @@ async function main() {
     const chatWxml = fs.readFileSync(path.join(ROOT, 'pages/chat/chat.wxml'), 'utf8')
     assert.ok(/<scroll-view class="chat-scroll"[^>]*scroll-y[^>]*show-scrollbar="false"/.test(chatWxml))
     assert.ok(/@media[^\{]*max-height\s*:\s*620px/.test(chatStyles))
-    assert.ok(/@media[^\{]*max-height\s*:\s*620px/.test(profileStyles))
+    // The home page now scrolls naturally at every height, rather than
+    // requiring a short-screen override to undo a fixed viewport height.
+    const profileWxml = fs.readFileSync(path.join(ROOT, 'pages/profile/profile.wxml'), 'utf8')
+    assert.ok(/class="page journal-home"/.test(profileWxml))
+    assert.ok(!/\.journal-home\s*\{[^}]*height\s*:\s*100vh/.test(profileStyles))
+    assert.ok(!/\.journal-home\s*\{[^}]*overflow\s*:\s*hidden/.test(profileStyles))
+    const feedStyles = fs.readFileSync(path.join(ROOT, 'pages/feed/feed.wxss'), 'utf8')
+    assert.ok(/\.sheet\s*\{[^}]*max-height\s*:\s*88vh[^}]*overflow-y\s*:\s*auto/s.test(feedStyles))
     assert.ok(/@media[^\{]*max-width\s*:\s*360px/.test(chatStyles))
     assert.ok(/@media[^\{]*max-width\s*:\s*360px/.test(profileStyles))
     assert.ok(/@media[^\{]*max-width\s*:\s*360px/.test(accountStyles))

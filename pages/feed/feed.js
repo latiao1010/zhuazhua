@@ -228,7 +228,7 @@ Page({
     pet: {}, day: '', month: '', today: '', selectedDate: '', trendEndDate: '', dateFilterText: '今天', emptyText: '', currentType: 'feed', singleMode: true, detailTitle: '喂食详情', detailEyebrow: 'FEEDING DETAIL', trendRange: 30,
     tabs: Object.keys(TYPES).map(key => ({ key, tab: TYPES[key].tab, icon: TYPES[key].icon })),
     rows: [], summary: {}, typeMeta: {}, feedTrend: { days: [], scrollLeft: 0, activeDays: 0, totalMeals: 0, average: 0, latest7Average: 0 },
-    adding: false, editingRecordId: null,
+    adding: false, editingRecordId: null, showFilters: false,
     editingFeedGoal: false, feedGoal: FEED_GOAL, feedGoalDraft: String(FEED_GOAL),
     editingWaterGoal: false, waterGoal: 600, waterGoalDraft: '600',
     mealTypes: ['早餐', '午餐', '晚餐', '零食'],
@@ -264,10 +264,11 @@ Page({
     const waterGoal = Number(store.get('waterGoal')) || Math.round((Number(pet.weight) || 0) * 55) || 600
     const typeRecords = store.get(TYPES[type].storeKey)
     const keyword = String(this.data.recordSearch || '').trim().toLowerCase()
-    const authorFilter = this.data.authorFilter || 'all'
     const authorOptions = [{ value: 'all', label: '全部成员' }, ...Array.from(new Map(typeRecords.filter(item => item && item.recordedBy).map(item => [item.recordedBy, { value:item.recordedBy, label:item.recordedByName || '家庭成员' }])).values())]
-    const records = typeRecords
-      .filter(item => item && item.dayKey === selectedDate && (authorFilter === 'all' || item.recordedBy === authorFilter))
+    const authorFilter = authorOptions.some(item => item.value === this.data.authorFilter) ? this.data.authorFilter : 'all'
+    const dayRecords = typeRecords.filter(item => item && item.dayKey === selectedDate)
+    const records = dayRecords
+      .filter(item => authorFilter === 'all' || item.recordedBy === authorFilter)
       .filter(item => !keyword || JSON.stringify(item).toLowerCase().includes(keyword))
       .sort((a, b) => String(b.time || '').localeCompare(String(a.time || '')))
     const selectedRecordIds = this.data.selectedRecordIds || []
@@ -285,9 +286,10 @@ Page({
       detailEyebrow: { feed: 'FEEDING DETAIL', stool: 'STOOL DETAIL', water: 'WATER DETAIL', walk: 'WALK DETAIL' }[type],
       rows,
       feedGoal, waterGoal,
-      summary: buildSummary(type, records, pet, isToday, feedGoal, waterGoal),
+      summary: buildSummary(type, dayRecords, pet, isToday, feedGoal, waterGoal),
       feedTrend: buildTrend(type, typeRecords, trendEndDate, selectedDate, pet, feedGoal, waterGoal, this.data.trendRange || 30),
-      authorOptions,
+      authorOptions, authorFilter, filtersActive: !!keyword || authorFilter !== 'all',
+      authorFilterIndex: Math.max(0, authorOptions.findIndex(item => item.value === authorFilter)),
       authorFilterLabel: (authorOptions.find(item => item.value === authorFilter) || authorOptions[0]).label,
       readOnly: isReadOnlyMember()
     })
@@ -310,6 +312,18 @@ Page({
   },
   onRecordSearch(e) {
     this.setData({ recordSearch:e.detail.value, selectedRecordIds: [] })
+    this.refresh()
+  },
+  openRecordTools() {
+    const itemList = ['搜索与筛选']
+    if (!isReadOnlyMember() && this.data.rows.length) itemList.push('批量管理记录')
+    wx.showActionSheet({ itemList, success: result => {
+      if (result.tapIndex === 0) this.setData({ showFilters: !this.data.showFilters })
+      else if (result.tapIndex === 1) this.toggleRecordSelectionMode()
+    } })
+  },
+  clearRecordFilters() {
+    this.setData({ recordSearch: '', authorFilter: 'all', selectedRecordIds: [] })
     this.refresh()
   },
   onAuthorFilter(e) {
@@ -344,7 +358,7 @@ Page({
     } })
   },
   switchType(e) {
-    this.setData({ currentType: e.currentTarget.dataset.type, adding: false, selectedRecordIds: [], selectingRecords: false, authorFilter: 'all', recordSearch: '' })
+    this.setData({ currentType: e.currentTarget.dataset.type, adding: false, selectedRecordIds: [], selectingRecords: false, authorFilter: 'all', recordSearch: '', showFilters: false })
     this.refresh()
   },
   openAdd() {

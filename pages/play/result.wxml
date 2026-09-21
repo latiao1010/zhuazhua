@@ -1,0 +1,35 @@
+<view class="page result-page">
+ <view class="empty card" wx:if="{{error}}"><view>{{error}}</view><button class="primary-btn" bindtap="tryTool">我也来算一算</button></view>
+ <block wx:elif="{{model}}">
+  <view class="result-caption">{{model.tool === 'bingo' ? '九个小习惯，拼出独一份的可爱' : model.tool === 'age' ? '关于它的成长，你又多知道了一点' : '每一种小性格，都值得被好好喜欢'}}</view>
+  <view class="result-card {{model.tool}}">
+   <view class="result-brand">爪爪日常 · 陪伴小发现</view>
+   <image wx:if="{{model.photo}}" class="custom-pet-photo" src="{{model.photo}}" mode="aspectFill" binderror="photoError" />
+   <view wx:else class="pet-portrait {{model.species}}"><view class="pet-ear left"></view><view class="pet-ear right"></view><view class="pet-face"><view class="pet-eye left"></view><view class="pet-eye right"></view><view class="pet-cheek left"></view><view class="pet-cheek right"></view><view class="pet-muzzle"><view class="pet-nose"></view><view class="pet-mouth"></view></view></view></view>
+   <view class="result-name">{{model.name}}</view>
+   <block wx:if="{{model.tool === 'age'}}">
+    <view class="result-age">今年 {{model.ageText}}</view><view class="human-label">相当于人类约</view><view class="human-age" wx:if="{{model.humanAge !== null}}">{{model.humanAge}}<text>岁</text></view><view class="out-of-range" wx:else>超出参考范围</view>
+    <view class="together-panel"><view>{{model.dayLabel}} <text>{{model.days}}</text> 天</view><text>当前阶段：{{model.stage}}</text></view>
+    <view class="birthday-count">{{model.birthdayDays === 0 ? '今天生日快乐！' : '距离下一个生日还有 ' + model.birthdayDays + ' 天'}}</view>
+   </block>
+   <block wx:elif="{{model.tool === 'bingo'}}"><view class="bingo-result-title">{{model.peer ? '好友同款对照' : '行为宾果'}}</view><view class="bingo-peer" wx:if="{{model.peer}}">{{model.name}} × {{model.peer.n}}<text>共同命中 {{model.commonCount}} 项 · 共 9 项行为</text></view><view class="bingo-result-count">中了 <text>{{model.count}}</text> / 9 项</view><view class="bingo-grid"><view wx:for="{{model.cells}}" wx:key="id" class="bingo-cell {{item.selected ? 'checked' : ''}} {{item.winning && !model.peer ? 'winning' : ''}} {{item.common ? 'common' : ''}} {{item.peerSelected && !item.selected ? 'peer-only' : ''}}"><text class="bingo-check {{model.peer ? 'compare-check' : ''}}">{{model.peer ? (item.common ? '共同' : item.selected ? '我家' : item.peerSelected ? '好友' : '—') : (item.selected ? '✓' : '·')}}</text><text>{{item.label}}</text></view></view><view class="bingo-summary">{{model.lines ? 'BINGO！连成 ' + model.lines + ' 条线' : '每一个小习惯，都很像它'}}</view></block>
+   <block wx:else>
+    <view class="result-age">你家{{model.species === 'cat' ? '猫咪' : '狗狗'}}是</view><view class="personality-title">{{model.title}}</view><view class="personality-tag">{{model.tag}}</view>
+    <view class="personality-metrics"><view wx:for="{{model.metrics}}" wx:key="label"><text>{{item.label}}</text><view class="metric-track"><view style="width:{{item.value}}%"></view></view><text>{{item.value}}%</text></view></view>
+   </block>
+   <view class="result-quote">{{model.quote}}</view><view class="result-date">生成于 {{model.date}}</view>
+  </view>
+  <view class="result-note" wx:if="{{model.tool === 'age'}}">换算参考 AAHA 发布的猫狗年龄对照表，按月插值估算。犬只阶段按体型粗分，品种与健康状况会影响实际衰老速度；不用于医疗判断。</view>
+  <view class="result-note" wx:elif="{{model.tool === 'bingo'}}">按主人日常观察勾选，仅供趣味交流。你家的九宫格，会和它一样吗？</view>
+  <view class="result-note" wx:else>{{model.tip}}<view>本结果为趣味观察，指数由答案归一化得出，不是行为发生概率或专业评估。</view></view>
+  <view class="photo-editor"><button class="ghost-btn" disabled="{{generating || choosingPhoto}}" loading="{{choosingPhoto}}" bindtap="choosePhoto">{{model.photo ? '换一张宠物照片' : '用自家宠物照片做卡片'}}</button><button wx:if="{{model.photo}}" class="photo-remove" disabled="{{generating}}" bindtap="removePhoto">恢复插画</button><text>照片用于当前页面和分享图片，链接内页使用默认插画。</text></view>
+  <view class="bingo-compare-invite" wx:if="{{model.tool === 'bingo'}}"><view>你家也有这些小习惯吗？</view><button class="primary-btn" bindtap="compare">和 {{model.name}} 比一比 →</button><text>勾选你家的行为，生成好友同款对照卡</text></view>
+  <view class="result-actions"><button class="primary-btn" open-type="share">分享给朋友</button><button class="ghost-btn" loading="{{generating}}" disabled="{{generating}}" bindtap="posterAction">{{generating ? '正在制作卡片' : poster ? '分享结果图片' : '生成分享卡片'}}</button></view>
+  <view class="poster-status" wx:if="{{codeState === 'unavailable'}}">小程序码暂未获取成功。可先分享给朋友或保存无二维码卡片。<text bindtap="generate">重新获取小程序码</text></view>
+  <view class="poster-status" wx:elif="{{codeState === 'ready' && codeVersion !== 'release'}}">当前卡片使用开发 / 体验码，仅授权用户可扫码访问。</view>
+  <view class="poster-status error" wx:if="{{posterError}}">{{posterError}}<text bindtap="generate">重试生成</text></view>
+  <view class="poster-preview" wx:if="{{poster}}"><view>分享卡片预览<text bindtap="preview">查看大图 ›</text></view><image src="{{poster}}" mode="widthFix" bindtap="preview" /><button class="ghost-btn" loading="{{saving}}" disabled="{{saving}}" bindtap="save">保存卡片到相册</button></view>
+  <button class="try-again" bindtap="tryTool">{{model.tool === 'bingo' ? '制作我家的宾果 →' : model.tool === 'age' ? '我也来算一算 →' : '我也来测测 →'}}</button>
+ </block>
+ <canvas id="shareCanvas" type="2d" class="share-canvas"></canvas>
+</view>

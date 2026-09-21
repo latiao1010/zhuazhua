@@ -1,0 +1,23 @@
+<view class="page records-page">
+  <view class="records-heading"><view><view class="eyebrow">{{pet.name}}的日常</view><view class="page-title">记录</view></view><text>{{today}}</text></view>
+  <view class="records-intro">随手记下今天，也能回顾每一次变化。</view>
+  <view class="records-readonly" wx:if="{{readOnly}}">当前为只读查看，可以查看记录与趋势。</view>
+  <view class="record-overview-grid">
+    <view class="record-overview {{item.tone}}" wx:for="{{records}}" wx:key="key">
+      <view class="record-overview-link" data-type="{{item.key}}" bindtap="openDetail">
+        <view class="record-overview-title">{{item.label}}<text>›</text></view>
+        <view class="record-overview-value">{{item.count ? item.total : '—'}}<text>{{item.unit}}</text></view>
+        <text class="record-overview-caption">{{item.count ? '今天已记录 ' + item.count + ' 次' : '今天还没有记录'}}</text>
+        <view class="record-overview-history">{{item.historyCount ? '查看 ' + item.historyCount + ' 条记录与趋势' : '查看记录与趋势'}}</view>
+      </view>
+      <button wx:if="{{!readOnly}}" data-type="{{item.key}}" bindtap="addRecord">＋ 记{{item.label}}</button>
+    </view>
+  </view>
+  <view class="section-title">体重变化</view>
+  <view class="weight-entry card">
+    <view class="weight-entry-link" bindtap="openWeightTrend"><view><text>当前体重</text><view>{{pet.weight || '—'}}<text>kg</text></view></view><view><text>{{weightCount ? weightCount + ' 条体重记录' : '完善体重，开始记录变化'}}</text><view>查看最近趋势 ›</view></view></view>
+    <button wx:if="{{!readOnly}}" bindtap="editWeight">更新当前体重</button>
+  </view>
+  <view class="records-export" bindtap="openVisitData"><view><view>整理就诊资料</view><text>按日期汇总记录，方便就诊时出示</text></view><text>›</text></view>
+</view>
+<include src="../shared/weight-sheet.wxml" />

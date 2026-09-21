@@ -1,3 +1,5 @@
+const { buildWeightTrend } = require('../../utils/weight-trend')
+const tabNavigation = require('../../utils/tab-navigation')
 const store = require('../../utils/store')
 const { getWeather } = require('../../utils/weather')
 const cloudData = require('../../utils/cloud-data')
@@ -118,56 +120,6 @@ function getHealthTips(pet, ageYears, careSchedule) {
   return { lifeStage, healthTips: [ageTip, careTip, behaviorTip] }
 }
 
-function buildWeightTrend(records, currentWeight) {
-  let normalized = (records || [])
-    .map(item => {
-      const weight = Number(item.weight)
-      const createdAt = Number(item.createdAt) || Number(item.id) || new Date(`${item.dayKey || store.todayKey()}T00:00:00`).getTime()
-      return { ...item, weight, createdAt }
-    })
-    .filter(item => item.dayKey && item.weight > 0)
-    .sort((a, b) => b.createdAt - a.createdAt)
-  if (!normalized.length && Number(currentWeight) > 0) {
-    const createdAt = Date.now()
-    normalized = [{ id: createdAt, createdAt, dayKey: store.todayKey(), time: '', weight: Number(currentWeight) }]
-  }
-  const byDay = {}
-  normalized.forEach(item => {
-    if (!byDay[item.dayKey]) byDay[item.dayKey] = item
-  })
-  const ordered = Object.values(byDay).sort((a, b) => a.dayKey.localeCompare(b.dayKey))
-  const recent = ordered.slice(-8)
-  const weights = recent.map(item => item.weight)
-  const min = Math.min(...weights)
-  const max = Math.max(...weights)
-  const range = max - min
-  const bars = recent.map(item => {
-    const parts = item.dayKey.split('-')
-    return {
-      ...item,
-      dateLabel: `${Number(parts[1])}/${Number(parts[2])}`,
-      height: range ? Math.round(42 + (item.weight - min) / range * 78) : 76
-    }
-  })
-  const first = normalized[normalized.length - 1]
-  const last = normalized[0]
-  const change = first && last ? Number((last.weight - first.weight).toFixed(1)) : 0
-  return {
-    bars,
-    history: normalized.slice(0, 30).map(item => ({
-      ...item,
-      date: item.dayKey.replace(/-/g, '.'),
-      timeText: item.time || ''
-    })),
-    current: last ? last.weight : Number(currentWeight) || 0,
-    change,
-    changeText: change === 0 ? '保持稳定' : `${change > 0 ? '增加' : '减少'} ${Math.abs(change).toFixed(1)}kg`,
-    changeClass: change > 0 ? 'up' : change < 0 ? 'down' : 'stable',
-    min: min || Number(currentWeight) || 0,
-    max: max || Number(currentWeight) || 0,
-    hasTrend: ordered.length > 1
-  }
-}
 
 function buildTodayFeeds(records) {
   const todayFeeds = (records || [])
@@ -437,13 +389,13 @@ function buildAIPredictions({ now, pet, todayWater, todayWaters, stools, weather
   let waterText
   let waterTone = 'blue'
   if (!waterTarget) {
-    waterTitle = '还不能预测饮水结果'
+    waterTitle = '完善体重后查看饮水目标'
     waterBadge = '缺少体重'
-    waterText = '补充体重后，模型会自动计算每日目标和预计达标时间。'
+    waterText = '补充体重后，可查看饮水参考目标与记录进度。'
   } else if (!waterRecords.length) {
-    waterTitle = '饮水模型正在学习'
+    waterTitle = '今天还没有饮水记录'
     waterBadge = '待记录'
-    waterText = `记录今天第一笔饮水后，将预测 ${waterTarget}ml 的达标时间。`
+    waterText = `今日参考目标为 ${waterTarget}ml，记录后可查看进度。`
   } else if (todayWater >= waterTarget) {
     waterTitle = '今天饮水预计稳定达标'
     waterBadge = '趋势较高'
@@ -471,9 +423,9 @@ function buildAIPredictions({ now, pet, todayWater, todayWaters, stools, weather
   let stoolText
   let stoolTone = 'green'
   if (recentStools.length < 3) {
-    stoolTitle = '肠胃模型还在学习'
+    stoolTitle = '排便记录还不够完整'
     stoolBadge = `${recentStools.length}/3 条`
-    stoolText = `再记录 ${3 - recentStools.length} 次排便，模型即可开始判断短期趋势。`
+    stoolText = `目前有 ${recentStools.length} 次记录，再记录 ${3 - recentStools.length} 次后可查看近期记录汇总。`
     stoolTone = 'cream'
   } else if (abnormalCount) {
     stoolTitle = '近期肠胃状态有波动'
@@ -652,6 +604,10 @@ Page({
     homeDashboard: { greeting: '', healthScore: 100, healthSummary: '', tasks: [], statusCards: [], completedCount: 0, totalTasks: 6, progress: 0, nextTask: {}, laterTasks: [], findings: [], knowledge: { detail: [] } }, quickRecords: QUICK_RECORDS
   },
   quickRecord(e) { wx.navigateTo({ url: '/pages/feed/feed?type=' + e.currentTarget.dataset.type + '&add=1' }) },
+  openPlay(e) {
+    const tool = ['age','personality','bingo'].includes(e.currentTarget.dataset.tool) ? e.currentTarget.dataset.tool : 'age'
+    wx.navigateTo({ url: '/pages/play/play?tool=' + tool })
+  },
   customizeQuickRecords() {
     wx.showActionSheet({ itemList: QUICK_RECORDS.map(item => `优先 ${item.label.slice(2)}`), success:result => {
       const first = QUICK_RECORDS[result.tapIndex]
@@ -699,7 +655,7 @@ Page({
     const festivals = getFestivalInfo(togetherSince, daysTogether)
     const careSchedule = store.normalizeCareSchedule(store.get('care'))
     const health = getHealthTips(pet, months / 12, careSchedule)
-    const weightTrend = buildWeightTrend(store.get('weightRecords'), pet.weight)
+    const weightTrend = buildWeightTrend(store.get('weightRecords'), pet.weight, store.todayKey())
     const homeDashboard = buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, careRecords, supplies, weather: this.data.weather })
     const syncStatus = cloudData.getSyncStatus ? cloudData.getSyncStatus() : {}
     const syncLabel = syncStatus.status === 'conflict' ? '记录有冲突，点此处理' : syncStatus.status === 'fail' ? '同步异常' : syncStatus.status === 'pending' ? '待同步' : ''
@@ -737,7 +693,7 @@ Page({
   },
   goNextTask() {
     const task = this.data.homeDashboard.nextTask || {}
-    if (task.action === 'account') return wx.switchTab({ url: '/pages/account/account' })
+    if (task.action === 'account') return tabNavigation.openTab('care', task.key)
     const mealType = task.key === 'breakfast' ? '早餐' : task.key === 'dinner' ? '晚餐' : ''
     this.goDailyRecord(task.action || 'feed', !task.done, mealType)
   },
@@ -750,6 +706,7 @@ Page({
   closeKnowledge() { this.setData({ knowledgeOpen: false }) },
   openHealthTip(e) { this.setData({ healthTipOpen: true, selectedHealthTip: this.data.healthTips[e.currentTarget.dataset.index] }) },
   closeHealthTip() { this.setData({ healthTipOpen: false }) },
+  goCare() { this.setData({ healthTipOpen: false }); tabNavigation.openTab('care') },
   goAccount() { this.setData({ healthTipOpen: false }); wx.switchTab({ url: '/pages/account/account' }) },
   noop() {}
 })

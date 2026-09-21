@@ -1,0 +1,28 @@
+<view class="overlay" wx:if="{{weightTrendOpen}}" catchtap="closeWeightTrend">
+  <view class="sheet weight-sheet" catchtap="noop">
+    <view class="sheet-head"><text>体重趋势</text><text class="close" bindtap="closeWeightTrend">×</text></view>
+    <view class="empty" wx:if="{{!weightTrend.bars.length}}">还没有体重记录，完善当前体重后即可查看变化。</view>
+    <view class="weight-hero" wx:if="{{weightTrend.bars.length}}">
+      <view><text>当前体重</text><view>{{weightTrend.current}}<text>kg</text></view></view>
+      <view class="weight-change {{weightTrend.changeClass}}"><text>相比首次记录</text><view>{{weightTrend.changeText}}</view></view>
+    </view>
+    <view class="weight-chart-card" wx:if="{{weightTrend.bars.length}}">
+      <view class="weight-chart-title"><view>最近 {{weightTrend.bars.length}} 次记录</view><text>{{weightTrend.min}}–{{weightTrend.max}} kg</text></view>
+      <view class="weight-chart">
+        <view class="weight-column" wx:for="{{weightTrend.bars}}" wx:key="dayKey">
+          <text class="weight-value">{{item.weight}}</text>
+          <view class="weight-bar-area"><view class="weight-bar {{index === weightTrend.bars.length - 1 ? 'latest' : ''}}" style="height:{{item.height}}rpx"></view></view>
+          <text class="weight-date">{{item.dateLabel}}</text>
+        </view>
+      </view>
+      <view class="weight-empty-tip" wx:if="{{!weightTrend.hasTrend}}">目前只有一条记录，下一次修改体重后即可看到变化趋势。</view>
+    </view>
+    <view class="weight-history-title" wx:if="{{weightTrend.history.length}}">最近 {{weightTrend.history.length}} 条记录</view>
+    <scroll-view class="weight-history" wx:if="{{weightTrend.history.length}}" scroll-y enhanced show-scrollbar="false">
+      <view class="weight-history-row" wx:for="{{weightTrend.history}}" wx:key="id">
+        <view class="weight-history-copy"><text>{{item.date}}</text><view>{{item.timeText || '历史记录'}}</view></view>
+        <view class="weight-history-value">{{item.weight}}<text>kg</text></view>
+      </view>
+    </scroll-view>
+  </view>
+</view>
