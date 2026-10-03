@@ -1,0 +1,9 @@
+<import src="cards.wxml" />
+<view class="outing-page saved-page"><view class="saved-hero"><text class="eyebrow">{{shared ? '一起带狗出门' : '把想去的地方，慢慢攒起来'}}</text><view class="detail-name">{{shared ? '下次，一起去。' : '我的出行清单'}}</view><text class="detail-intro">{{shared ? '看看朋友挑选的地点，喜欢的可以收藏到自己的清单。' : '收藏存在这台设备。挑选最多 12 处地点，发给朋友一起商量。'}}</text></view>
+  <view class="policy-caution" wx:if="{{missingCount}}">{{missingCount}} 处地点暂时无法找到，其余地点仍可查看。</view>
+  <view class="list-heading" wx:if="{{total}}"><view>{{total}} 处{{shared ? '分享地点' : '想去的地方'}}</view><button class="text-button" bindtap="selectionAction">{{selectedCount ? '取消选择' : '全选分享'}}</button></view>
+  <view wx:for="{{rows}}" wx:key="id" class="saved-row"><button class="select-place {{item.selected ? 'checked' : ''}}" data-id="{{item.id}}" bindtap="toggleSelection"><text class="check-box">{{item.selected ? '✓' : ''}}</text><text>{{item.selected ? '已选入分享清单' : '选入分享清单'}}</text></button><template is="place-card" data="{{item}}"/></view>
+  <view class="outing-empty" wx:if="{{!total}}"><view class="empty-symbol">♡</view><view>{{shared ? '这份清单暂时没有可查看的地点' : '还没有收藏地点'}}</view><text>{{shared ? '可以先选一个城市，找找你和狗狗想去的地方。' : '看到喜欢的地方点一下爱心，就会出现在这里。'}}</text><button class="outing-primary" bindtap="browse">去找个好去处</button></view>
+  <button wx:if="{{total}}" class="more-city" bindtap="browse">再找几个想去的地方 →</button>
+  <view class="detail-dock list-dock" wx:if="{{total}}"><view>已选 {{selectedCount}} / {{maxShare}}<text>分享地点和公开资料</text></view><button class="outing-primary" open-type="share" disabled="{{!hasSelection}}">分享清单 ↗</button></view>
+</view>

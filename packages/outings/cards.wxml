@@ -1,0 +1,8 @@
+<template name="place-card">
+  <view class="place-card" data-id="{{item.id}}" bindtap="openPlace">
+    <view class="place-top"><view class="place-category {{item.categoryId}}"><text>{{item.glyph}}</text></view><view class="place-heading"><text class="place-kicker">{{item.city}} · {{item.category}}</text><view class="place-name">{{item.name}}</view></view><button class="save-button {{item.saved ? 'is-saved' : ''}}" data-id="{{item.id}}" catchtap="toggleSaved" aria-label="{{item.saved ? '取消收藏' : '收藏地点'}}">{{item.saved ? '♥' : '♡'}}</button></view>
+    <view class="place-location">{{item.location}}</view>
+    <view class="place-tags" wx:if="{{item.tags.length}}"><text wx:for="{{item.tags}}" wx:key="*this">{{item}}</text></view>
+    <view class="place-bottom"><text class="status {{item.status}}">{{item.statusLabel}}</text><text>{{item.sourceCount}} 条参考 · 查看条件 ›</text></view>
+  </view>
+</template>

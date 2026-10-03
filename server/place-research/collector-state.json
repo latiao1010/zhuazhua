@@ -1,0 +1,16 @@
+{
+  "paused": true,
+  "reason": "After user brought Chrome forward, page text and search field setValue work, but coordinate click still returns noWindowsAvailable and key events do not submit. Chrome and in-app browser getTab each timed out. No authentication warning observed. Search field contains 包头 宠物友好; awaiting manual submit.",
+  "resumed_at": "2026-09-25T13:51:28.581777+00:00",
+  "paused_at": "2026-09-25T13:43:14.999404+00:00",
+  "user_authorized_at": "2026-09-25T05:31:07.232314+00:00",
+  "updated_at": "2026-09-25T14:50:35.029966+00:00",
+  "last_resume_attempt": {
+    "checked_at": "2026-09-25T14:50:35.029966+00:00",
+    "new_content_this_attempt": 0,
+    "native_view": "After user brought Chrome forward, page text and search field setValue work, but coordinate click still returns noWindowsAvailable and key events do not submit. Chrome and in-app browser getTab each timed out. No authentication warning observed. Search field contains 包头 宠物友好; awaiting manual submit.",
+    "auth_prompt_observed": false,
+    "next_action": "User submits current Baotou search; inspect results and try opening an observed note link. Complete Baotou 1 remaining, then Wuhai and Chifeng."
+  },
+  "next_action": "User submits current Baotou search; inspect results and try opening an observed note link. Complete Baotou 1 remaining, then Wuhai and Chifeng."
+}

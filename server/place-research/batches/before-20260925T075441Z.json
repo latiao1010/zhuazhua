@@ -1,0 +1,94 @@
+{
+  "status": "session_batch_complete",
+  "started_at": "2026-09-25T01:59:20.326122+00:00",
+  "source": "小红书可见页面",
+  "cities": [
+    {
+      "province": "河北省",
+      "city": "唐山市",
+      "target_new_content": 3
+    },
+    {
+      "province": "河北省",
+      "city": "秦皇岛市",
+      "target_new_content": 3
+    },
+    {
+      "province": "河北省",
+      "city": "邯郸市",
+      "target_new_content": 3
+    },
+    {
+      "province": "河北省",
+      "city": "邢台市",
+      "target_new_content": 3
+    },
+    {
+      "province": "河北省",
+      "city": "保定市",
+      "target_new_content": 3
+    },
+    {
+      "province": "河北省",
+      "city": "张家口市",
+      "target_new_content": 3
+    },
+    {
+      "province": "河北省",
+      "city": "承德市",
+      "target_new_content": 3
+    },
+    {
+      "province": "河北省",
+      "city": "沧州市",
+      "target_new_content": 3
+    },
+    {
+      "province": "河北省",
+      "city": "廊坊市",
+      "target_new_content": 3
+    }
+  ],
+  "baseline_content_count": 261,
+  "baseline_city_count": 16,
+  "saved_new_content": 24,
+  "next_action": "Chengde, Cangzhou and Langfang each reached 3/3. This collection session saved 9 valid notes and held 1 unnamed restaurant pending. Session budget reached (3 searches, 10 distinct details). Next city: Hengshui. Qinhuangdao remains deferred after detail timeouts.",
+  "saved_ids": [
+    "6a00c76d000000003503a42c",
+    "6973d47800000000220301dc",
+    "6a6ed2680000000006006247",
+    "6a60a610000000001c0123e8",
+    "699e694b000000001b016b36",
+    "68de2c020000000005003926",
+    "68dff29b0000000007031d6e",
+    "69cd110b000000001f00246a",
+    "696483cf000000000a03042a",
+    "68dfa9e70000000005033eb0",
+    "6a9e0344000000001902511d",
+    "6ab4e76900000000120363d4",
+    "6a72c1ea0000000032031679",
+    "6a68a3b6000000000f01484f",
+    "6a8a610e0000000028032be9",
+    "69f823b2000000003503abae",
+    "6a9ce76d000000002b027f70",
+    "69566608000000001f00eb9d",
+    "6a7b2f87000000002500770d",
+    "69d374bf000000001d01a3e7",
+    "68bfc476000000001d019294",
+    "6aa64e180000000012003885",
+    "69402348000000001b025fe7",
+    "6aa7f7bb0000000011037951"
+  ],
+  "saved_content_count": 285,
+  "saved_city_count": 24,
+  "catalog_places": 514,
+  "updated_at": "2026-09-25T07:52:48.174406+00:00",
+  "blocker": null,
+  "pending_location_ids": [
+    "6a2adff10000000008027cfd",
+    "69f5d0260000000035033b8c",
+    "6947c5d7000000001e03940b"
+  ],
+  "per_city_content_limit": 3,
+  "continuation_mode": "multiple_cities_per_turn"
+}

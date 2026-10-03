@@ -1,0 +1,84 @@
+{
+  "id": "6a6c6f27000000002402f1eb",
+  "title": "杭州宠物友好商场/餐厅自留版",
+  "author": "醒醒",
+  "date_text": "07-31",
+  "province": "浙江省",
+  "city": "杭州市",
+  "published_at": null,
+  "collected_at": "2026-09-25",
+  "read_status": "已读正文及部分评论",
+  "search_query": "杭州 宠物友好 餐厅",
+  "verification_status": "作者携犬多处到访，门店规则需分别复核",
+  "url": "https://www.xiaohongshu.com/explore/6a6c6f27000000002402f1eb",
+  "summary": "作者按携自家小狗到访经历整理五座商场及四家餐厅，逐项说明推车、落地、室内外座位的差别。评论中提到滨江天街部分餐厅牵犬不准入，不能把商场可逛等同于餐厅可进。",
+  "places": [
+    {
+      "name": "杭州大悦城",
+      "location_text": "杭州，具体入口待核实",
+      "address": null,
+      "category": "商场",
+      "conditions": "作者称可携犬进入，但部分工作人员要求抱起；当时可租宠物推车。"
+    },
+    {
+      "name": "龙湖滨江天街",
+      "location_text": "杭州滨江，具体门牌待核实",
+      "address": null,
+      "category": "商场",
+      "conditions": "作者称可牵犬走商场，但其到访的餐厅未允许牵犬入内。"
+    },
+    {
+      "name": "龙湖上城天街",
+      "location_text": "杭州上城，具体门牌待核实",
+      "address": null,
+      "category": "商场",
+      "conditions": "作者称可牵犬，并在星光嘉映影城宠物厅带犬观影。"
+    },
+    {
+      "name": "远洋乐堤港",
+      "location_text": "杭州，具体门牌待核实",
+      "address": null,
+      "category": "商场",
+      "conditions": "作者称可牵犬，COMUNE室外座位可携犬用餐。"
+    },
+    {
+      "name": "拱墅万达",
+      "location_text": "杭州拱墅，具体门牌待核实",
+      "address": null,
+      "category": "商场",
+      "conditions": "作者称可牵犬，星巴克室外座位可携犬。"
+    },
+    {
+      "name": "佟爷炙子烤肉（杭州首店）",
+      "location_text": "杭州浙大紫金港附近",
+      "address": null,
+      "category": "餐厅",
+      "conditions": "作者称仅院内景观位可携犬用餐，店方曾提供宠物水碗。"
+    },
+    {
+      "name": "夏星酒馆（剑桥公社店）",
+      "location_text": "杭州剑桥公社",
+      "address": null,
+      "category": "餐厅",
+      "conditions": "作者称室外座位可携犬。"
+    },
+    {
+      "name": "刘一勺·贵州酸汤豆米牛肉火锅（黄龙店）",
+      "location_text": "杭州黄龙",
+      "address": null,
+      "category": "餐厅",
+      "conditions": "作者称室外座位可携犬，大犬活动空间可能较局促。"
+    },
+    {
+      "name": "卷卷JuanJuan",
+      "location_text": "杭州，具体门牌待核实",
+      "address": null,
+      "category": "餐厅",
+      "conditions": "作者称有宠物座位和拴绳设施，店方提供水及狗饭。"
+    }
+  ],
+  "comment_notes": [
+    "商场内不同门店有独立规则，不能由商场准入推定所有店铺准入。",
+    "推车租金、影院宠物厅及餐饮政策是作者到访时信息。"
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "status": "session_batch_complete",
+  "started_at": "2026-09-25T07:54:41.945358+00:00",
+  "source": "小红书可见页面",
+  "cities": [
+    {
+      "province": "河北省",
+      "city": "衡水市",
+      "target_new_content": 3
+    },
+    {
+      "province": "山西省",
+      "city": "大同市",
+      "target_new_content": 3
+    },
+    {
+      "province": "山西省",
+      "city": "阳泉市",
+      "target_new_content": 3
+    }
+  ],
+  "baseline_content_count": 285,
+  "baseline_city_count": 24,
+  "saved_new_content": 9,
+  "saved_ids": [
+    "68ad89f8000000001d014793",
+    "698f4909000000001a01ec0c",
+    "6ab52e2000000000140330ce",
+    "69520f47000000001e029bb5",
+    "69b407b0000000002200f665",
+    "6a4b25b3000000001503f127",
+    "680c27ce000000000e00762d",
+    "6a367cdc0000000016024698",
+    "6a4a09b60000000006021b81"
+  ],
+  "saved_content_count": 294,
+  "saved_city_count": 27,
+  "catalog_places": 530,
+  "pending_location_ids": [
+    "6a2adff10000000008027cfd",
+    "69f5d0260000000035033b8c",
+    "6947c5d7000000001e03940b",
+    "6a75ecd10000000029030505"
+  ],
+  "per_city_content_limit": 3,
+  "continuation_mode": "multiple_cities_per_turn",
+  "next_action": "Hengshui, Datong and Yangquan each reached 3/3. Session saved 9 valid notes plus 1 unlocated Datong hotel. Session budget reached: 3 searches, 10 distinct details. Next city: Changzhi. Qinhuangdao remains deferred after earlier detail timeouts.",
+  "blocker": null,
+  "updated_at": "2026-09-25T08:10:19.539002+00:00"
+}

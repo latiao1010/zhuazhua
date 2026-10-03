@@ -1,0 +1,57 @@
+{
+  "id": "696458bb000000000a03f212",
+  "title": "石家庄养宠人狂喜🐶 携宠自由清单！",
+  "author": "肉肉樊",
+  "date_text": "01-12",
+  "province": "河北省",
+  "city": "石家庄市",
+  "published_at": null,
+  "collected_at": "2026-09-25",
+  "read_status": "已读正文及部分评论",
+  "search_query": "石家庄 宠物友好 咖啡",
+  "url": "https://www.xiaohongshu.com/explore/696458bb000000000a03f212",
+  "summary": "作者整理石家庄咖啡、餐饮与商场的携宠线索。评论中多人指出先天下广场及北国未来城后来不再允许携宠，另有人称中大型犬难以进入商场；因此商场条目只能作为历史线索，不能标为当前可入。",
+  "places": [
+    {
+      "name": "够够咖啡（go狗咖啡）",
+      "location_text": "新华区边界街文创园",
+      "address": null,
+      "category": "咖啡馆/宠物活动",
+      "conditions": "帖子称提供犬只活动区、宠物零食和洗护，入场要求及当前营业状态待核实。"
+    },
+    {
+      "name": "喜宝面馆（欢乐汇店）",
+      "location_text": "裕华区欢乐汇 2 楼",
+      "address": null,
+      "category": "餐饮",
+      "conditions": "帖子称设人宠分区和宠物餐食，现行携宠规则待核实。"
+    },
+    {
+      "name": "喜宝人宠音乐餐厅（外贸街店）",
+      "location_text": "桥西区外贸街",
+      "address": null,
+      "category": "餐饮",
+      "conditions": "帖子称提供宠物鲜食，现行携宠规则待核实。"
+    },
+    {
+      "name": "先天下广场",
+      "location_text": "石家庄，具体地址未注明",
+      "address": null,
+      "category": "商场",
+      "conditions": "原帖列为可携宠，但随后评论称已不再宠物友好；当前不应作为可携宠推荐。"
+    },
+    {
+      "name": "北国未来城",
+      "location_text": "石家庄，具体地址未注明",
+      "address": null,
+      "category": "商场",
+      "conditions": "原帖贴士提到借推车，后续评论称已不允许携宠；当前不应作为可携宠推荐。"
+    }
+  ],
+  "comment_notes": [
+    "01-13 评论称先天下广场已不再宠物友好，作者表示不知情。",
+    "06-06 评论称北国未来城目前不让宠物进入。",
+    "有评论称中大型犬进商场受限，并提醒可能需要狗证、牵绳和推车。"
+  ],
+  "verification_status": "商场准入存在明确冲突；仅保留历史线索，不作当前准入承诺"
+}

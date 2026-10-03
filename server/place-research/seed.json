@@ -1,0 +1,14 @@
+{
+  "posts": [
+    {"id":"6a268633000000001603d1f9","title":"上海真·宠物友好实测④Omitofee毛球公园","author":"Piquillo","date_text":"06-08","date_kind":"页面日期","collected_at":"2026-09-22"},
+    {"id":"6a59958b000000001303e612","title":"上海TOP4家宝藏宠物友好商场｜遛狗必备！","author":"萌U友","date_text":"07-17","date_kind":"页面日期","collected_at":"2026-09-22"},
+    {"id":"6aa145dc000000000d027f46","title":"上海最大城市森林绿地｜三林滨江遛狗攻略🐾","author":"白白和糯米","date_text":"09-12","date_kind":"编辑日期","collected_at":"2026-09-22"}
+  ],
+  "places": [
+    {"id":"omitofee","post_id":"6a268633000000001603d1f9","name":"Omitofee 超级毛球公园","query":"Omitofee","category":"宠物乐园 / 咖啡","city":"上海市","claim":"作者描述有围栏放绳区、大小犬分区、清洁及洗吹设施。","caution":"需注册小程序；室内范围、收费、犬种限制待核实。","status":"待核实"},
+    {"id":"bfc","post_id":"6a59958b000000001303e612","name":"BFC 外滩金融中心","query":"BFC外滩金融中心","category":"商场","city":"上海市","claim":"作者称多家门店可携宠，有饮水、拾便袋、推车租借，接纳中大型犬。","caution":"商场与单店规则需分别核实。","status":"待核实"},
+    {"id":"raffles","post_id":"6a59958b000000001303e612","name":"长宁来福士","query":"长宁来福士","category":"商场","city":"上海市","claim":"作者称户外草坪、餐饮外摆可携宠。","caution":"作者 07-26 评论补充：室内可装包、不能落地；正文提及推车。适用范围待核实。","status":"待核实"},
+    {"id":"mega","post_id":"6a59958b000000001303e612","name":"南翔印象城 MEGA","query":"南翔印象城MEGA","category":"商场","city":"上海市","claim":"正文列为推荐地点。","caution":"07-17 评论指出已不让狗进，作者同日回复确认。暂不推荐，待商场核实。","status":"信息冲突"},
+    {"id":"sanlin","post_id":"6aa145dc000000000d027f46","name":"三林滨江城市森林","query":"三林滨江","category":"公园 / 绿地","city":"上海市","claim":"作者在 09-12 评论称狗可直接进入。","caution":"体型、牵绳及开放区域规则待核实；停车场开放情况存在不同反馈。","status":"待核实"}
+  ]
+}

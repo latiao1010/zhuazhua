@@ -1,0 +1,39 @@
+{
+  "id": "6a09db720000000036030be1",
+  "title": "天津宠物友好咖啡店｜咖啡汪汪",
+  "author": "天津带狗玩",
+  "date_text": "05-17",
+  "province": "天津市",
+  "city": "天津市",
+  "published_at": null,
+  "collected_at": "2026-09-25",
+  "read_status": "已读正文",
+  "search_query": "天津 宠物友好 咖啡",
+  "url": "https://www.xiaohongshu.com/explore/6a09db720000000036030be1",
+  "summary": "作者整理了天津三家咖啡馆的携宠线索：强心剂咖啡设宠物围栏区，椿咖啡介绍为可带猫狗，CHEMBOX 五大道店被描述为室内可携宠。营业时间与人均消费为发帖时信息，未核实现在是否仍适用。",
+  "places": [
+    {
+      "name": "coffeetonics 强心剂咖啡",
+      "location_text": "和平区重庆道 120 号花园老街院内 3 号楼（跳海酒馆内）",
+      "address": "天津市和平区重庆道 120 号花园老街院内 3 号楼",
+      "category": "咖啡馆",
+      "conditions": "帖子称设有宠物围栏区并提供狗粮；未说明体型限制，现行规则待店家确认。"
+    },
+    {
+      "name": "椿咖啡 ChunCafe",
+      "location_text": "南开区龙川路 3 号院商铺 6 号（康域医院对面）",
+      "address": "天津市南开区龙川路 3 号院商铺 6 号",
+      "category": "咖啡馆",
+      "conditions": "帖子介绍可带猫狗，具体入店范围与现行规则待核实。"
+    },
+    {
+      "name": "CHEMBOX（五大道店）",
+      "location_text": "和平区五大道街道先农大院",
+      "address": null,
+      "category": "咖啡馆",
+      "conditions": "帖子称室内可携宠；先农大院内具体门牌及现行规则待核实。"
+    }
+  ],
+  "comment_notes": [],
+  "verification_status": "合集作者提供的地点及携宠规则，非逐店当前核验"
+}

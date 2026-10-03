@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>爪爪 · 地点线索库</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f7f4;color:#263b33;font:15px/1.65 system-ui,-apple-system,sans-serif}main{max-width:1120px;margin:auto;padding:44px 24px}header{display:flex;justify-content:space-between;align-items:center;gap:20px}h1{font-size:32px;margin:6px 0}h2{font-size:21px;margin:0}p{margin:8px 0;color:#66766e}.eyebrow{font-size:12px;letter-spacing:3px;color:#658571}.badge{display:inline-block;border-radius:20px;padding:4px 12px;background:#e9f1e9;font-size:12px}.warn{background:#fff0df;color:#925528}.stats{display:flex;gap:12px;margin:26px 0}.stat{background:white;border:1px solid #e1e8e1;border-radius:16px;padding:16px 22px;flex:1}.stat strong{font-size:26px;margin-right:10px}.notice{padding:14px 18px;background:#ecf1ed;border-radius:12px;margin-bottom:22px}input{width:100%;padding:14px 18px;border:1px solid #d8e2da;border-radius:12px;background:white;font:inherit;margin-bottom:22px}article{padding:24px;background:white;border:1px solid #e0e7df;border-radius:20px;margin-bottom:16px}.top{display:flex;justify-content:space-between;gap:12px}.meta{color:#849086;font-size:13px;margin:5px 0 18px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}.label{font-size:12px;font-weight:600;color:#7c897f;margin-bottom:8px}.map{background:#f5f7f4;padding:18px;border-radius:12px}.source{border-top:1px solid #eef0ec;margin-top:18px;padding-top:14px;font-size:13px;color:#77867a}a{color:#37785b}button{font:inherit;color:#376a51;background:white;border:1px solid #d4e0d5;border-radius:10px;padding:10px 16px;cursor:pointer}.poi{border-top:1px solid #dce5dc;padding-top:10px;margin-top:10px}.empty{color:#869088}footer{font-size:12px;color:#88948b;margin:24px 0}@media(max-width:640px){main{padding:24px 16px}.grid{grid-template-columns:1fr;gap:14px}.stat{padding:12px}.stat strong{display:block}h1{font-size:26px}.top{flex-wrap:wrap}}
+</style>
+<main><header><div><div class="eyebrow">爪爪 / 地点研究室</div><h1>让每一次出门，都有据可查</h1><p>上海地点库 · 高德 POI 匹配预览</p></div><button onclick="location.reload()">刷新数据</button></header>
+<div class="stats"><div class="stat"><strong id="matched">0</strong>有地图候选</div><div class="stat"><strong>5</strong>地点线索</div><div class="stat"><strong>1</strong>信息冲突</div></div>
+<div class="notice" id="notice">正在读取本地数据库…</div><input id="search" aria-label="搜索地点或类型" placeholder="搜索地点、类型或线索关键词"><section id="list"></section>
+<footer>本地地点库 · 高德匹配仅用于确定地理位置，不代表携宠政策已核实。</footer></main>
+<script>
+let items=[];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function render(){
+ const q=document.querySelector('#search').value.trim().toLowerCase();
+ document.querySelector('#matched').textContent=items.filter(x=>x.candidates.length).length;
+ const rows=items.filter(x=>[x.name,x.category,...x.candidates.map(p=>p.name+' '+p.address)].join(' ').toLowerCase().includes(q));
+ document.querySelector('#list').innerHTML=rows.map(x=>`<article><div class="top"><h2>${esc(x.name)}</h2><span class="badge ${x.status==='信息冲突'?'warn':''}">${esc(x.status)}</span></div><div class="meta">${esc(x.city)} · ${esc(x.category)} · 携宠政策待核实</div><div class="map"><div class="label">高德 POI · ${esc(x.match_status)}</div>${x.candidates.length?x.candidates.map(p=>`<div class="poi"><strong>${esc(p.name)}</strong><div>地址：${esc(p.address||'未返回')}</div><div>类型：${esc(p.type||'未返回')}</div><div class="meta">POI ID：${esc(p.id)} · 坐标（GCJ-02）：${esc(p.location)}</div></div>`).join(''):`<div class="empty">${esc(x.error||'尚无高德数据，地址与坐标待查询')}</div>`}</div>${x.status==='信息冲突'?'<p>携宠条件存在冲突，暂不推荐。</p>':''}</article>`).join('')||'<p>没有找到符合条件的地点。</p>';
+}
+document.querySelector('#search').addEventListener('input',render);
+fetch('/api/places').then(r=>{if(!r.ok)throw Error();return r.json()}).then(d=>{items=d.items;document.querySelector('#notice').textContent=d.key_configured?'高德 Key 已配置。候选地点仍需确认是否同一家；携宠政策单独核实。':'5 个地点等待匹配。尚未配置高德 Web 服务 Key，当前没有真实地图数据。';render()}).catch(()=>{document.querySelector('#notice').textContent='数据库读取失败，请检查本地服务后刷新。'});
+</script></html>

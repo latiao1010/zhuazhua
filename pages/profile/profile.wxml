@@ -5,6 +5,7 @@
   <view class="journal-notice" wx:if="{{!pet.weight || !pet.birthday}}" bindtap="goAccount">完善体重与生日，获得更合适的日常建议 ›</view>
   <view class="journal-section-head"><view>记录今天</view><text>长按调整顺序</text></view>
   <view class="journal-actions" bindlongpress="customizeQuickRecords"><view wx:for="{{quickRecords}}" wx:key="type" data-type="{{item.type}}" bindtap="quickRecord">{{item.label}}</view></view>
+  <view class="outing-home-entry" bindtap="openOutings"><view><text class="outing-home-label">带狗出门</text><view>下一站，也带上它。</view><text class="outing-home-sub">按城市找吃饭、住宿和游玩的地方</text></view><view class="outing-home-arrow">↗</view></view>
   <view class="journal-section-head"><view>发现更多陪伴</view><text>留下一张专属小卡片</text></view>
   <view class="play-entries">
     <view class="play-entry age-entry" data-tool="age" bindtap="openPlay"><view class="play-entry-icon"><view class="warm-icon warm-icon-paw"></view></view><view>它的人类年龄</view><text>算年龄 · 数相伴的日子</text><view class="play-entry-link">生成年龄卡片 ›</view></view>

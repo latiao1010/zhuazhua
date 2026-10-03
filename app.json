@@ -10,6 +10,12 @@
     "pages/play/play",
     "pages/play/result"
   ],
+  "subPackages": [
+    {
+      "root": "packages/outings",
+      "pages": ["index", "detail", "saved"]
+    }
+  ],
   "window": {
     "navigationBarTitleText": "爪爪日常",
     "navigationBarBackgroundColor": "#FFFAF7",

@@ -1,0 +1,58 @@
+{
+  "status": "session_batch_complete",
+  "started_at": "2026-09-25T08:14:05.119743+00:00",
+  "source": "小红书可见页面",
+  "cities": [
+    {
+      "province": "山西省",
+      "city": "长治市",
+      "target_new_content": 3
+    },
+    {
+      "province": "山西省",
+      "city": "晋城市",
+      "target_new_content": 3
+    },
+    {
+      "province": "山西省",
+      "city": "朔州市",
+      "target_new_content": 3
+    }
+  ],
+  "baseline_content_count": 294,
+  "baseline_city_count": 27,
+  "saved_new_content": 8,
+  "saved_ids": [
+    "68a1232f000000001d025d73",
+    "69971a1e000000001600b5ba",
+    "6a100f8f0000000035031398",
+    "689875940000000025010576",
+    "69e0d460000000002103bb1e",
+    "6a632333000000000301eb9d",
+    "699689a10000000028009fcb",
+    "68f4e34c0000000004000575"
+  ],
+  "saved_content_count": 302,
+  "saved_city_count": 30,
+  "catalog_places": 546,
+  "pending_location_ids": [
+    "6a2adff10000000008027cfd",
+    "69f5d0260000000035033b8c",
+    "6947c5d7000000001e03940b",
+    "6a75ecd10000000029030505",
+    "6a4b5abc000000000f03371c",
+    "68bec3fe000000001d03740e"
+  ],
+  "per_city_content_limit": 3,
+  "continuation_mode": "multiple_cities_per_turn",
+  "next_action": "Resume Shuozhou: 2/3 valid records; unidentified park held pending. Then continue Jinzhong. Local session cap reached: 3 searches, 10 distinct details. Changzhi and Jincheng each 3/3.",
+  "blocker": null,
+  "updated_at": "2026-09-25T08:32:47.360666+00:00",
+  "session_searches": 3,
+  "session_distinct_details": 10,
+  "session_new_pending_ids": [
+    "6a4b5abc000000000f03371c",
+    "68bec3fe000000001d03740e"
+  ],
+  "stop_reason": "local_session_limit_reached"
+}

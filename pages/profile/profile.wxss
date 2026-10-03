@@ -1,4 +1,10 @@
 @import "../shared/weight-sheet.wxss";
+.outing-home-entry{display:flex;align-items:center;justify-content:space-between;gap:20rpx;padding:30rpx;margin-top:26rpx;border:1rpx solid #dae8d9;border-radius:28rpx;background:#eaf2e9}
+.outing-home-entry>view:first-child{min-width:0;flex:1}
+.outing-home-label{font-size:22rpx;color:#6a8569;letter-spacing:2rpx}
+.outing-home-entry>view>view{font-size:33rpx;line-height:1.4;font-weight:600;color:#36573e;margin:12rpx 0}
+.outing-home-sub{font-size:23rpx;color:#789075;line-height:1.7}
+.outing-home-entry>.outing-home-arrow{display:flex;align-items:center;justify-content:center;width:76rpx;height:76rpx;flex:none;border-radius:50%;background:#d4e5cf;color:#54764d;font-size:36rpx}
 /* 页面样式按原有级联顺序整理；媒体规则独立保留。 */
 .peach { background: #ffe6d9; }
 .blue { background: #e3f3ff; }

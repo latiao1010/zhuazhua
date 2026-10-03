@@ -604,6 +604,9 @@ Page({
     homeDashboard: { greeting: '', healthScore: 100, healthSummary: '', tasks: [], statusCards: [], completedCount: 0, totalTasks: 6, progress: 0, nextTask: {}, laterTasks: [], findings: [], knowledge: { detail: [] } }, quickRecords: QUICK_RECORDS
   },
   quickRecord(e) { wx.navigateTo({ url: '/pages/feed/feed?type=' + e.currentTarget.dataset.type + '&add=1' }) },
+  openOutings() {
+    wx.navigateTo({ url: '/packages/outings/index', fail: () => wx.showToast({ title: '页面暂时无法打开，请重试', icon: 'none' }) })
+  },
   openPlay(e) {
     const tool = ['age','personality','bingo'].includes(e.currentTarget.dataset.tool) ? e.currentTarget.dataset.tool : 'age'
     wx.navigateTo({ url: '/pages/play/play?tool=' + tool })

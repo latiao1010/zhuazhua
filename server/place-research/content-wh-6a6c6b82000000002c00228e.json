@@ -1,0 +1,27 @@
+{
+  "province": "湖北省",
+  "city": "武汉市",
+  "published_at": null,
+  "collected_at": "2026-09-23",
+  "read_status": "已读正文及部分评论",
+  "id": "6a6c6b82000000002c00228e",
+  "title": "武汉很适合带小狗玩耍的咖啡厅",
+  "author": "宝藏姐姐",
+  "date_text": "07-31",
+  "search_query": "武汉 宠物友好 咖啡",
+  "url": "https://www.xiaohongshu.com/explore/6a6c6b82000000002c00228e",
+  "summary": "作者称三次带狗到访，室内宽敞。评论有人认为曾不让带狗，作者回复目前可带，存在政策变化线索。",
+  "places": [
+    {
+      "name": "户慢",
+      "location_text": "武汉汉阳（作者回复）",
+      "category": "咖啡馆/茶园",
+      "address": null,
+      "conditions": "作者称三次带狗到访，室内宽敞。评论有人认为曾不让带狗，作者回复目前可带，存在政策变化线索。"
+    }
+  ],
+  "comment_notes": [
+    "作者和评论信息已在摘要区分，未见官方政策证据。"
+  ],
+  "verification_status": "个人到访和回复，现行规则待核实"
+}

@@ -1,0 +1,67 @@
+{
+  "province": "北京市",
+  "city": "北京市",
+  "complete": false,
+  "queries": [
+    {
+      "query": "北京 宠物友好",
+      "status": "已保存部分正文，未采完",
+      "content_saved": 1
+    },
+    {
+      "query": "北京 宠物友好 餐厅",
+      "status": "已保存部分正文，未采完",
+      "content_saved": 8
+    },
+    {
+      "query": "北京 宠物友好 咖啡馆",
+      "status": "已保存部分正文，未采完",
+      "content_saved": 2
+    },
+    {
+      "query": "北京 宠物友好 商场",
+      "status": "已保存部分正文，未采完",
+      "content_saved": 10
+    },
+    {
+      "query": "北京 宠物友好 公园",
+      "status": "已保存部分正文，未采完",
+      "content_saved": 12
+    },
+    {
+      "query": "北京 宠物友好 酒店",
+      "status": "已保存部分正文，未采完",
+      "content_saved": 3
+    }
+  ],
+  "detail_attempts": [
+    {
+      "id": "6a0c86eb00000000370365e6",
+      "title": "北京首钢园｜一站式宠物友好路线（持续更新）",
+      "status": "content_saved",
+      "content_file": "city-content.json",
+      "reason": ""
+    },
+    {
+      "id": "6a05e1360000000036030cdb",
+      "title": "三里屯宠物友好餐厅标杆（提供宠物鲜食）",
+      "status": "content_saved",
+      "reason": "",
+      "content_file": "city-content.json"
+    },
+    {
+      "id": "69b56064000000001d01dbe7",
+      "title": "北京宠物友好餐厅之15：一楼一火锅饭店",
+      "status": "content_saved",
+      "reason": "",
+      "content_file": "city-content.json"
+    },
+    {
+      "id": "6a51e2e1000000001503c2b1",
+      "status": "content_saved",
+      "reason": "",
+      "content_file": "city-content.json"
+    }
+  ],
+  "content_saved": 50
+}

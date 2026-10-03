@@ -3,6 +3,10 @@
   "packOptions": {
     "ignore": [
       {
+        "value": "docs",
+        "type": "folder"
+      },
+      {
         "value": "server",
         "type": "folder"
       },
