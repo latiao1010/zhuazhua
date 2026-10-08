@@ -1,1 +1,6 @@
-{"navigationBarTitleText":"首页"}
+{
+  "navigationBarTitleText": "首页",
+  "navigationBarBackgroundColor": "#FAFCF9",
+  "backgroundColor": "#FAFCF9",
+  "disableScroll": true
+}

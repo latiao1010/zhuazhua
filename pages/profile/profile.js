@@ -1,12 +1,14 @@
 const { buildWeightTrend } = require('../../utils/weight-trend')
 const tabNavigation = require('../../utils/tab-navigation')
 const store = require('../../utils/store')
-const { getWeather } = require('../../utils/weather')
+const weatherService = require('../../utils/weather')
 const cloudData = require('../../utils/cloud-data')
 
-const QUICK_RECORDS = [
-  { type: 'feed', label: '＋ 喂食' }, { type: 'water', label: '＋ 饮水' },
-  { type: 'stool', label: '＋ 排便' }, { type: 'walk', label: '＋ 散步' }
+const DISCOVERY_SLIDES = [
+  { tool: 'outings', label: '带狗出门', title: '下一站，也带上它', description: '按城市找吃饭、住宿和游玩的地方' },
+  { tool: 'age', label: '年龄换算', title: '它相当于人类几岁？', description: '算算年龄，留下一张相伴纪念', icon: 'age' },
+  { tool: 'personality', label: '性格测试', title: '读懂它的小个性', description: '回答日常小问题，发现它的性格', icon: 'heart' },
+  { tool: 'bingo', label: '行为九宫格', title: '这些小习惯，它中了几个？', description: '选出同款行为，分享你家的日常', icon: 'grid' }
 ]
 
 function getBirthdayInfo(birthday) {
@@ -178,65 +180,7 @@ function getGreeting(hour) {
   return '晚上好'
 }
 
-function formatTaskWait(targetMinutes, now) {
-  const currentMinutes = now.getHours() * 60 + now.getMinutes()
-  const diff = targetMinutes - currentMinutes
-  if (diff <= 0) return '建议现在完成'
-  if (diff < 60) return `还有 ${diff} 分钟`
-  return `还有 ${Math.floor(diff / 60)} 小时`
-}
-
-function timeAfterRain(rainTime) {
-  const match = String(rainTime || '').match(/(\d{1,2}):(\d{2})/)
-  if (!match) return '雨停后'
-  const minutes = (Number(match[1]) * 60 + Number(match[2]) + 150) % 1440
-  return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`
-}
-
-function getDogFoodDays(supplies, feeds) {
-  const item = (supplies && supplies.dogFood) || {}
-  const packageAmount = Number(item.packageAmount) || 0
-  if (!item.openedDate || packageAmount <= 0) return { configured: false, daysLeft: null }
-  const today = store.todayKey()
-  const matched = (feeds || []).filter(feed => feed.dayKey && feed.dayKey >= item.openedDate && feed.dayKey <= today && feed.type !== '零食')
-  const consumed = matched.reduce((sum, feed) => sum + numberFromText(feed.amount), 0)
-  const recordedDays = new Set(matched.map(feed => feed.dayKey)).size
-  const dailyAverage = recordedDays ? consumed / recordedDays : 0
-  const remaining = Math.max(0, packageAmount - consumed)
-  return { configured: true, daysLeft: dailyAverage ? Math.max(0, Math.ceil(remaining / dailyAverage)) : null }
-}
-
-function getTodayKnowledge(month, date = new Date()) {
-  const seasonalKnowledge = {
-    spring: [
-      { icon: '🌿', title: '春天散步后为什么要检查毛发？', summary: '花粉、蜱虫和草籽容易藏进毛发、耳朵与脚趾间。', detail: ['回家后依次检查耳朵、腋下、腹部、趾间和尾巴根部。', '发现蜱虫不要直接硬拽，可联系兽医或使用合适工具处理。', '花粉较多时可用湿毛巾轻擦身体和脚垫，并保持皮肤干燥。'] },
-      { icon: '🪲', title: '外出回来为什么要检查蜱虫？', summary: '蜱虫常藏在耳后、腋下和趾间，越早发现越容易处理。', detail: ['散步后重点查看皮肤褶皱和毛发浓密处。', '发现附着蜱虫时，不要挤压虫体或徒手拔除。', '出现红肿、精神不佳等情况，及时咨询兽医。'] },
-      { icon: '🌼', title: '花粉季怎么减少皮肤刺激？', summary: '减少过敏原残留，能让皮肤和脚垫更舒服。', detail: ['花粉浓度高时缩短草地停留时间。', '回家后擦拭脚垫、腹部和嘴周毛发。', '频繁抓挠、红疹或耳朵发红时应留意并就诊。'] }
-    ],
-    summer: [
-      { icon: '☀️', title: '夏天为什么要避开中午遛狗？', summary: '高温路面可能烫伤脚垫，狗狗也更容易中暑。', detail: ['中午阳光直射时，柏油和水泥路面的温度通常明显高于气温，可能在短时间内烫伤脚垫。', '狗狗主要依靠喘气散热，高温、高湿和剧烈运动叠加时，中暑风险会明显增加。', '优先选择清晨或日落后的凉爽时段，出门前可用手背接触地面数秒，感觉烫手就不要久走。'] },
-      { icon: '💧', title: '夏天喝水要注意什么？', summary: '少量多次补水，比一次猛喝更舒适。', detail: ['外出时随身带干净饮水和便携水碗。', '剧烈活动后先休息片刻，再少量多次喝水。', '不要让狗狗饮用积水或来源不明的水。'] },
-      { icon: '🏠', title: '空调房里也要防着凉吗？', summary: '温差过大和冷风直吹，都可能让狗狗不舒服。', detail: ['让休息区域避开空调出风口。', '从室外回家后先擦干汗水和雨水，再进入低温环境。', '室内外温差不宜过大，老年犬和幼犬更要留意。'] }
-    ],
-    autumn: [
-      { icon: '🍂', title: '换毛季应该多久梳一次毛？', summary: '规律梳毛能减少浮毛，也方便及时发现皮肤问题。', detail: ['根据毛发长度和掉毛量安排频率，换毛明显时可每天短时梳理。', '从毛尖开始轻柔梳开，不要反复拉扯打结区域。', '梳毛时同步观察皮屑、红肿、结痂和异常掉毛。'] },
-      { icon: '🪮', title: '毛发打结该怎么处理？', summary: '耐心拆结能避免拉扯皮肤和毛发断裂。', detail: ['先用手指轻轻分开结团边缘。', '从毛尖向毛根慢慢梳理，不要硬拉。', '结团贴近皮肤或范围较大时，可请专业美容师处理。'] },
-      { icon: '🍽️', title: '换季食欲变好要加餐吗？', summary: '食欲变化要结合体重和活动量一起判断。', detail: ['先保持原有主粮比例，连续观察一周。', '每周记录体重，避免因加餐造成体重快速上升。', '食欲突然大增或下降并伴随精神异常时，应咨询兽医。'] }
-    ],
-    winter: [
-      { icon: '❄️', title: '冬天遛狗需要给脚垫保暖吗？', summary: '低温、融雪剂和干燥环境都可能刺激脚垫。', detail: ['缩短严寒时段的户外停留时间，回家后擦净并检查脚垫。', '接触融雪剂后及时用清水清洁，避免舔食残留。', '出现干裂、出血或持续舔脚时，应减少刺激并咨询兽医。'] },
-      { icon: '🧥', title: '哪些狗狗更需要保暖？', summary: '幼犬、老年犬和短毛犬对低温更敏感。', detail: ['出门前观察体感，发抖或蜷缩说明可能觉得冷。', '选择合身、活动方便的衣物，保持干燥。', '雨雪天回家后及时擦干腹部、脚垫和毛发。'] },
-      { icon: '🏡', title: '冬天在家也要活动吗？', summary: '室外时间变短时，室内互动可以补足运动和消耗。', detail: ['用嗅闻游戏或藏零食增加脑力活动。', '根据年龄和体力安排短时、多次互动。', '避免在光滑地板上追逐急停，减少打滑风险。'] }
-    ]
-  }
-  const season = [6, 7, 8].includes(month) ? 'summer' : [3, 4, 5].includes(month) ? 'spring' : [9, 10, 11].includes(month) ? 'autumn' : 'winter'
-  const yearStart = new Date(date.getFullYear(), 0, 1)
-  const dayIndex = Math.floor((new Date(date.getFullYear(), date.getMonth(), date.getDate()) - yearStart) / 86400000)
-  const tips = seasonalKnowledge[season]
-  return tips[dayIndex % tips.length]
-}
-
-function getPersonalizedKnowledge({ now, pet, weather, healthScore, todayStools, waterRatio }) {
+function getPersonalizedKnowledge({ now, pet, weather, todayStools, todayWater, waterRecordCount }) {
   const dayStart = new Date(now.getFullYear(), 0, 1)
   const dayIndex = Math.floor((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - dayStart) / 86400000)
   const birthday = pet && pet.birthday ? new Date(`${pet.birthday}T00:00:00`) : null
@@ -247,25 +191,22 @@ function getPersonalizedKnowledge({ now, pet, weather, healthScore, todayStools,
   const lifeStage = !ageMonths ? '宠物' : ageMonths < 12 ? '幼年宠物' : ageMonths >= 84 ? '老年宠物' : '成年宠物'
   const isPuppy = ageMonths !== null && ageMonths < 12
   const isSenior = ageMonths !== null && ageMonths >= 84
-  const apparent = Number(weather && (weather.apparent || weather.temperature))
-  const hasRain = Boolean(weather && weather.rainTime)
+  const apparent = weather && weather.live === true ? Number(weather.apparent) : NaN
+  const hasRain = Boolean(weather && weather.live === true && weather.rainTime)
   const abnormalStools = (todayStools || []).filter(item => item.abnormal).length
-  const needsWater = Number.isFinite(waterRatio) && waterRatio < 0.7 && now.getHours() >= 14
   const healthText = abnormalStools
-    ? `今天已记录 ${abnormalStools} 次异常排便，需要重点观察肠胃`
-    : needsWater
-      ? '今天饮水尚未达到建议量，补水需要优先安排'
-      : healthScore < 90
-        ? `今日健康评分 ${healthScore} 分，建议补齐待办并继续观察`
-        : '今日记录暂未发现明显健康异常'
+    ? `今天有 ${abnormalStools} 条排便记录标记了异常，可回顾具体状态与备注`
+    : waterRecordCount
+      ? `今天已记录饮水 ${todayWater} ml；记录量不一定等于实际饮水量`
+      : '今天还没有饮水记录，可以从记下一次饮水开始'
 
-  let weatherTitle = '天气平稳，按日常节奏活动'
-  let weatherSummary = '适合把散步、饮水和休息安排得更均衡。'
-  let weatherAction = '按平时节奏出门，随身带水，并在活动后检查脚垫和毛发。'
+  let weatherTitle = '出门前，留意当地天气'
+  let weatherSummary = '出门前查看当地天气，再安排今天的外出。'
+  let weatherAction = '结合当地天气与平时习惯安排活动，准备好牵绳和饮水。'
   if (hasRain) {
-    weatherTitle = '有降雨提醒，散步要避开潮湿时段'
+    weatherTitle = '有降水提醒，散步留意路面'
     weatherSummary = '雨天湿毛和湿脚垫更容易带来皮肤不适。'
-    weatherAction = `建议避开 ${weather.rainTime} 前后的降雨；回家后擦干脚垫、腹部和趾间。`
+    weatherAction = `${weather.rainTime}可能有降水，外出留意路面；回家后擦干脚垫、腹部和趾间。`
   } else if (Number.isFinite(apparent) && apparent >= 30) {
     weatherTitle = '体感偏热，今天优先防暑和补水'
     weatherSummary = `当前体感约 ${apparent}℃，高温会增加中暑和脚垫烫伤风险。`
@@ -283,9 +224,7 @@ function getPersonalizedKnowledge({ now, pet, weather, healthScore, todayStools,
       : '成年阶段可保持规律散步和互动，并用每周体重变化校准食量。'
   const healthAction = abnormalStools
     ? '今天先保持饮食简单稳定，记录排便次数、形态和精神状态；持续异常或伴随呕吐、无力时尽快咨询兽医。'
-    : needsWater
-      ? '把水碗放在常活动的位置，分时补充干净饮水；若持续明显少喝水，建议结合精神和排尿情况观察。'
-      : '继续记录饮水、排便和活动；连续数据比单次状态更能反映健康变化。'
+    : '记录饮水、排便和活动时，也可以补充当时的状态；忘记记录不代表没有发生。'
 
   const weatherKnowledge = {
     icon: hasRain ? '🌧️' : Number.isFinite(apparent) && apparent >= 30 ? '☀️' : Number.isFinite(apparent) && apparent <= 5 ? '❄️' : '🌤️',
@@ -300,311 +239,100 @@ function getPersonalizedKnowledge({ now, pet, weather, healthScore, todayStools,
     detail: [`年龄建议：${ageAction}`, `天气安排：${weatherAction}`, `健康观察：${healthText}。`]
   }
   const healthKnowledge = {
-    icon: abnormalStools ? '🩺' : needsWater ? '💧' : '💚',
-    title: abnormalStools ? '今天肠胃有波动，先这样观察' : needsWater ? '今天的补水需要优先完成' : '今天健康记录怎样看？',
-    summary: `${healthText}；结合${ageLabel}和当前天气，安排要适度。`,
+    icon: abnormalStools ? '🩺' : '💧',
+    title: abnormalStools ? '怎样回顾异常排便记录？' : '用记录了解它的日常',
+    summary: `${healthText}。`,
     detail: [healthAction, `天气安排：${weatherAction}`, `年龄建议：${ageAction}`]
   }
   return [weatherKnowledge, ageKnowledge, healthKnowledge][dayIndex % 3]
 }
 
-function buildCareFindings(careSchedule) {
-  const careTypes = [
-    { key: 'deworming', icon: '🪱', label: '体内外驱虫', action: '驱虫' },
-    { key: 'medicine', icon: '💊', label: '宠物用药', action: '用药' },
-    { key: 'vaccine', icon: '💉', label: '疫苗接种', action: '接种疫苗' },
-    { key: 'bath', icon: '🛁', label: '洗澡护理', action: '洗澡' },
-    { key: 'dental', icon: '🦷', label: '刷牙护理', action: '刷牙' },
-    { key: 'nail', icon: '✂️', label: '修剪指甲', action: '修剪指甲' }
+function buildCareFindings(careSchedule, careRecords) {
+  const today = store.todayKey()
+  const types = [
+    { key: 'deworming', label: '驱虫' }, { key: 'medicine', label: '用药' },
+    { key: 'vaccine', label: '疫苗' }, { key: 'bath', label: '洗澡' },
+    { key: 'dental', label: '刷牙' }, { key: 'nail', label: '剪指甲' }
   ]
-  const urgentItems = careTypes.reduce((items, config) => {
-    const dateKey = careSchedule && careSchedule[config.key]
-    if (!dateKey) return items
-    const days = daysUntil(dateKey)
-    if (days > 1) return items
-    let text
-    let summary
-    let tone
-    let priority
-    if (days < 0) {
-      text = `${config.label}已逾期 ${Math.abs(days)} 天，请尽快安排${config.action}并补充记录。`
-      summary = `已逾期 ${Math.abs(days)} 天，尽快安排`
-      tone = 'orange'
-      priority = 0
-    } else if (days === 0) {
-      text = `今天该${config.action}了，完成后记得在“我的”中记录日期。`
-      summary = `今天需要${config.action}`
-      tone = 'orange'
-      priority = 1
-    } else {
-      text = `明天要${config.action}，建议今天提前做好准备。`
-      summary = `明天要${config.action}，今天提前准备`
-      tone = 'purple'
-      priority = 2
-    }
-    items.push({ id: `care-${config.key}`, icon: config.icon, title: config.label, summary, text, tone, priority, target: 'account', careKey: config.key })
+  return types.reduce((items, item) => {
+    const date = careSchedule[item.key]
+    if (!date) return items
+    const days = daysUntil(date)
+    const completedToday = careSchedule[`${item.key}Last`] === today ||
+      (careRecords || []).some(record => record.key === item.key && record.date === today)
+    if (!Number.isFinite(days) || days > 0 || completedToday) return items
+    items.push({ ...item, days, overdue: days < 0,
+      summary: days < 0 ? `提醒已过 ${Math.abs(days)} 天` : '今天到期',
+      detail: days < 0 ? '查看原计划，确认是否需要补记' : '按你的照护计划安排，完成后记一笔' })
     return items
-  }, [])
-  const nearest = careTypes
-    .map(config => ({ ...config, days: careSchedule && careSchedule[config.key] ? daysUntil(careSchedule[config.key]) : Infinity }))
-    .filter(item => item.days > 1 && Number.isFinite(item.days))
-    .sort((a, b) => a.days - b.days)[0]
-  if (nearest) {
-    urgentItems.push({
-      id: `care-next-${nearest.key}`,
-      icon: nearest.icon,
-      title: nearest.label,
-      summary: `${nearest.days} 天后需要${nearest.action}`,
-      text: `距离${nearest.label}还有 ${nearest.days} 天，可提前确认用品和时间。`,
-      tone: 'cream',
-      priority: 8,
-      target: 'account',
-      careKey: nearest.key
-    })
-  }
-  return urgentItems
+  }, []).sort((a, b) => a.days - b.days)
 }
 
-function clockToMinutes(value) {
-  const match = String(value || '').match(/^(\d{1,2}):(\d{2})/)
-  if (!match) return null
-  return Number(match[1]) * 60 + Number(match[2])
+function buildWeatherTip(weather) {
+  if (!weather || weather.live !== true) return ''
+  if (weather.rainTime) return '外出备好雨具，回家擦干脚垫'
+  if (Number(weather.apparent) >= 30) return '体感偏热，避开高温时段外出'
+  return '外出带好牵绳和饮水'
 }
 
-function minutesToClock(value) {
-  const minutes = Math.max(0, Math.min(1439, Math.round(value)))
-  return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`
-}
-
-function buildAIPredictions({ now, pet, todayWater, todayWaters, stools, weather, rainWalkTime, dogFood, healthScore, statusCards, rangeDays }) {
-  const dailyWaterTarget = Number(store.get('waterGoal')) || Math.round((Number(pet.weight) || 0) * 55)
-  const waterTarget = dailyWaterTarget * rangeDays
-  const nowMinutes = now.getHours() * 60 + now.getMinutes()
-  const waterRecords = (todayWaters || [])
-    .map(item => ({ amount: numberFromText(item.amount), minutes: clockToMinutes(item.time) }))
-    .filter(item => item.amount > 0)
-  const waterTimes = waterRecords.map(item => item.minutes).filter(item => item !== null).sort((a, b) => a - b)
-  const averageWater = waterRecords.length ? waterRecords.reduce((sum, item) => sum + item.amount, 0) / waterRecords.length : 0
-  const averageInterval = waterTimes.length > 1
-    ? Math.max(90, (waterTimes[waterTimes.length - 1] - waterTimes[0]) / (waterTimes.length - 1))
-    : 210
-  const projectionStart = Math.max(nowMinutes, waterTimes.length ? waterTimes[waterTimes.length - 1] : nowMinutes)
-  const remainingDrinks = averageWater ? Math.max(0, Math.floor((22 * 60 - projectionStart) / averageInterval)) : 0
-  const projectedWater = Math.round(todayWater + remainingDrinks * averageWater)
-  let waterTitle
-  let waterBadge
-  let waterText
-  let waterTone = 'blue'
-  if (!waterTarget) {
-    waterTitle = '完善体重后查看饮水目标'
-    waterBadge = '缺少体重'
-    waterText = '补充体重后，可查看饮水参考目标与记录进度。'
-  } else if (!waterRecords.length) {
-    waterTitle = `近 ${rangeDays} 天饮水记录不足`
-    waterBadge = '待记录'
-    waterText = `近 ${rangeDays} 天参考目标为 ${waterTarget}ml，继续记录后可查看趋势。`
-  } else if (todayWater >= waterTarget) {
-    waterTitle = `近 ${rangeDays} 天饮水趋势正常`
-    waterBadge = '趋势较高'
-    waterText = `依据近 ${rangeDays} 天 ${waterRecords.length} 次记录，累计约 ${Math.max(todayWater, projectedWater)}ml。`
-    waterTone = 'green'
-  } else {
-    const hourlyRate = averageWater / averageInterval
-    const targetTime = hourlyRate > 0 ? projectionStart + (waterTarget - todayWater) / hourlyRate : Infinity
-    if (targetTime <= 22 * 60) {
-      waterTitle = `近 ${rangeDays} 天饮水趋势接近目标`
-      waterBadge = '趋势较高'
-      waterText = `依据近 ${rangeDays} 天 ${waterRecords.length} 次饮水记录和日均饮水频率推算。`
-      waterTone = 'green'
-    } else {
-      waterTitle = `近 ${rangeDays} 天平均饮水偏少`
-      waterBadge = '趋势偏低'
-      waterText = `近 ${rangeDays} 天累计约 ${projectedWater}ml，参考目标为 ${waterTarget}ml。`
-    }
-  }
-
-  const recentStools = (stools || []).filter(item => item.dayKey >= offsetDateKey(-(rangeDays - 1)) && item.dayKey <= store.todayKey())
-  const abnormalCount = recentStools.filter(item => item.abnormal).length
-  let stoolTitle
-  let stoolBadge
-  let stoolText
-  let stoolTone = 'green'
-  if (recentStools.length < 3) {
-    stoolTitle = '排便记录还不够完整'
-    stoolBadge = `${rangeDays}天`
-    stoolText = `近 ${rangeDays} 天共有 ${recentStools.length} 次记录，继续记录后趋势会更可靠。`
-    stoolTone = 'cream'
-  } else if (abnormalCount) {
-    stoolTitle = '近期肠胃状态有波动'
-    stoolBadge = '需观察'
-    stoolText = `依据近 ${rangeDays} 天 ${recentStools.length} 次记录，其中 ${abnormalCount} 次出现异常。`
-    stoolTone = 'orange'
-  } else {
-    stoolTitle = `近 ${rangeDays} 天排便记录正常`
-    stoolBadge = '趋势稳定'
-    stoolText = `近 ${rangeDays} 天共 ${recentStools.length} 次记录，暂未发现明显波动。`
-  }
-
-  let walkTitle
-  let walkBadge
-  let walkText
-  if (now.getHours() >= 22 || now.getHours() < 6) {
-    walkTitle = '夜间以休息为主'
-    walkBadge = '夜间提醒'
-    walkText = '如需外出排便，按平时习惯短时出门，避免额外增加运动。'
-  } else if (weather && weather.rainTime) {
-    const start = clockToMinutes(rainWalkTime) || 19 * 60
-    walkTitle = `${rainWalkTime}–${minutesToClock(start + 90)} 更适合散步`
-    walkBadge = '天气预测'
-    walkText = `依据逐小时降雨变化，避开 ${weather.rainTime} 前后的降雨时段。`
-  } else if (weather && Number(weather.apparent) >= 30) {
-    walkTitle = '19:00 后更适合散步'
-    walkBadge = '热风险'
-    walkText = `当前体感约 ${weather.apparent}℃，晚间短时出门的热风险相对更低。`
-  } else {
-    walkTitle = '未来 2–3 小时适合散步'
-    walkBadge = '天气稳定'
-    walkText = '逐小时天气暂未出现明显降雨信号，原定散步计划受影响较低。'
-  }
-
-  const attention = (statusCards || []).filter(item => item.tone === 'watch' || item.tone === 'attention')
-  let stateTitle
-  const stateBadge = '综合推演'
-  let stateText
-  let stateTone = 'purple'
-  if (attention.length) {
-    stateTitle = `今天整体平稳，留意${attention.map(item => item.label).join('、')}`
-    stateText = `综合食欲、饮水、排便和活动四项数据，当前健康评分为 ${healthScore} 分。`
-    stateTone = attention.some(item => item.tone === 'attention') ? 'orange' : 'purple'
-  } else if (dogFood.configured && dogFood.daysLeft !== null) {
-    stateTitle = '今天整体状态预计平稳'
-    stateText = `四项日常数据未发现明显偏离；狗粮按近期消耗约可维持 ${dogFood.daysLeft} 天。`
-  } else {
-    stateTitle = '今天整体状态预计平稳'
-    stateText = `综合食欲、饮水、排便和活动四项数据，当前健康评分为 ${healthScore} 分。`
-  }
-
+function buildRecentFindings(waters, stools, rangeDays) {
+  const today = store.todayKey()
+  const start = offsetDateKey(-(rangeDays - 1))
+  const inRange = item => item.dayKey >= start && item.dayKey <= today
+  const waterRecords = (waters || []).filter(item => inRange(item) && numberFromText(item.amount) > 0)
+  const waterDays = new Set(waterRecords.map(item => item.dayKey)).size
+  const total = Math.round(waterRecords.reduce((sum, item) => sum + numberFromText(item.amount), 0) * 10) / 10
+  const average = waterDays ? Math.round(total / waterDays) : 0
+  const stoolRecords = (stools || []).filter(inRange)
+  const stoolDays = new Set(stoolRecords.map(item => item.dayKey)).size
+  const abnormalCount = stoolRecords.filter(item => item.abnormal).length
   return [
-    { id: 'ai-water', icon: '💧', title: waterTitle, badge: waterBadge, text: waterText, tone: waterTone, target: 'water' },
-    { id: 'ai-stool', icon: '🧬', title: stoolTitle, badge: stoolBadge, text: stoolText, tone: stoolTone, target: 'stool' },
-    { id: 'ai-walk', icon: '⛅', title: walkTitle, badge: walkBadge, text: walkText, tone: 'purple', target: 'walk' },
-    { id: 'ai-state', icon: '✨', title: stateTitle, badge: stateBadge, text: stateText, tone: stateTone, target: 'account' }
+    {
+      id: 'water', target: 'water', label: '饮水', icon: 'water', tone: 'mint',
+      title: waterDays ? `记录日均 ${average} ml` : `近 ${rangeDays} 天暂无饮水记录`,
+      compactTitle: waterDays ? `日均 ${average} ml` : '暂无记录',
+      compactSummary: `已记录 ${waterDays}/${rangeDays} 天`,
+      text: `累计 ${total} ml · 已记录 ${waterDays}/${rangeDays} 天`,
+      note: waterDays < rangeDays ? `${rangeDays - waterDays} 天未记录，不计入日均` : '日均按有记录的天数计算',
+      total, average, recordedDays: waterDays, missingDays: rangeDays - waterDays
+    },
+    {
+      id: 'stool', target: 'stool', label: '排便', icon: 'record', tone: abnormalCount ? 'attention' : 'mint',
+      title: stoolRecords.length ? `${stoolRecords.length} 次记录 · ${abnormalCount} 次标记异常` : `近 ${rangeDays} 天暂无排便记录`,
+      compactTitle: stoolRecords.length ? (abnormalCount ? `${abnormalCount} 次标记异常` : '未标记异常') : '暂无记录',
+      compactSummary: `共 ${stoolRecords.length} 次 · ${stoolDays}/${rangeDays} 天`,
+      text: `已记录 ${stoolDays}/${rangeDays} 天`,
+      note: abnormalCount ? '查看记录中的形态、颜色和备注' : '仅汇总已保存记录，不代表健康判断',
+      recordedDays: stoolDays, abnormalCount
+    }
   ]
 }
 
-function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, careRecords, supplies, weather, rangeDays = 7 }) {
+function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, careRecords, weather, rangeDays = 7 }) {
   const now = new Date()
   const today = store.todayKey()
-  const todayFeeds = (feeds || []).filter(item => item.dayKey === today)
-  const todayStools = (stools || []).filter(item => item.dayKey === today)
-  const todayWaters = (waters || []).filter(item => item.dayKey === today)
-  const todayWalks = (walks || []).filter(item => item.dayKey === today)
-  const todayWater = todayWaters.reduce((sum, item) => sum + numberFromText(item.amount), 0)
-  const recentStart = offsetDateKey(-(rangeDays - 1))
-  const recentWaters = (waters || []).filter(item => item.dayKey >= recentStart && item.dayKey <= today)
-  const recentWater = recentWaters.reduce((sum, item) => sum + numberFromText(item.amount), 0)
+  const todayRecords = records => (records || []).filter(item => item.dayKey === today)
+  const todayFeeds = todayRecords(feeds)
+  const todayStools = todayRecords(stools)
+  const todayWaters = todayRecords(waters)
+  const todayWalks = todayRecords(walks)
+  const total = (records, field) => Math.round(records.reduce((sum, item) => sum + numberFromText(item[field]), 0) * 10) / 10
+  const todayWater = total(todayWaters, 'amount')
   const waterTarget = Number(store.get('waterGoal')) || Math.round((Number(pet.weight) || 0) * 55)
-  const dentalDone = careSchedule.dentalLast === today || (careRecords || []).some(item => item.key === 'dental' && item.date === today)
-  const rainWalkTime = weather && weather.rainTime ? timeAfterRain(weather.rainTime) : '19:00'
-  const walkParts = rainWalkTime.match(/(\d{1,2}):(\d{2})/)
-  const walkMinutes = walkParts ? Number(walkParts[1]) * 60 + Number(walkParts[2]) : 19 * 60
-  const tasks = [
-    { key: 'breakfast', icon: '🥣', label: '早餐', detail: todayFeeds.some(item => item.type === '早餐') ? '已记录' : '等待记录', done: todayFeeds.some(item => item.type === '早餐'), action: 'feed', time: '08:00', plannedMinutes: 480 },
-    { key: 'water', icon: '💧', label: `喝水 ${todayWater}ml`, detail: waterTarget ? `建议 ${waterTarget}ml` : '记录饮水量', done: waterTarget > 0 && todayWater >= waterTarget, action: 'water', time: '12:00', plannedMinutes: 720 },
-    { key: 'stool', icon: '💩', label: `排便 ${todayStools.length} 次`, detail: todayStools.some(item => item.abnormal) ? '有异常需留意' : todayStools.length ? '状态正常' : '等待记录', done: todayStools.length > 0, action: 'stool', time: '13:00', plannedMinutes: 780 },
-    { key: 'dinner', icon: '🍚', label: '晚餐', detail: todayFeeds.some(item => item.type === '晚餐') ? '已记录' : '18:00', done: todayFeeds.some(item => item.type === '晚餐'), action: 'feed', time: '18:00', plannedMinutes: 1080 },
-    { key: 'walk', icon: '🐾', label: '散步', detail: todayWalks.length ? `${todayWalks.reduce((sum, item) => sum + numberFromText(item.duration), 0)} 分钟` : rainWalkTime, done: todayWalks.length > 0, action: 'walk', time: rainWalkTime, plannedMinutes: walkMinutes },
-    { key: 'dental', icon: '🦷', label: '刷牙', detail: dentalDone ? '已完成' : '21:00', done: dentalDone, action: 'account', time: '21:00', plannedMinutes: 1260 }
-  ].map(item => ({ ...item, stateIcon: item.done ? '✓' : '' }))
-  const completedCount = tasks.filter(item => item.done).length
-  const nextTask = tasks.filter(item => !item.done).sort((a, b) => a.plannedMinutes - b.plannedMinutes)[0]
-  const next = nextTask
-    ? { ...nextTask, waitText: nextTask.plannedMinutes < now.getHours() * 60 + now.getMinutes() ? '待确认记录' : formatTaskWait(nextTask.plannedMinutes, now), actionText: '去记录' }
-    : { key: 'done', icon: '🎉', label: '今天的任务都完成啦', detail: '做得真棒', time: '今日', waitText: '全部完成', actionText: '查看', action: 'feed', done: true }
-  const laterTasks = tasks
-    .filter(item => !item.done && item.key !== next.key)
-    .sort((a, b) => a.plannedMinutes - b.plannedMinutes)
-    .slice(0, 2)
-  let healthScore = 100
-  if (now.getHours() >= 14 && waterTarget && todayWater < waterTarget * 0.7) healthScore -= 4
-  if (todayStools.some(item => item.abnormal)) healthScore -= 8
-  if (now.getHours() >= 10 && !tasks[0].done) healthScore -= 5
-  if (now.getHours() >= 20 && !tasks[4].done) healthScore -= 3
-  healthScore = Math.max(70, healthScore)
-  const weatherAdvice = weather && weather.rainTime
-    ? `${weather.rainTime}前后可能下雨，建议${rainWalkTime}后再出去散步。`
-    : '天气暂无明显降雨提醒，可以按计划安排散步。'
-  const dogFood = getDogFoodDays(supplies, feeds)
-  const breakfastDone = tasks[0].done
-  const dinnerDone = tasks[3].done
-  const walkDuration = todayWalks.reduce((sum, item) => sum + numberFromText(item.duration), 0)
-  const appetiteStatus = !breakfastDone && now.getHours() >= 10
-    ? { value: '早餐待补', tone: 'watch' }
-    : dinnerDone || now.getHours() < 17
-      ? { value: '节奏正常', tone: 'good' }
-      : { value: '晚餐待记', tone: 'neutral' }
-  const waterRatio = waterTarget ? todayWater / waterTarget : 0
-  const waterStatus = waterRatio >= 1
-    ? { value: '已经达标', tone: 'good' }
-    : waterRatio >= 0.7
-      ? { value: '接近目标', tone: 'neutral' }
-      : { value: '需要补水', tone: 'watch' }
-  const stomachStatus = todayStools.some(item => item.abnormal)
-    ? { value: '需要留意', tone: 'attention' }
-    : todayStools.length
-      ? { value: '状态正常', tone: 'good' }
-      : { value: '等待观察', tone: 'neutral' }
-  const activityStatus = todayWalks.length
-    ? { value: `${walkDuration}分钟`, tone: 'good' }
-    : weather && weather.rainTime
-      ? { value: '雨后再出门', tone: 'neutral' }
-      : { value: '等待散步', tone: 'watch' }
-  const aiPredictions = buildAIPredictions({
-    now,
-    pet,
-    todayWater: recentWater,
-    todayWaters: recentWaters,
-    stools,
-    weather,
-    rainWalkTime,
-    dogFood,
-    healthScore,
-    statusCards: [
-      { label: '食欲', ...appetiteStatus },
-      { label: '水分', ...waterStatus },
-      { label: '肠胃', ...stomachStatus },
-      { label: '活力', ...activityStatus }
-    ],
-    rangeDays,
-    rangeDays
-  })
+  const abnormalCount = todayStools.filter(item => item.abnormal).length
   return {
     greeting: getGreeting(now.getHours()),
-    healthScore,
-    scoreLevel: healthScore >= 90 ? 'good' : healthScore >= 80 ? 'watch' : 'attention',
-    healthSummary: nextTask ? '已完成但还没记录？补记后会同步更新今日进度。' : '今天的日常安排已完成，好好休息吧。',
-    tasks,
-    completedCount,
-    totalTasks: tasks.length,
-    progress: Math.round(completedCount / tasks.length * 100),
-    nextTask: next,
-    laterTasks,
+    dateLabel: `${now.getMonth() + 1}月${now.getDate()}日 · 星期${'日一二三四五六'[now.getDay()]}`,
     statusCards: [
-      { icon: '🍚', label: '食欲', action: 'feed', ...appetiteStatus },
-      { icon: '💧', label: '水分', action: 'water', ...waterStatus },
-      { icon: '🌿', label: '肠胃', action: 'stool', ...stomachStatus },
-      { icon: '🐾', label: '活力', action: 'walk', ...activityStatus }
+      { label: '喂食', action: 'feed', value: todayFeeds.length ? total(todayFeeds, 'amount') : '—', unit: 'g', detail: todayFeeds.length ? `${todayFeeds.length} 次喂食记录` : '今天还没有记录', compactDetail: todayFeeds.length ? `${todayFeeds.length} 次记录` : '未记录', tone: 'neutral' },
+      { label: '饮水', action: 'water', value: todayWaters.length ? todayWater : '—', unit: 'ml', detail: !todayWaters.length ? '今天还没有记录' : waterTarget ? `参考目标 ${waterTarget} ml` : `${todayWaters.length} 次饮水记录`, compactDetail: todayWaters.length ? `${todayWaters.length} 次记录` : '未记录', tone: 'neutral' },
+      { label: '排便', action: 'stool', value: todayStools.length || '—', unit: '次', detail: abnormalCount ? `${abnormalCount} 次标记异常` : todayStools.length ? '已记录，未标记异常' : '今天还没有记录', compactDetail: abnormalCount ? `${abnormalCount} 次异常` : todayStools.length ? '未标记异常' : '未记录', tone: abnormalCount ? 'attention' : 'neutral' },
+      { label: '散步', action: 'walk', value: todayWalks.length ? total(todayWalks, 'duration') : '—', unit: '分钟', detail: todayWalks.length ? `${todayWalks.length} 次散步记录` : '今天还没有记录', compactDetail: todayWalks.length ? `${todayWalks.length} 次记录` : '未记录', tone: 'neutral' }
     ],
-    walkReminder: aiPredictions[2],
-    findings: [aiPredictions[0], todayStools.some(item => item.abnormal) || (now.getHours() >= 6 && now.getHours() < 22) ? aiPredictions[1] : aiPredictions[2]],
-    knowledge: getPersonalizedKnowledge({
-      now,
-      pet,
-      weather,
-      healthScore,
-      todayStools,
-      waterRatio
-    })
+    careReminders: buildCareFindings(careSchedule, careRecords),
+    weatherTip: buildWeatherTip(weather),
+    findings: buildRecentFindings(waters, stools, rangeDays),
+    knowledge: getPersonalizedKnowledge({ now, pet, weather, todayStools, todayWater, waterRecordCount: todayWaters.length })
   }
 }
 
@@ -612,9 +340,11 @@ Page({
   data: {
     pet: {}, festivalOpen: false, healthTipOpen: false, knowledgeOpen: false, weightTrendOpen: false, feedDetailOpen: false, stoolDetailOpen: false, weightTrend: { bars: [], history: [] }, selectedHealthTip: { careItems: [] }, careSchedule: {}, ageText: '', daysTogether: 0,
     todayFeeds: [], todayFeedCount: 0, todayFeedTotal: 0, todayStools: [], todayStoolCount: 0, todayStoolAbnormalCount: 0, todayStoolStatus: '等待记录', waterTarget: 0, birthdayDays: 0, nextAge: 0, birthdayLabel: '',
-    weatherLoading: true, weather: { icon: '🌤️', temperature: '--', apparent: '--', condition: '加载天气', location: '正在定位', rainText: '正在获取逐小时降雨预报', rainTime: '', live: false },
+    weatherLoading: false, weather: weatherService.emptyWeather(),
     seasonName: '', seasonTip: '', lifeStage: '', healthTips: [],
-    homeDashboard: { greeting: '', healthScore: 100, healthSummary: '', tasks: [], statusCards: [], completedCount: 0, totalTasks: 6, progress: 0, nextTask: {}, laterTasks: [], findings: [], knowledge: { detail: [] } }, insightRange: 7, quickRecords: QUICK_RECORDS
+    homeDashboard: { greeting: '', dateLabel: '', statusCards: [], careReminders: [], weatherTip: '', findings: [], knowledge: { detail: [] } },
+    insightRange: 7, demoMode: false, readOnly: false, careRemindersOpen: false, recentOpen: false, largeText: false,
+    discoverySlides: DISCOVERY_SLIDES, discoveryIndex: 0
   },
   setInsightRange(event) {
     const range = Number(event.currentTarget.dataset.range)
@@ -622,32 +352,50 @@ Page({
     this.setData({ insightRange: range })
     this.refresh()
   },
-  quickRecord(e) { wx.navigateTo({ url: '/pages/feed/feed?type=' + e.currentTarget.dataset.type + '&add=1' }) },
+  goRecords() { tabNavigation.openTab('records') },
   openOutings() {
     wx.navigateTo({ url: '/packages/outings/index', fail: () => wx.showToast({ title: '页面暂时无法打开，请重试', icon: 'none' }) })
+  },
+  onDiscoveryChange(event) {
+    const index = Number(event.detail.current)
+    if (Number.isInteger(index) && index >= 0 && index < DISCOVERY_SLIDES.length) this.setData({ discoveryIndex: index })
+  },
+  openDiscovery(event) {
+    const tool = event.currentTarget.dataset.tool
+    if (tool === 'outings') return this.openOutings()
+    if (DISCOVERY_SLIDES.some(item => item.tool === tool)) this.openPlay(event)
   },
   openPlay(e) {
     const tool = ['age','personality','bingo'].includes(e.currentTarget.dataset.tool) ? e.currentTarget.dataset.tool : 'age'
     wx.navigateTo({ url: '/pages/play/play?tool=' + tool })
   },
-  customizeQuickRecords() {
-    wx.showActionSheet({ itemList: QUICK_RECORDS.map(item => `优先 ${item.label.slice(2)}`), success:result => {
-      const first = QUICK_RECORDS[result.tapIndex]
-      const quickRecords = [first, ...QUICK_RECORDS.filter(item => item.type !== first.type)]
-      wx.setStorageSync('paw_quick_record_order', quickRecords.map(item => item.type))
-      this.setData({ quickRecords })
-      wx.showToast({ title:`已将${first.label.slice(2)}放在第一位`, icon:'none' })
-    } })
-  },
   onShow() {
-    const savedOrder = wx.getStorageSync('paw_quick_record_order')
-    const quickRecords = Array.isArray(savedOrder) && savedOrder.length === QUICK_RECORDS.length
-      ? savedOrder.map(type => QUICK_RECORDS.find(item => item.type === type)).filter(Boolean)
-      : QUICK_RECORDS
-    this.setData({ quickRecords })
+    this.pageVisible = true
+    this.syncFontPreference()
     this.refresh()
-    cloudData.syncOnResume().then(() => this.refresh())
+    cloudData.syncOnResume().then(() => { if (this.pageVisible) this.refresh() })
     this.loadWeather()
+    clearInterval(this.weatherTimer)
+    this.weatherTimer = setInterval(() => { if (this.pageVisible) this.loadWeather() }, 15 * 60 * 1000)
+  },
+  syncFontPreference() {
+    let largeText = false
+    try {
+      const info = typeof wx.getAppBaseInfo === 'function' ? wx.getAppBaseInfo() : wx.getSystemInfoSync()
+      largeText = Number(info.fontSizeSetting) >= 19 || Number(info.fontSizeScaleFactor) >= 1.15
+    } catch (_) {}
+    if (largeText !== this.data.largeText) this.setData({ largeText })
+  },
+  onHide() {
+    this.pageVisible = false
+    this.weatherRequest = (this.weatherRequest || 0) + 1
+    clearInterval(this.weatherTimer)
+    this.setData({ festivalOpen: false, healthTipOpen: false, knowledgeOpen: false, weightTrendOpen: false, feedDetailOpen: false, stoolDetailOpen: false, careRemindersOpen: false, recentOpen: false })
+  },
+  onUnload() {
+    this.pageVisible = false
+    this.weatherRequest = (this.weatherRequest || 0) + 1
+    clearInterval(this.weatherTimer)
   },
   refresh() {
     const pet = store.get('pet')
@@ -666,34 +414,68 @@ Page({
     const waters = store.get('waters')
     const walks = store.get('walks')
     const careRecords = store.get('careRecords')
-    const supplies = store.normalizeSupplies(store.get('supplies'))
     const feedSummary = buildTodayFeeds(feeds)
     const todayFeedCount = feedSummary.todayFeeds.length
     const stoolSummary = buildTodayStools(stools)
     const todayStoolCount = stoolSummary.todayStools.length
     const waterTarget = Number(store.get('waterGoal')) || Math.round((Number(pet.weight) || 0) * 55)
-    const todayWater = waters.filter(item => item.dayKey === dayKey).reduce((sum, item) => sum + (parseInt(item.amount, 10) || 0), 0)
+    const todayWater = Math.round(waters.filter(item => item.dayKey === dayKey).reduce((sum, item) => sum + numberFromText(item.amount), 0) * 10) / 10
     const birthday = getBirthdayInfo(pet.birthday)
     const festivals = getFestivalInfo(togetherSince, daysTogether)
     const careSchedule = store.normalizeCareSchedule(store.get('care'))
     const health = getHealthTips(pet, months / 12, careSchedule)
     const weightTrend = buildWeightTrend(store.get('weightRecords'), pet.weight, store.todayKey())
-    const homeDashboard = buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, careRecords, supplies, weather: this.data.weather, rangeDays: this.data.insightRange || 7 })
+    const homeDashboard = buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, careRecords, weather: this.data.weather, rangeDays: this.data.insightRange || 7 })
     const syncStatus = cloudData.getSyncStatus ? cloudData.getSyncStatus() : {}
+    const shareStatus = cloudData.getShareStatus ? cloudData.getShareStatus() : {}
+    const demoMode = !!(store.isDemoMode && store.isDemoMode())
+    const readOnly = !demoMode && !!shareStatus.shared && shareStatus.role === 'viewer'
     const syncLabel = syncStatus.status === 'conflict' ? '记录有冲突，点此处理' : syncStatus.status === 'fail' ? '同步异常' : syncStatus.status === 'pending' ? '待同步' : ''
-    this.setData({ pet: { ...pet, togetherSince }, careSchedule, weightTrend, homeDashboard, ageText, daysTogether, todayFeedCount, ...feedSummary, todayStoolCount, ...stoolSummary, waterTarget, todayWater, syncLabel, ...birthday, ...festivals, ...health })
+    this.setData({ pet: { ...pet, togetherSince }, demoMode, readOnly, careSchedule, weightTrend, homeDashboard, ageText, daysTogether, todayFeedCount, ...feedSummary, todayStoolCount, ...stoolSummary, waterTarget, todayWater, syncLabel, ...birthday, ...festivals, ...health })
   },
-  loadWeather() {
-    this.setData({ weatherLoading: true })
-    getWeather().then(weather => {
+  loadWeather(force = false) {
+    const request = this.weatherRequest = (this.weatherRequest || 0) + 1
+    this.setData({ weatherLoading: true, weather: weatherService.emptyWeather() })
+    this.refresh()
+    weatherService.getWeather({ force }).then(weather => {
+      if (!this.pageVisible || request !== this.weatherRequest) return
       const season = getSeasonInfo(new Date().getMonth() + 1, weather)
       this.setData({ weather, weatherLoading: false, ...season })
       this.refresh()
+    }).catch(() => {
+      if (!this.pageVisible || request !== this.weatherRequest) return
+      this.setData({ weather: weatherService.emptyWeather('unavailable'), weatherLoading: false })
+      this.refresh()
     })
   },
-  openFestivals() { this.setData({ festivalOpen: true }) },
+  refreshWeather() { if (!this.data.weatherLoading) this.loadWeather(true) },
+  openWeatherDetails() {
+    const weather = this.data.weather
+    if (this.data.weatherLoading) return
+    const content = weather.live
+      ? [`${weather.location} · ${weather.condition} ${weather.temperature}℃`, `体感 ${weather.apparent}℃`, weather.rainText, this.data.homeDashboard.weatherTip, `${weather.updatedLabel} 更新 · 数据来源 Open-Meteo`].filter(Boolean).join('\n\n')
+      : weather.rainText
+    wx.showModal({ title: '本地天气与外出建议', content, showCancel: false, confirmText: '知道了' })
+  },
+  onWeatherPrivacyAgreed() { this.loadWeather(true) },
+  onWeatherSettings(event) {
+    if ((event.detail.authSetting || {})[weatherService.LOCATION_SCOPE]) this.loadWeather(true)
+  },
+  openWeatherPrivacy() {
+    wx.openPrivacyContract({ fail: () => wx.showToast({ title: '隐私指引暂时无法打开', icon: 'none' }) })
+  },
+  copyWeatherSources() {
+    wx.setClipboardData({ data: '天气：Open-Meteo https://open-meteo.com/（CC BY 4.0）\n城市识别：BigDataCloud https://www.bigdatacloud.com/' })
+  },
+  openFestivals() {
+    if (!this.data.pet.togetherSince) return this.goAccount()
+    this.setData({ festivalOpen: true })
+  },
   closeFestivals() { this.setData({ festivalOpen: false }) },
-  openWeightTrend() { this.setData({ weightTrendOpen: true }) },
+  openWeightTrend() {
+    if (!this.data.pet.weight) return tabNavigation.openTab('account', 'weight')
+    this.setData({ weightTrendOpen: true })
+  },
   closeWeightTrend() { this.setData({ weightTrendOpen: false }) },
   openFeedDetail() { this.refresh(); this.setData({ feedDetailOpen: true }) },
   closeFeedDetail() { this.setData({ feedDetailOpen: false }) },
@@ -707,38 +489,39 @@ Page({
     this.setData({ stoolDetailOpen: false })
     wx.navigateTo({ url: '/pages/feed/feed?type=stool&single=1' })
   },
-  goDailyRecord(type, autoAdd, mealType) {
-    const query = [`type=${type || 'feed'}`, 'single=1']
-    if (autoAdd) query.push('add=1')
-    if (type === 'feed' && mealType) query.push(`meal=${mealType === '早餐' ? 'breakfast' : 'dinner'}`)
-    wx.navigateTo({ url: `/pages/feed/feed?${query.join('&')}` })
-  },
-  goNextTask() {
-    const task = this.data.homeDashboard.nextTask || {}
-    if (task.action === 'account') return tabNavigation.openTab('care', task.key)
-    const mealType = task.key === 'breakfast' ? '早餐' : task.key === 'dinner' ? '晚餐' : ''
-    this.goDailyRecord(task.action || 'feed', !task.done, mealType)
+  goDailyRecord(type) {
+    if (!['feed', 'water', 'stool', 'walk'].includes(type)) return
+    wx.navigateTo({ url: `/pages/feed/feed?type=${type}&single=1` })
   },
   openStatusDetail(e) {
     const status = this.data.homeDashboard.statusCards[e.currentTarget.dataset.index]
     if (!status) return
-    this.goDailyRecord(status.action || 'feed', false)
+    this.goDailyRecord(status.action || 'feed')
   },
   openFinding(event) {
     const finding = this.data.homeDashboard.findings[Number(event.currentTarget.dataset.index)]
     if (!finding) return
-    wx.showModal({ title: finding.title, content: finding.text, showCancel: false, confirmText: '知道了' })
+    this.setData({ recentOpen: false })
+    this.goDailyRecord(finding.target)
   },
-  openWalkReminder() {
-    const reminder = this.data.homeDashboard.walkReminder
-    if (!reminder) return
-    wx.showModal({ title: reminder.title, content: reminder.text, showCancel: false, confirmText: '知道了' })
+  openRecent() { this.refresh(); this.setData({ recentOpen: true }) },
+  closeRecent() { this.setData({ recentOpen: false }) },
+  openCareReminders() {
+    this.refresh()
+    this.setData({ careRemindersOpen: true })
+  },
+  closeCareReminders() { this.setData({ careRemindersOpen: false }) },
+  openCareReminder(event) {
+    const key = event.currentTarget.dataset.key
+    if (!(this.data.homeDashboard.careReminders || []).some(item => item.key === key)) return
+    this.setData({ careRemindersOpen: false })
+    tabNavigation.openTab('care', key)
   },
   openKnowledge() { this.setData({ knowledgeOpen: true }) },
   closeKnowledge() { this.setData({ knowledgeOpen: false }) },
   openHealthTip(e) { this.setData({ healthTipOpen: true, selectedHealthTip: this.data.healthTips[e.currentTarget.dataset.index] }) },
   closeHealthTip() { this.setData({ healthTipOpen: false }) },
-  goCare() { this.setData({ healthTipOpen: false }); tabNavigation.openTab('care') },
+  goCare() { this.setData({ healthTipOpen: false, careRemindersOpen: false }); tabNavigation.openTab('care') },
   goAccount() { this.setData({ healthTipOpen: false }); wx.switchTab({ url: '/pages/account/account' }) },
   noop() {}
 })

@@ -13,7 +13,11 @@
   "subPackages": [
     {
       "root": "packages/outings",
-      "pages": ["index", "detail", "saved"]
+      "pages": [
+        "index",
+        "detail",
+        "saved"
+      ]
     }
   ],
   "window": {
@@ -45,5 +49,13 @@
   },
   "lazyCodeLoading": "requiredComponents",
   "style": "v2",
-  "sitemapLocation": "sitemap.json"
+  "sitemapLocation": "sitemap.json",
+  "permission": {
+    "scope.userFuzzyLocation": {
+      "desc": "用于自动获取所在城市的天气与外出降水提醒"
+    }
+  },
+  "requiredPrivateInfos": [
+    "getFuzzyLocation"
+  ]
 }
