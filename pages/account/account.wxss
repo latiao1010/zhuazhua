@@ -1,3 +1,8 @@
+@import "../shared/merged-care.wxss";
+.account-page .profile-cover.display-profile-card{padding:22rpx 0;background:transparent;border:0;box-shadow:none}
+.account-page .profile-cover .cover-glow{display:none}
+.account-page .profile-cover .birthday-chip{margin-top:8rpx}
+.account-page .profile-cover .pet-meta{margin-top:10rpx}
 /* 页面样式按原有级联顺序整理；媒体规则独立保留。 */
 .settings-icon { display: flex; align-items: center; justify-content: center; width: 70rpx; height: 70rpx; border-radius: 26rpx; color: #8d8178; background: #fff; box-shadow: none; font-size: 30rpx; }
 .profile-cover { position: relative; overflow: hidden; display: flex; align-items: center; padding: 30rpx; background: var(--cream); }

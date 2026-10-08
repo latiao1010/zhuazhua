@@ -1,7 +1,7 @@
 <view hidden="{{!pageVisible}}">
 <view class="page account-page">
   <view class="topbar">
-    <view><view class="page-title">宠物档案</view></view>
+    <view><view class="page-title">宠物与照护</view></view>
   </view>
 
   <view class="profile-cover display-profile-card card">
@@ -23,31 +23,17 @@
     </view>
   </view>
 
-  <view class="account-section-label">资料与家人</view>
-  <view class="account-shortcuts">
-        <view class="growth-album-entry" bindtap="openGrowthAlbum">
-          <view class="archive-symbol"><view class="warm-icon warm-icon-album"></view></view>
-          <view><text>成长相册</text><view>{{growthPhotos.length}} 张照片</view></view>
-          <text>›</text>
-        </view>
-
-  <view class="family-share-entry" bindtap="openFamilyManager">
-    <view class="family-share-icon"><view class="warm-icon warm-icon-family"></view></view>
-    <view class="family-share-copy">
-      <view>家庭共享</view>
-      <text>{{familyMembers.length}} 位成员</text>
-    </view>
-    <view class="family-share-avatars">
-      <text wx:for="{{familyMembers}}" wx:key="id" wx:if="{{index < 3}}">{{item.initial}}</text>
-    </view>
-    <text class="family-share-arrow">›</text>
+  <view id="care-overview" class="merged-care"><include src="../shared/care-overview.wxml" /></view>
+  <view class="care-compact-heading"><view>档案管理</view></view>
+  <view class="care-compact-list">
+    <view class="care-compact-row" bindtap="openGrowthAlbum"><view>成长相册</view><text>{{growthPhotos.length}} 张照片</text><text>›</text></view>
+    <view class="care-compact-row" bindtap="openFamilyManager"><view>家庭共享</view><text>{{familyMembers.length}} 位成员</text><text>›</text></view>
+    <view class="care-compact-row" bindtap="openDataManager"><view>数据与就诊资料</view><text>›</text></view>
   </view>
-
-  </view>
-  <view class="data-manager-entry" bindtap="openDataManager">数据与就诊资料 <text>›</text></view>
   <view class="privacy-note">资料在本机缓存，并支持云端同步与家庭共享；照片可上传云端。</view>
 </view>
 
+<include src="../shared/care-panels.wxml" />
 <view class="family-page" wx:if="{{familyOpen}}">
   <view class="family-top">
     <view class="family-back" catchtap="closeFamilyManager">←</view>

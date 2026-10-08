@@ -78,6 +78,12 @@ function daysUntil(dateKey) {
   return Math.round((target - today) / 86400000)
 }
 
+function offsetDateKey(days) {
+  const date = new Date(`${store.todayKey()}T00:00:00`)
+  date.setDate(date.getDate() + days)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
 function shortDate(dateKey) {
   const parts = dateKey.split('-')
   return `${Number(parts[1])}月${Number(parts[2])}日`
@@ -370,8 +376,9 @@ function minutesToClock(value) {
   return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`
 }
 
-function buildAIPredictions({ now, pet, todayWater, todayWaters, stools, weather, rainWalkTime, dogFood, healthScore, statusCards }) {
-  const waterTarget = Number(store.get('waterGoal')) || Math.round((Number(pet.weight) || 0) * 55)
+function buildAIPredictions({ now, pet, todayWater, todayWaters, stools, weather, rainWalkTime, dogFood, healthScore, statusCards, rangeDays }) {
+  const dailyWaterTarget = Number(store.get('waterGoal')) || Math.round((Number(pet.weight) || 0) * 55)
+  const waterTarget = dailyWaterTarget * rangeDays
   const nowMinutes = now.getHours() * 60 + now.getMinutes()
   const waterRecords = (todayWaters || [])
     .map(item => ({ amount: numberFromText(item.amount), minutes: clockToMinutes(item.time) }))
@@ -393,30 +400,30 @@ function buildAIPredictions({ now, pet, todayWater, todayWaters, stools, weather
     waterBadge = '缺少体重'
     waterText = '补充体重后，可查看饮水参考目标与记录进度。'
   } else if (!waterRecords.length) {
-    waterTitle = '今天还没有饮水记录'
+    waterTitle = `近 ${rangeDays} 天饮水记录不足`
     waterBadge = '待记录'
-    waterText = `今日参考目标为 ${waterTarget}ml，记录后可查看进度。`
+    waterText = `近 ${rangeDays} 天参考目标为 ${waterTarget}ml，继续记录后可查看趋势。`
   } else if (todayWater >= waterTarget) {
-    waterTitle = '今天饮水预计稳定达标'
+    waterTitle = `近 ${rangeDays} 天饮水趋势正常`
     waterBadge = '趋势较高'
-    waterText = `依据今天 ${waterRecords.length} 次记录，预计全天约 ${Math.max(todayWater, projectedWater)}ml。`
+    waterText = `依据近 ${rangeDays} 天 ${waterRecords.length} 次记录，累计约 ${Math.max(todayWater, projectedWater)}ml。`
     waterTone = 'green'
   } else {
     const hourlyRate = averageWater / averageInterval
     const targetTime = hourlyRate > 0 ? projectionStart + (waterTarget - todayWater) / hourlyRate : Infinity
     if (targetTime <= 22 * 60) {
-      waterTitle = `${minutesToClock(targetTime)} 左右可达到饮水目标`
+      waterTitle = `近 ${rangeDays} 天饮水趋势接近目标`
       waterBadge = '趋势较高'
-      waterText = `依据今天 ${waterRecords.length} 次饮水记录和当前饮水频率推算。`
+      waterText = `依据近 ${rangeDays} 天 ${waterRecords.length} 次饮水记录和日均饮水频率推算。`
       waterTone = 'green'
     } else {
-      waterTitle = `今天可能少喝 ${Math.max(0, waterTarget - projectedWater)}ml`
+      waterTitle = `近 ${rangeDays} 天平均饮水偏少`
       waterBadge = '趋势偏低'
-      waterText = `依据今天 ${waterRecords.length} 次记录，预计全天约 ${projectedWater}ml，目标为 ${waterTarget}ml。`
+      waterText = `近 ${rangeDays} 天累计约 ${projectedWater}ml，参考目标为 ${waterTarget}ml。`
     }
   }
 
-  const recentStools = (stools || []).slice(0, 7)
+  const recentStools = (stools || []).filter(item => item.dayKey >= offsetDateKey(-(rangeDays - 1)) && item.dayKey <= store.todayKey())
   const abnormalCount = recentStools.filter(item => item.abnormal).length
   let stoolTitle
   let stoolBadge
@@ -424,18 +431,18 @@ function buildAIPredictions({ now, pet, todayWater, todayWaters, stools, weather
   let stoolTone = 'green'
   if (recentStools.length < 3) {
     stoolTitle = '排便记录还不够完整'
-    stoolBadge = `${recentStools.length}/3 条`
-    stoolText = `目前有 ${recentStools.length} 次记录，再记录 ${3 - recentStools.length} 次后可查看近期记录汇总。`
+    stoolBadge = `${rangeDays}天`
+    stoolText = `近 ${rangeDays} 天共有 ${recentStools.length} 次记录，继续记录后趋势会更可靠。`
     stoolTone = 'cream'
   } else if (abnormalCount) {
     stoolTitle = '近期肠胃状态有波动'
     stoolBadge = '需观察'
-    stoolText = `依据最近 ${recentStools.length} 次记录，其中 ${abnormalCount} 次出现异常。`
+    stoolText = `依据近 ${rangeDays} 天 ${recentStools.length} 次记录，其中 ${abnormalCount} 次出现异常。`
     stoolTone = 'orange'
   } else {
-    stoolTitle = `最近 ${recentStools.length} 次排便记录正常`
+    stoolTitle = `近 ${rangeDays} 天排便记录正常`
     stoolBadge = '趋势稳定'
-    stoolText = `最近 ${recentStools.length} 次记录均正常，短期内暂未发现明显波动。`
+    stoolText = `近 ${rangeDays} 天共 ${recentStools.length} 次记录，暂未发现明显波动。`
   }
 
   let walkTitle
@@ -485,7 +492,7 @@ function buildAIPredictions({ now, pet, todayWater, todayWaters, stools, weather
   ]
 }
 
-function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, careRecords, supplies, weather }) {
+function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, careRecords, supplies, weather, rangeDays = 7 }) {
   const now = new Date()
   const today = store.todayKey()
   const todayFeeds = (feeds || []).filter(item => item.dayKey === today)
@@ -493,6 +500,9 @@ function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, c
   const todayWaters = (waters || []).filter(item => item.dayKey === today)
   const todayWalks = (walks || []).filter(item => item.dayKey === today)
   const todayWater = todayWaters.reduce((sum, item) => sum + numberFromText(item.amount), 0)
+  const recentStart = offsetDateKey(-(rangeDays - 1))
+  const recentWaters = (waters || []).filter(item => item.dayKey >= recentStart && item.dayKey <= today)
+  const recentWater = recentWaters.reduce((sum, item) => sum + numberFromText(item.amount), 0)
   const waterTarget = Number(store.get('waterGoal')) || Math.round((Number(pet.weight) || 0) * 55)
   const dentalDone = careSchedule.dentalLast === today || (careRecords || []).some(item => item.key === 'dental' && item.date === today)
   const rainWalkTime = weather && weather.rainTime ? timeAfterRain(weather.rainTime) : '19:00'
@@ -552,8 +562,8 @@ function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, c
   const aiPredictions = buildAIPredictions({
     now,
     pet,
-    todayWater,
-    todayWaters,
+    todayWater: recentWater,
+    todayWaters: recentWaters,
     stools,
     weather,
     rainWalkTime,
@@ -564,7 +574,9 @@ function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, c
       { label: '水分', ...waterStatus },
       { label: '肠胃', ...stomachStatus },
       { label: '活力', ...activityStatus }
-    ]
+    ],
+    rangeDays,
+    rangeDays
   })
   return {
     greeting: getGreeting(now.getHours()),
@@ -583,6 +595,7 @@ function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, c
       { icon: '🌿', label: '肠胃', action: 'stool', ...stomachStatus },
       { icon: '🐾', label: '活力', action: 'walk', ...activityStatus }
     ],
+    walkReminder: aiPredictions[2],
     findings: [aiPredictions[0], todayStools.some(item => item.abnormal) || (now.getHours() >= 6 && now.getHours() < 22) ? aiPredictions[1] : aiPredictions[2]],
     knowledge: getPersonalizedKnowledge({
       now,
@@ -601,7 +614,13 @@ Page({
     todayFeeds: [], todayFeedCount: 0, todayFeedTotal: 0, todayStools: [], todayStoolCount: 0, todayStoolAbnormalCount: 0, todayStoolStatus: '等待记录', waterTarget: 0, birthdayDays: 0, nextAge: 0, birthdayLabel: '',
     weatherLoading: true, weather: { icon: '🌤️', temperature: '--', apparent: '--', condition: '加载天气', location: '正在定位', rainText: '正在获取逐小时降雨预报', rainTime: '', live: false },
     seasonName: '', seasonTip: '', lifeStage: '', healthTips: [],
-    homeDashboard: { greeting: '', healthScore: 100, healthSummary: '', tasks: [], statusCards: [], completedCount: 0, totalTasks: 6, progress: 0, nextTask: {}, laterTasks: [], findings: [], knowledge: { detail: [] } }, quickRecords: QUICK_RECORDS
+    homeDashboard: { greeting: '', healthScore: 100, healthSummary: '', tasks: [], statusCards: [], completedCount: 0, totalTasks: 6, progress: 0, nextTask: {}, laterTasks: [], findings: [], knowledge: { detail: [] } }, insightRange: 7, quickRecords: QUICK_RECORDS
+  },
+  setInsightRange(event) {
+    const range = Number(event.currentTarget.dataset.range)
+    if (![7, 14].includes(range) || range === this.data.insightRange) return
+    this.setData({ insightRange: range })
+    this.refresh()
   },
   quickRecord(e) { wx.navigateTo({ url: '/pages/feed/feed?type=' + e.currentTarget.dataset.type + '&add=1' }) },
   openOutings() {
@@ -659,7 +678,7 @@ Page({
     const careSchedule = store.normalizeCareSchedule(store.get('care'))
     const health = getHealthTips(pet, months / 12, careSchedule)
     const weightTrend = buildWeightTrend(store.get('weightRecords'), pet.weight, store.todayKey())
-    const homeDashboard = buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, careRecords, supplies, weather: this.data.weather })
+    const homeDashboard = buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, careRecords, supplies, weather: this.data.weather, rangeDays: this.data.insightRange || 7 })
     const syncStatus = cloudData.getSyncStatus ? cloudData.getSyncStatus() : {}
     const syncLabel = syncStatus.status === 'conflict' ? '记录有冲突，点此处理' : syncStatus.status === 'fail' ? '同步异常' : syncStatus.status === 'pending' ? '待同步' : ''
     this.setData({ pet: { ...pet, togetherSince }, careSchedule, weightTrend, homeDashboard, ageText, daysTogether, todayFeedCount, ...feedSummary, todayStoolCount, ...stoolSummary, waterTarget, todayWater, syncLabel, ...birthday, ...festivals, ...health })
@@ -704,6 +723,16 @@ Page({
     const status = this.data.homeDashboard.statusCards[e.currentTarget.dataset.index]
     if (!status) return
     this.goDailyRecord(status.action || 'feed', false)
+  },
+  openFinding(event) {
+    const finding = this.data.homeDashboard.findings[Number(event.currentTarget.dataset.index)]
+    if (!finding) return
+    wx.showModal({ title: finding.title, content: finding.text, showCancel: false, confirmText: '知道了' })
+  },
+  openWalkReminder() {
+    const reminder = this.data.homeDashboard.walkReminder
+    if (!reminder) return
+    wx.showModal({ title: reminder.title, content: reminder.text, showCancel: false, confirmText: '知道了' })
   },
   openKnowledge() { this.setData({ knowledgeOpen: true }) },
   closeKnowledge() { this.setData({ knowledgeOpen: false }) },

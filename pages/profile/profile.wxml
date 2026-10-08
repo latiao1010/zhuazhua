@@ -1,27 +1,23 @@
 <view class="page journal-home">
-  <view class="journal-header"><view><text class="journal-kicker">日常照护</text><view class="journal-title">{{homeDashboard.greeting}}</view><text class="journal-subtitle">记录{{pet.name}}的每一天</text></view><image src="{{pet.avatar}}" mode="aspectFill" bindtap="goAccount" /></view>
-  <view class="journal-pet"><text>{{pet.name}}</text><view bindtap="openWeightTrend">{{pet.weight ? pet.weight + ' kg' : '填写体重'}} ›</view><view bindtap="openFestivals">{{pet.birthday ? '相伴 ' + daysTogether + ' 天' : '填写生日'}} ›</view></view>
-  <view class="journal-notice" wx:if="{{syncLabel}}" bindtap="goAccount">{{syncLabel}} · 前往处理 ›</view>
-  <view class="journal-notice" wx:if="{{!pet.weight || !pet.birthday}}" bindtap="goAccount">完善体重与生日，获得更合适的日常建议 ›</view>
-  <view class="journal-section-head"><view>记录今天</view><text>长按调整顺序</text></view>
-  <view class="journal-actions" bindlongpress="customizeQuickRecords"><view wx:for="{{quickRecords}}" wx:key="type" data-type="{{item.type}}" bindtap="quickRecord">{{item.label}}</view></view>
-  <view class="outing-home-entry" bindtap="openOutings"><view><text class="outing-home-label">带狗出门</text><view>下一站，也带上它。</view><text class="outing-home-sub">按城市找吃饭、住宿和游玩的地方</text></view><view class="outing-home-arrow">↗</view></view>
+  <view class="journal-intro">
+    <view class="journal-header"><view><text class="journal-kicker">日常照护</text><view class="journal-title">{{homeDashboard.greeting}}</view><text class="journal-subtitle">记录{{pet.name}}的每一天</text></view><image src="{{pet.avatar}}" mode="aspectFill" bindtap="goAccount" /></view>
+    <view class="journal-pet"><text>{{pet.name}}</text><view bindtap="openWeightTrend">{{pet.weight ? pet.weight + ' kg' : '填写体重'}} ›</view><view bindtap="openFestivals">{{pet.birthday ? '相伴 ' + daysTogether + ' 天' : '填写生日'}} ›</view></view>
+    <view class="journal-notice" wx:if="{{syncLabel}}" bindtap="goAccount">{{syncLabel}} · 前往处理 ›</view>
+    <view class="journal-notice" wx:if="{{!pet.weight || !pet.birthday}}" bindtap="goAccount">完善体重与生日，获得更合适的日常建议 ›</view>
+  </view>
   <view class="journal-section-head"><view>发现更多陪伴</view><text>留下一张专属小卡片</text></view>
-  <view class="play-entries">
-    <view class="play-entry age-entry" data-tool="age" bindtap="openPlay"><view class="play-entry-icon"><view class="warm-icon warm-icon-paw"></view></view><view>它的人类年龄</view><text>算年龄 · 数相伴的日子</text><view class="play-entry-link">生成年龄卡片 ›</view></view>
-    <view class="play-entry personality-entry" data-tool="personality" bindtap="openPlay"><view class="play-entry-icon"><view class="warm-icon warm-icon-companion"></view></view><view>它是哪种性格？</view><text>10 道题 · 发现小个性</text><view class="play-entry-link">开始趣味测试 ›</view></view>
-  </view>
-  <view class="bingo-home" data-tool="bingo" bindtap="openPlay"><view><text class="bingo-home-tag">新玩法 · 九宫格</text><view>这些小习惯，你家中了几项？</view><text>宠物行为宾果 · 制作你家的分享卡片</text></view><text>去点亮 ›</text></view>
-  <view class="journal-task">
-    <view class="journal-task-caption">接下来 <text>{{homeDashboard.nextTask.waitText}}</text></view>
-    <view class="journal-task-main"><view><view class="journal-task-title">{{homeDashboard.nextTask.label}}</view><text>{{homeDashboard.nextTask.time}} · {{homeDashboard.nextTask.detail}}</text></view><button bindtap="goNextTask">{{homeDashboard.nextTask.actionText}} →</button></view>
-  </view>
-  <view class="journal-section-head"><view>今日概况</view><text>{{homeDashboard.completedCount}} / {{homeDashboard.totalTasks}} 项已完成</text></view>
+  <swiper class="companionship-swiper" indicator-dots autoplay interval="5000" duration="400" circular indicator-color="#ddcfc6" indicator-active-color="#bf7456">
+    <swiper-item><view class="discovery-card" bindtap="openOutings"><view class="discovery-top"><text>带狗出门</text><view class="discovery-icon">↗</view></view><view class="discovery-title">下一站，也带上它。</view><text class="discovery-description">按城市找吃饭、住宿和游玩的地方</text><view class="discovery-action">探索好去处<text>↗</text></view></view></swiper-item>
+    <swiper-item><view class="discovery-card" bindtap="openPlay" data-tool="age"><view class="discovery-top"><text>年龄换算</text><view class="discovery-icon"><view class="warm-icon warm-icon-paw"></view></view></view><view class="discovery-title">它的人类年龄</view><text class="discovery-description">算年龄 · 数相伴的日子</text><view class="discovery-action">生成年龄卡片<text>↗</text></view></view></swiper-item>
+    <swiper-item><view class="discovery-card" bindtap="openPlay" data-tool="personality"><view class="discovery-top"><text>性格测试</text><view class="discovery-icon"><view class="warm-icon warm-icon-companion"></view></view></view><view class="discovery-title">它是哪种性格？</view><text class="discovery-description">10 道题 · 发现小个性</text><view class="discovery-action">开始趣味测试<text>↗</text></view></view></swiper-item>
+    <swiper-item><view class="discovery-card" bindtap="openPlay" data-tool="bingo"><view class="discovery-top"><text>行为九宫格</text><view class="discovery-icon">▦</view></view><view class="discovery-title">你家中了几项？</view><text class="discovery-description">发现宠物的小习惯，制作专属分享卡</text><view class="discovery-action">去点亮<text>↗</text></view></view></swiper-item>
+  </swiper>
+  <view class="journal-walk-reminder" bindtap="openWalkReminder"><view><text>{{homeDashboard.walkReminder.badge}}</text><view>{{homeDashboard.walkReminder.title}}</view><text>{{homeDashboard.walkReminder.text}}</text></view><text>›</text></view>
+  <view class="journal-section-head"><view>今日概况</view></view>
   <view class="journal-progress"><view style="width:{{homeDashboard.progress}}%"></view></view>
-  <view class="journal-status"><view wx:for="{{homeDashboard.statusCards}}" wx:key="label" data-index="{{index}}" bindtap="openStatusDetail"><text>{{item.label}}</text><view>{{item.value}}</view><text class="journal-detail">查看记录 ›</text></view></view>
-  <view class="journal-summary">{{homeDashboard.healthSummary}}</view>
-  <view class="journal-section-head"><view>照护提醒</view></view>
-  <view class="journal-findings"><view wx:for="{{homeDashboard.findings}}" wx:key="id"><view class="journal-finding-title">{{item.title}}<text>{{item.badge}}</text></view><text>{{item.text}}</text></view></view>
+  <view class="journal-status"><view wx:for="{{homeDashboard.statusCards}}" wx:key="label" class="status-{{item.tone}}" data-index="{{index}}" bindtap="openStatusDetail"><text>{{item.label}} ›</text><view>{{item.value}}</view></view></view>
+  <view class="journal-section-head"><view>近期情况</view><view class="insight-range-switch"><text class="{{insightRange === 7 ? 'active' : ''}}" data-range="7" bindtap="setInsightRange">7天</text><text class="{{insightRange === 14 ? 'active' : ''}}" data-range="14" bindtap="setInsightRange">14天</text></view></view>
+  <view class="journal-findings"><view wx:for="{{homeDashboard.findings}}" wx:key="id" data-index="{{index}}" bindtap="openFinding"><view class="journal-finding-title">{{item.title}}</view><text>{{item.text}}</text><view class="finding-more">查看建议 ›</view></view></view>
   <view class="journal-knowledge" bindtap="openKnowledge"><view><text>每日知识</text><view>{{homeDashboard.knowledge.title}}</view></view><text>›</text></view>
 </view>
 

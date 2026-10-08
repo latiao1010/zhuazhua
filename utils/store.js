@@ -305,18 +305,16 @@ function buildSeedDiaries() {
 const seedDiaries = buildSeedDiaries()
 
 const seedStools = [
-  { id: 2, dayKey: todayKey(), date: '今天', time: '16:40', condition: '正常成形', color: '棕色', note: '状态很好', icon: '💩', abnormal: false, ...demoActor(3) },
+  { id: 2, dayKey: todayKey(), date: '今天', time: '16:40', condition: '偏软', color: '黄色', note: '演示：需要观察', icon: '💩', abnormal: true, ...demoActor(3) },
   { id: 1, dayKey: todayKey(), date: '今天', time: '08:05', condition: '正常成形', color: '棕色', note: '', icon: '💩', abnormal: false, ...demoActor(1) }
 ]
 
 const seedWaters = [
-  { id: 2, dayKey: todayKey(), date: '今天', time: '15:20', amount: '160ml', note: '', icon: '💧', ...demoActor(3) },
-  { id: 1, dayKey: todayKey(), date: '今天', time: '09:10', amount: '180ml', note: '散步回来喝的', icon: '💧', ...demoActor(1) }
+  { id: 2, dayKey: todayKey(), date: '今天', time: '15:20', amount: '60ml', note: '演示：饮水偏少', icon: '💧', ...demoActor(3) },
+  { id: 1, dayKey: todayKey(), date: '今天', time: '09:10', amount: '80ml', note: '', icon: '💧', ...demoActor(1) }
 ]
 
-const seedWalks = [
-  { id: 1, dayKey: todayKey(), date: '今天', time: '08:20', duration: 35, distance: '1.6', note: '小区一圈', icon: '🐾', ...demoActor(3) }
-]
+const seedWalks = []
 
 function buildSeedDailyTrendHistory() {
   const histories = { stools: [], waters: [], walks: [] }
@@ -498,7 +496,7 @@ const seedChats = buildSeedChats()
 const seedSupplies = buildSeedSupplies()
 const seedCareSchedule = buildSeedCareSchedule()
 // 跨度变了就要升版本，否则已经播过种的设备不会重新生成
-const SIX_MONTH_DEMO_VERSION = 'six-month-v2'
+const SIX_MONTH_DEMO_VERSION = 'six-month-v4'
 
 function isDemoRecord(item, key) {
   if (!item || typeof item !== 'object') return true

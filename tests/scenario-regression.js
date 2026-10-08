@@ -264,7 +264,7 @@ async function main() {
     assert.strictEqual(storage.paw_feed_trend_demo_v1, true)
     assert.strictEqual(storage.paw_daily_trend_demo_v1, true)
     assert.strictEqual(storage.paw_two_month_demo_v1, true)
-    assert.strictEqual(storage.paw_six_month_demo_v1, 'six-month-v2')
+    assert.strictEqual(storage.paw_six_month_demo_v1, 'six-month-v4')
     assert.ok(storage.paw_supply_records.dogFood.openedDate)
     assert.ok(storage.paw_supply_records.snack.openedDate)
     assert.ok(storage.paw_supply_records.dogFood.history.length >= 4)
@@ -624,6 +624,32 @@ async function main() {
     page.onShow.call(context)
     assert.strictEqual(context.data.pageVisible, true)
     assert.strictEqual(calls.tabShows, 4)
+  })
+
+  await scenario('照护入口跳入合并页，保留护理目标且不会污染档案跳转', () => {
+    const { wx, calls } = makeWx()
+    const page = loadPage('pages/account/account.js', makeStore(makeState()), wx)
+    const context = pageContext(page)
+    const navigation = require('../utils/tab-navigation')
+    navigation.openTab('care', 'dental')
+    assert.strictEqual(calls.switches.pop(), '/pages/account/account')
+    page.onShow.call(context)
+    assert.strictEqual(context.data.careDetailOpen, true)
+    assert.strictEqual(context.data.selectedCare.key, 'dental')
+    page.closeCareDetail.call(context)
+    let selector
+    wx.nextTick = callback => callback()
+    wx.pageScrollTo = options => { selector = options.selector }
+    navigation.openTab('care')
+    page.onShow.call(context)
+    assert.strictEqual(selector, '#care-overview')
+    assert.strictEqual(context.data.careDetailOpen, false)
+    navigation.openTab('account', 'weight')
+    page.onShow.call(context)
+    assert.strictEqual(context.data.profileField, 'weight')
+    assert.strictEqual(context.data.profileFieldEditOpen, true)
+    navigation.openTab('account')
+    assert.strictEqual(navigation.takeTarget('account'), undefined)
   })
 
   await scenario('体重与护理周期拒绝非数字并保留原档案', () => {
@@ -1957,17 +1983,17 @@ async function main() {
     assert.ok(weather.rainText.includes('审核版暂不获取定位'))
   })
 
-  await scenario('页面清单和四个 Tab 路由都指向真实文件', () => {
+  await scenario('合并照护后，三个 Tab 路由都指向真实文件', () => {
     const appConfig = JSON.parse(fs.readFileSync(path.join(ROOT, 'app.json'), 'utf8'))
-    assert.strictEqual(appConfig.tabBar.list.length, 4)
+    assert.strictEqual(appConfig.tabBar.list.length, 3)
     const routes = [...appConfig.pages, ...appConfig.tabBar.list.map(item => item.pagePath)]
     routes.forEach(route => {
       assert.ok(fs.existsSync(path.join(ROOT, `${route}.js`)), `${route}.js is missing`)
       assert.ok(fs.existsSync(path.join(ROOT, `${route}.wxml`)), `${route}.wxml is missing`)
       assert.ok(fs.existsSync(path.join(ROOT, `${route}.wxss`)), `${route}.wxss is missing`)
     })
-    assert.strictEqual(new Set(appConfig.tabBar.list.map(item => item.pagePath)).size, 4)
-    assert.deepStrictEqual(appConfig.tabBar.list.map(item => item.text), ['今天', '记录', '照护', '我的'])
+    assert.strictEqual(new Set(appConfig.tabBar.list.map(item => item.pagePath)).size, 3)
+    assert.deepStrictEqual(appConfig.tabBar.list.map(item => item.text), ['首页', '记录', '我的'])
   })
 
   await scenario('审核版前端包不包含大模型接口或密钥', () => {

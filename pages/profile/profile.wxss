@@ -182,3 +182,129 @@
 .play-entries{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16rpx}.play-entry{padding:24rpx 20rpx;border:1rpx solid #f7dfcc;border-radius:28rpx;background:#fff1e5}.personality-entry{background:#eef8f1;border-color:#dfeee2}.play-entry-icon{display:flex;align-items:center;justify-content:center;width:58rpx;height:58rpx;margin-bottom:18rpx;border-radius:20rpx;background:rgba(255,255,255,.85)}.play-entry-icon .warm-icon{width:34rpx;height:34rpx}.play-entry>view:nth-child(2){font-size:28rpx;font-weight:600;line-height:1.4}.play-entry>text{display:block;margin-top:10rpx;color:#a18a77;font-size:22rpx;line-height:1.6}.play-entry .play-entry-link{margin-top:20rpx;font-size:24rpx;color:#b47753}.personality-entry .play-entry-link{color:#73947c}
 
 .bingo-home{display:flex;align-items:center;justify-content:space-between;gap:18rpx;padding:26rpx;margin:18rpx 0 24rpx;border:1rpx solid #e4ebdc;border-radius:24rpx;background:#f3f7eb}.bingo-home-tag{font-size:20rpx;color:#8b9b74}.bingo-home>view>view{font-size:28rpx;font-weight:600;color:#586a50;margin:10rpx 0}.bingo-home>view>text:last-child{font-size:22rpx;color:#8b967e}.bingo-home>text{flex-shrink:0;font-size:24rpx;color:#78906e}
+
+/* “发现更多陪伴”功能入口：手动左右滑动，自动每 5 秒切换。 */
+.companionship-swiper{height:274rpx;margin-top:18rpx}
+.companionship-slide{height:238rpx;padding:0 2rpx;box-sizing:border-box}
+.companionship-slide .outing-home-entry,.carousel-play-entry,.carousel-bingo-entry{height:238rpx;margin:0;box-sizing:border-box}
+.carousel-play-entry{padding:28rpx 26rpx}
+.carousel-play-entry .play-entry-icon{margin-bottom:12rpx}
+.carousel-play-entry .play-entry-link{margin-top:14rpx}
+.carousel-bingo-entry{margin:0;padding:28rpx}
+
+/* 轮播入口共用同一套暖杏色卡片语气，避免不同功能像来自不同页面。 */
+.companionship-slide .outing-home-entry,.companionship-slide .carousel-play-entry,.companionship-slide .carousel-bingo-entry{border:1rpx solid #f0d9cb;border-radius:30rpx;background:linear-gradient(135deg,#fff1e8 0%,#fff9f5 100%);box-shadow:0 10rpx 24rpx rgba(180,112,78,.08)}
+.companionship-slide .outing-home-label,.companionship-slide .bingo-home-tag{color:#b78368}
+.companionship-slide .outing-home-entry>view>view,.companionship-slide .bingo-home>view>view,.companionship-slide .play-entry>view:nth-child(2){color:#694d40}
+.companionship-slide .outing-home-sub,.companionship-slide .bingo-home>view>text:last-child,.companionship-slide .play-entry>text{color:#a08070}
+.companionship-slide .outing-home-entry>.outing-home-arrow,.companionship-slide .play-entry-icon{background:#ffe2d4;color:#c56f4f}
+.companionship-slide .play-entry .play-entry-link,.companionship-slide .personality-entry .play-entry-link,.companionship-slide .bingo-home>text{color:#c56f4f}
+
+/* 今天页优先展示“记录、入口、待办、状态”，将信息密度控制在一屏内。 */
+.journal-home{padding:18rpx 24rpx calc(18rpx + env(safe-area-inset-bottom))}
+.journal-intro{padding:20rpx 22rpx 16rpx;border:1rpx solid #f1e1d6;border-radius:30rpx;background:linear-gradient(135deg,#fffaf6 0%,#fff1e8 100%);box-shadow:0 10rpx 26rpx rgba(194,130,95,.06)}
+.journal-header{gap:18rpx;padding:0 0 14rpx}
+.journal-header image{width:94rpx;height:94rpx;border-radius:32rpx;border-width:4rpx}
+.journal-kicker{color:#c17a5e}
+.journal-title{margin:6rpx 0 3rpx;font-size:38rpx;color:#4e403a}
+.journal-subtitle{font-size:22rpx}
+.journal-pet{gap:12rpx;padding:10rpx 0 0;border-top:1rpx solid rgba(228,202,186,.72);border-bottom:0;font-size:21rpx}
+.journal-pet>text{font-size:25rpx}
+.journal-pet>view{padding:5rpx 10rpx;border-radius:99rpx;background:rgba(255,255,255,.72)}
+.journal-notice{margin-top:10rpx;padding:10rpx 14rpx;border-radius:14rpx;background:rgba(244,232,220,.88);font-size:21rpx;line-height:1.45}
+.journal-section-head{margin:18rpx 0 10rpx}
+.journal-section-head>view{font-size:27rpx;color:#4d403a}
+.journal-section-head>text{color:#a99388}
+.journal-actions{gap:8rpx}
+.journal-actions>view{min-height:66rpx;border-color:#f1dfd3;border-radius:20rpx;background:#fffaf7;color:#604e45;font-size:22rpx;box-shadow:0 5rpx 13rpx rgba(174,121,91,.04)}
+.companionship-swiper{height:218rpx;margin-top:8rpx}
+.companionship-slide{height:180rpx}
+.companionship-slide .outing-home-entry,.carousel-play-entry,.carousel-bingo-entry{height:180rpx}
+.companionship-slide .outing-home-entry,.carousel-bingo-entry{padding:22rpx}
+.carousel-play-entry{padding:22rpx}
+.companionship-slide .outing-home-entry>view>view,.companionship-slide .bingo-home>view>view{font-size:27rpx;margin:6rpx 0}
+.companionship-slide .outing-home-sub,.companionship-slide .bingo-home>view>text:last-child,.companionship-slide .play-entry>text{font-size:20rpx}
+.carousel-play-entry .play-entry-icon{width:48rpx;height:48rpx;margin-bottom:8rpx;border-radius:16rpx}
+.carousel-play-entry .play-entry-icon .warm-icon{width:28rpx;height:28rpx}
+.carousel-play-entry .play-entry-link{margin-top:8rpx;font-size:22rpx}
+.journal-task{margin-top:14rpx;padding:17rpx 20rpx;border-radius:24rpx}
+.journal-task-main{gap:14rpx;margin-top:8rpx}
+.journal-task-title{font-size:27rpx}
+.journal-task-main>view>text{margin-top:3rpx;font-size:20rpx}
+.journal-task-main>button{min-height:60rpx;padding:0 16rpx;border-radius:19rpx;font-size:22rpx;line-height:60rpx}
+.journal-status{grid-template-columns:repeat(4,minmax(0,1fr));gap:7rpx;margin-top:10rpx}
+.journal-status>view{padding:12rpx 8rpx;border-color:#eee2da;border-radius:18rpx;background:#fffaf7;text-align:center}
+.journal-status>view>text{font-size:19rpx}
+.journal-status>view>view{margin:5rpx 0;font-size:21rpx;line-height:1.3}
+.journal-status .journal-detail{font-size:18rpx}
+.journal-summary{margin-top:9rpx;font-size:21rpx;line-height:1.45}
+.journal-findings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;padding:0 14rpx;border-radius:22rpx}
+.journal-findings>view{min-width:0;padding:14rpx 10rpx}
+.journal-findings>view+view{border-top:0;border-left:1rpx solid var(--line)}
+.journal-finding-title{display:block;font-size:22rpx;line-height:1.35}
+.journal-finding-title>text{display:block;margin-top:3rpx;font-size:18rpx}
+.journal-findings>view>text{display:-webkit-box;overflow:hidden;margin-top:5rpx;font-size:19rpx;line-height:1.45;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.journal-knowledge{margin-top:12rpx;padding:14rpx 18rpx;border-radius:22rpx}
+.journal-knowledge>view>text{font-size:19rpx}
+.journal-knowledge>view>view{display:-webkit-box;overflow:hidden;margin-top:3rpx;font-size:23rpx;line-height:1.35;-webkit-box-orient:vertical;-webkit-line-clamp:1}
+.journal-knowledge>text{font-size:28rpx}
+
+/* 每个轮播入口使用同一内容骨架，底部留出独立分页区域。 */
+.discovery-card{height:184rpx;box-sizing:border-box;margin:0 2rpx;padding:14rpx 20rpx;border:1rpx solid #edddd2;border-radius:22rpx;background:#fff4eb;color:#544238;display:flex;flex-direction:column}
+.discovery-top{display:flex;align-items:center;justify-content:space-between;height:38rpx;flex:none;font-size:22rpx;color:#936d57}
+.discovery-icon{display:flex;align-items:center;justify-content:center;width:38rpx;height:38rpx;border-radius:12rpx;background:#ffe4d3;font-size:28rpx;color:#b86e4e}
+.discovery-icon .warm-icon{width:26rpx;height:26rpx}
+.discovery-title{margin-top:2rpx;font-size:28rpx;line-height:1.35;font-weight:600}
+.discovery-description{margin-top:5rpx;font-size:22rpx;line-height:1.5;color:#7f6d62}
+.discovery-action{display:flex;justify-content:space-between;align-items:center;margin-top:auto;font-size:21rpx;line-height:1.5;color:#a55d40}
+.discovery-action>text{font-size:25rpx}
+.journal-home{min-height:0;background:#fffaf7;padding-bottom:24rpx}
+.journal-intro{padding:6rpx 0 18rpx;box-shadow:none;background:transparent;border:0;border-radius:0}
+.journal-subtitle,.journal-section-head>text{color:#81726a}
+.journal-section-head{margin-top:24rpx}
+.journal-status{gap:0;padding:15rpx 0;border:1rpx solid #eee3dc;border-radius:22rpx;background:#fff}
+.journal-status>view,.journal-status>view:nth-child(2){background:transparent;border:0;border-radius:0;padding:3rpx 8rpx}
+.journal-status>view+view{border-left:1rpx solid #eee3dc}
+.journal-status>view>text{font-size:24rpx;color:#786b62}
+.journal-status>view>view{font-size:25rpx;color:#51443d;margin-top:10rpx;line-height:1.5}
+.journal-status>view.status-good{background:#f1f8f2}
+.journal-status>view.status-neutral{background:#fffaf3}
+.journal-status>view.status-watch{background:#fff4df}
+.journal-status>view.status-attention{background:#fff0ea}
+.journal-status>view.status-watch>text,.journal-status>view.status-watch>view{color:#a86b2f}
+.journal-status>view.status-attention>text,.journal-status>view.status-attention>view{color:#b84f37}
+.journal-task-compact{display:flex;align-items:center;justify-content:space-between;gap:14rpx;margin-top:14rpx;padding:14rpx 18rpx;border:1rpx solid #f0dfd4;border-radius:18rpx;background:#fff6ef}
+.journal-task-compact>view{min-width:0;flex:1}
+.journal-task-compact>view>text:first-child{font-size:19rpx;color:#a58270}
+.journal-task-compact>view>view{margin-top:3rpx;font-size:25rpx;font-weight:600;color:#5b473c}
+.journal-task-compact>view>text:last-child{display:block;margin-top:3rpx;font-size:20rpx;color:#8d776b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.journal-task-compact button{flex:none;margin:0;padding:0 14rpx;min-height:52rpx;border-radius:15rpx;background:#ffc09f;color:#704634;font-size:21rpx;line-height:52rpx}
+.journal-findings{grid-template-columns:1fr;background:transparent;border:0;border-radius:0;padding:0}
+.journal-walk-reminder{display:flex;align-items:center;justify-content:space-between;gap:12rpx;margin-top:14rpx;padding:14rpx 18rpx;border:1rpx solid #dfe9df;border-radius:18rpx;background:#f3f8f1}
+.journal-walk-reminder>view{min-width:0;flex:1}
+.journal-walk-reminder>view>text:first-child{font-size:19rpx;color:#6f886a}
+.journal-walk-reminder>view>view{margin-top:4rpx;font-size:24rpx;font-weight:600;color:#4d6148;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.journal-walk-reminder>view>text:last-child{display:block;margin-top:3rpx;font-size:20rpx;color:#71806d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.journal-walk-reminder>text{font-size:28rpx;color:#91a78a}
+.journal-section-head + .journal-walk-reminder{margin-top:0}
+.journal-section-head{position:relative;padding-left:12rpx}
+.journal-section-head:before{content:"";position:absolute;left:0;top:4rpx;width:4rpx;height:24rpx;border-radius:4rpx;background:#d77b5d}
+.journal-section-head>view{font-weight:600}
+.journal-findings{overflow:hidden;border:1rpx solid #eee4dd;border-radius:20rpx;background:#fff;padding:0 18rpx}
+.insight-range-switch{display:flex!important;align-items:center;gap:4rpx;padding:3rpx;border-radius:99rpx;background:#f1ece7}
+.insight-range-switch>text{padding:5rpx 12rpx;border-radius:99rpx;color:#8c7d73;font-size:20rpx;font-weight:400}
+.insight-range-switch>text.active{background:#fff;color:#a85e42;font-weight:600;box-shadow:0 2rpx 6rpx rgba(120,80,60,.12)}
+.journal-findings>view{padding:16rpx 0}
+.journal-findings>view+view{border-top:1rpx solid #f0e9e4}
+.journal-finding-title{font-size:24rpx;font-weight:600;color:#51463f}
+.journal-findings>view>text{display:block;margin-top:5rpx;font-size:22rpx;line-height:1.55;color:#7b6f67;-webkit-line-clamp:2}
+.journal-knowledge{margin-top:16rpx;padding:15rpx 18rpx;border-radius:20rpx;background:#f4f5ee;border-color:#e8eadf}
+.journal-knowledge>view>text{font-size:20rpx;color:#778263}
+.journal-knowledge>view>view{font-size:23rpx;color:#5e654d}
+.journal-findings>view{padding:14rpx 0}
+.journal-findings>view+view{border-left:0;border-top:1rpx solid #ebe4dc}
+.journal-finding-title{font-size:24rpx;color:#53463e}
+.journal-findings>view>text{font-size:24rpx;color:#74675e;line-height:1.5;-webkit-line-clamp:2}
+.finding-more{display:none}
+.journal-knowledge{background:#f5f5ed;border-color:#e8e8dc}
+.journal-knowledge>view>text{font-size:21rpx;color:#777c61}

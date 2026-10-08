@@ -1,4 +1,6 @@
 @import "../account/account.wxss";
+.care-page .care-dashboard{border:1rpx solid #eee3dc;border-radius:24rpx;background:#fff;box-shadow:none}
+.care-page .care-plan-icon{border-radius:14rpx;background:#fff1e7;color:#a36a4f}
 .care-page .topbar{margin-bottom:24rpx}.care-page .eyebrow{margin-bottom:10rpx;letter-spacing:0;color:var(--muted);font-weight:400;font-size:24rpx}
 .care-advisor-entry{display:flex;align-items:center;gap:20rpx;padding:28rpx;border:1rpx solid #f8dfcf;border-radius:28rpx;background:#fff0e5}
 .care-advisor-icon{display:flex;align-items:center;justify-content:center;width:72rpx;height:72rpx;flex:none;border-radius:24rpx;background:#fff}

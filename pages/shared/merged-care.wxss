@@ -1,0 +1,29 @@
+.merged-care{margin-top:24rpx}
+.care-compact-heading{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8rpx;margin:26rpx 0 14rpx}
+.care-compact-heading>view{font-size:28rpx;font-weight:600;color:#433e39}
+.care-compact-heading>text{font-size:22rpx;color:#786f67}
+.care-compact-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10rpx}
+.care-compact-item{padding:18rpx 14rpx;border-radius:16rpx;background:#f2f0eb;min-width:0}
+.care-compact-item>view{display:flex;align-items:center;justify-content:space-between;gap:4rpx;font-size:26rpx;font-weight:500;color:#45403a}
+.care-compact-item>view>text{font-size:25rpx;color:#9a8e83}
+.care-compact-item>text{display:block;margin-top:9rpx;font-size:22rpx;line-height:1.5;color:#6e7663;overflow-wrap:break-word}
+.care-compact-item.needs-attention{background:#fff0e4}
+.care-compact-item>.today,.care-compact-item>.overdue{color:#aa5438;font-weight:600}
+.care-compact-list{padding:0 20rpx;background:#fff;border-radius:20rpx}
+.care-compact-row{display:flex;align-items:center;gap:14rpx;min-height:84rpx;padding:12rpx 0;box-sizing:border-box}
+.care-compact-row+.care-compact-row{border-top:1rpx solid #f0ebe6}
+.care-compact-row>view{flex:1;min-width:0;font-size:26rpx;color:#49413a}
+.care-compact-row>text{font-size:23rpx;color:#786f67;max-width:52%;text-align:right;line-height:1.5}
+.care-compact-row>text:last-child{font-size:28rpx;color:#a5998e}
+.care-compact-row:active,.care-compact-item:active{opacity:.7}
+@media(max-width:360px){.care-compact-grid{gap:8rpx}.care-compact-item{padding:16rpx 10rpx}.care-compact-row{gap:8rpx}}
+.merged-care .care-dashboard{border:1rpx solid #eee3dc;border-radius:24rpx;background:#fff;box-shadow:none}
+.merged-care .care-plan-icon{border-radius:14rpx;background:#fff1e7;color:#a36a4f}
+.merged-care .care-advisor-entry{display:flex;align-items:center;gap:18rpx;padding:22rpx;border:1rpx solid #f0ded2;border-radius:24rpx;background:#fff3e9}
+.merged-care .care-advisor-icon{display:flex;align-items:center;justify-content:center;width:60rpx;height:60rpx;flex:none;border-radius:18rpx;background:#fff}
+.merged-care .care-advisor-icon .warm-icon{width:34rpx;height:34rpx}
+.merged-care .care-advisor-entry>view:nth-child(2){flex:1;min-width:0}
+.merged-care .care-advisor-entry>view>view{font-size:27rpx;font-weight:600}
+.merged-care .care-advisor-entry>view>text{display:block;margin-top:5rpx;font-size:22rpx;line-height:1.5;color:#897268}
+.merged-care .care-advisor-entry>text{color:#b68b72;font-size:30rpx}
+.merged-care .care-footer{padding:16rpx 4rpx;color:var(--muted);font-size:21rpx;line-height:1.6}

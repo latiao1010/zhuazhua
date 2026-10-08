@@ -35,7 +35,13 @@ Page({
     const end = preset ? today : this.data.end
     const care = store.get('care')
     let showDemoSwitch = false
-    try { showDemoSwitch = wx.getAccountInfoSync().miniProgram.envVersion === 'develop' } catch (_) {}
+    try {
+      const envVersion = wx.getAccountInfoSync().miniProgram.envVersion
+      showDemoSwitch = envVersion !== 'release'
+    } catch (_) {
+      // 开发者工具未登录时 getAccountInfoSync 可能失败，仍保留本地演示数据入口。
+      showDemoSwitch = true
+    }
     this.setData({ demo: store.isDemoMode(), showDemoSwitch, today, start, end, careItems: Object.keys(careLabels).map(key => ({ key, label: careLabels[key], date: care[key] || '未设置' })) })
     this.refreshSync()
     this.loadRemoteChanges()
@@ -96,6 +102,11 @@ Page({
     if (this.data.syncing || cloudData.getSyncStatus().status === 'syncing') return wx.showToast({ title:'请等待同步完成', icon:'none' })
     const enabled = e.detail.value
     store.setDemoMode(enabled)
+    wx.reLaunch({ url:'/pages/profile/profile' })
+  },
+  loadDemoData() {
+    if (this.data.syncing) return
+    store.setDemoMode(true)
     wx.reLaunch({ url:'/pages/profile/profile' })
   },
   refreshVisitCount() {

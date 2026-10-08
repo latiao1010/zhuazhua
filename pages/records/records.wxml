@@ -1,6 +1,6 @@
 <view class="page records-page">
   <view class="records-heading"><view><view class="eyebrow">{{pet.name}}的日常</view><view class="page-title">记录</view></view><text>{{today}}</text></view>
-  <view class="records-intro">随手记下今天，也能回顾每一次变化。</view>
+  <view class="records-intro">点卡片看历史与趋势，点「＋」添加记录。</view>
   <view class="records-readonly" wx:if="{{readOnly}}">当前为只读查看，可以查看记录与趋势。</view>
   <view class="record-overview-grid">
     <view class="record-overview {{item.tone}}" wx:for="{{records}}" wx:key="key">
@@ -8,7 +8,6 @@
         <view class="record-overview-title">{{item.label}}<text>›</text></view>
         <view class="record-overview-value">{{item.count ? item.total : '—'}}<text>{{item.unit}}</text></view>
         <text class="record-overview-caption">{{item.count ? '今天已记录 ' + item.count + ' 次' : '今天还没有记录'}}</text>
-        <view class="record-overview-history">{{item.historyCount ? '查看 ' + item.historyCount + ' 条记录与趋势' : '查看记录与趋势'}}</view>
       </view>
       <button wx:if="{{!readOnly}}" data-type="{{item.key}}" bindtap="addRecord">＋ 记{{item.label}}</button>
     </view>
