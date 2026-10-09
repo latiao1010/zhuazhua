@@ -7,9 +7,12 @@
     <view class="care-compact-item {{careView.dental.attentionClass}}" data-key="dental" bindtap="openCareDetail"><view>刷牙<text>›</text></view><text class="{{careView.dental.countdownClass}}">{{careView.dental.countdown}}</text></view>
     <view class="care-compact-item {{careView.nail.attentionClass}}" data-key="nail" bindtap="openCareDetail"><view>剪指甲<text>›</text></view><text class="{{careView.nail.countdownClass}}">{{careView.nail.countdown}}</text></view>
   </view>
-  <view class="care-compact-heading"><view>用品与咨询</view></view>
+  <view class="care-compact-heading"><view>用品储备</view></view>
   <view class="care-compact-list">
     <view class="care-compact-row" data-key="dogFood" bindtap="openSupply"><view>狗粮余量</view><text>{{supplyView.dogFood.daysText}}</text><text>›</text></view>
     <view class="care-compact-row" data-key="snack" bindtap="openSupply"><view>零食余量</view><text>{{supplyView.snack.daysText}}</text><text>›</text></view>
-    <view class="care-compact-row" bindtap="openAdvisor"><view>养护问答</view><text>结合日常记录给建议</text><text>›</text></view>
+  </view>
+  <view class="care-advisor-heading"><view>养护问答</view><text>根据记录获取建议</text></view>
+  <view class="care-advisor-card" style="{{advisorStyle}}" bindtap="openAdvisor" catchtouchstart="startAdvisorDrag" catchtouchmove="moveAdvisorDrag" catchtouchend="endAdvisorDrag" aria-label="养护问答">
+    <view class="care-advisor-copy"><view>专属养护建议</view></view><text class="care-advisor-arrow">›</text>
   </view>

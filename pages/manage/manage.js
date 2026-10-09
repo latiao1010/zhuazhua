@@ -147,20 +147,20 @@ Page({
     this.setData({
       summaryText:summary.buildSummary(this.data.start, this.data.end, options),
       summaryHeader:report.header,
-      summarySections:report.sections.map(section => ({ key:section.key, label:section.label, count:section.count, expanded:expanded.has(section.key), visibleCount:20, entries:expanded.has(section.key) ? section.entries.slice(0, 20) : [] }))
+      summarySections:report.sections.map(section => ({ key:section.key, label:section.label, count:section.count, expanded:expanded.has(section.key), visibleCount:5, entries:expanded.has(section.key) ? section.entries.slice(0, 5) : [] }))
     })
   },
   toggleSummarySection(e) {
     const key = e.currentTarget.dataset.key
     const source = (this._visitSections || []).find(section => section.key === key)
     if (!source) return
-    this.setData({ summarySections:this.data.summarySections.map(section => section.key === key ? { ...section, expanded:!section.expanded, visibleCount:20, entries:section.expanded ? [] : source.entries.slice(0, 20) } : section) })
+    this.setData({ summarySections:this.data.summarySections.map(section => section.key === key ? { ...section, expanded:!section.expanded, visibleCount:5, entries:section.expanded ? [] : source.entries.slice(0, 5) } : section) })
   },
   moreSummaryRecords(e) {
     const key = e.currentTarget.dataset.key
     const source = (this._visitSections || []).find(section => section.key === key)
     if (!source) return
-    this.setData({ summarySections:this.data.summarySections.map(section => section.key === key ? { ...section, visibleCount:section.visibleCount + 20, entries:source.entries.slice(0, section.visibleCount + 20) } : section) })
+    this.setData({ summarySections:this.data.summarySections.map(section => section.key === key ? { ...section, visibleCount:section.visibleCount + 5, entries:source.entries.slice(0, section.visibleCount + 5) } : section) })
   },
   generateSummary() {
     if (!this.refreshVisitCount()) return wx.showToast({ title:this.data.rangeError || '该时间段暂无记录，请调整日期', icon:'none' })

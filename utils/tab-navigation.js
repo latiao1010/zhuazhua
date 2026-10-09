@@ -1,11 +1,11 @@
 // One-shot destinations for tab navigation (switchTab cannot carry query data).
 const ROUTES = {
   today: '/pages/profile/profile', records: '/pages/records/records',
-  care: '/pages/account/account', account: '/pages/account/account'
+  care: '/pages/records/records', account: '/pages/account/account'
 }
 const targets = {}
 function openTab(name, target) {
-  if (name === 'care') { name = 'account'; target = target || 'care-overview' }
+  if (name === 'care') { name = 'records'; target = target || 'care-overview' }
   if (!ROUTES[name]) return
   if (target) targets[name] = target
   else delete targets[name]
@@ -15,7 +15,7 @@ function openTab(name, target) {
   } })
 }
 function takeTarget(name) {
-  if (name === 'care') name = 'account'
+  if (name === 'care') name = 'records'
   const target = targets[name]
   delete targets[name]
   return target

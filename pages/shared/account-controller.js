@@ -47,7 +47,11 @@ const PROFILE_FIELDS = {
   breed: { title: '品种' },
   sex: { title: '性别' },
   weight: { title: '体重' },
-  birthday: { title: '生日' }
+  birthday: { title: '生日' },
+  chipId: { title: '芯片号' },
+  neutered: { title: '绝育状态' },
+  allergies: { title: '过敏史' },
+  clinic: { title: '常用医院' }
 }
 
 const BREED_OPTIONS = ['柯基', '金毛', '拉布拉多', '泰迪', '贵宾', '比熊', '博美', '柴犬', '边牧', '萨摩耶', '哈士奇', '雪纳瑞', '法斗', '英斗', '巴哥', '吉娃娃', '约克夏', '腊肠犬', '马尔济斯', '中华田园犬', '混血犬', '橘猫', '狸花猫', '英短', '美短', '布偶', '暹罗', '缅因猫', '加菲猫', '其他']
@@ -303,6 +307,14 @@ return {
   },
   openAdvisor() { wx.navigateTo({ url: '/pages/chat/chat' }) },
   openDataManager() { wx.navigateTo({ url: '/pages/manage/manage' }) },
+  refreshCareOverview() {
+    const careDraft = store.normalizeCareSchedule(store.get('care'))
+    const supplies = store.normalizeSupplies(store.get('supplies'))
+    const share = cloudData.getShareStatus()
+    this.setData({ careDraft, careView: buildCareView(careDraft), careRecords: store.get('careRecords'),
+      supplies, supplyView: buildSupplyView(supplies, store.get('feeds')),
+      shareReadOnly: !(store.isDemoMode && store.isDemoMode()) && !!share.shared && share.role === 'viewer' })
+  },
   onShow() {
     this.setData({ pageVisible:true })
     showNativeTabBar()
@@ -321,8 +333,9 @@ return {
     const shareRole = shareStatus.role || 'owner'
     this.setData({ pet, draft, profileEditOpen: false, careDraft, careView: buildCareView(careDraft), careRecords: store.get('careRecords'), careDetailOpen: false, careMenuOpen: false, careSubView: '', selectedCare: {}, selectedCareRecords: [], selectedRecordDate: today, selectedMonth: today.slice(0, 7), selectedMonthText: monthText(today.slice(0, 7)), careCalendar: [], supplies, supplyView, supplyOpen: false, selectedSupplyKey: '', selectedSupply: {}, supplyDraft: {}, supplyHistory: [], growthPhotos, growthAlbumOpen: false, uploadingGrowthPhotos: false, newAvatarTemp: '', saving: false, changed: false, today, sexIndex: draft.sex === '女孩' ? 1 : 0, profileFieldEditOpen: false, profileField: '', profileFieldTitle: '', profileFieldValue: '', profileFieldSexIndex: draft.sex === '女孩' ? 1 : 0, profileFieldBreedIndex: Math.max(0, breedOptions.indexOf(draft.breed)), breedOptions, weightPickerRanges: WEIGHT_PICKER_RANGES, weightPickerValue: buildWeightPickerValue(draft.weight), profileFieldSaving: false, familyMembers, familyOpen: false, familyInviteCode: this.data.familyInviteCode || shortInviteCode(pet.name), familyDraftOpen: false, familyDraft: {}, familyEditingIndex: -1, familyRoleIndex: 0, familyRelationIndex: 0, familySaving: false, familyInviteLoading: false, pendingShareCode, shareShared: !!shareStatus.shared, shareRole, shareRoleLabel: FAMILY_ROLE_LABELS[shareRole] || '主人', shareReadOnly: !!shareStatus.shared && shareRole === 'viewer' })
     if (pendingShareCode) this.promptAcceptShare(pendingShareCode)
-    const target = require('../../utils/tab-navigation').takeTarget(options.careOnly ? 'care' : 'account')
+    const target = require('../../utils/tab-navigation').takeTarget(options.tabName || (options.careOnly ? 'care' : 'account'))
     if (target && CARE_TYPES[target]) this.openCareDetail({ currentTarget: { dataset: { key: target } } })
+    if (target && SUPPLY_TYPES[target]) this.openSupply({ currentTarget: { dataset: { key: target } } })
     if (target === 'care-overview') wx.nextTick(() => wx.pageScrollTo({ selector: '#care-overview', duration: 200 }))
     if (!options.careOnly && target === 'weight') this.openProfileFieldEdit({ currentTarget: { dataset: { field: 'weight' } } })
   },
@@ -788,6 +801,8 @@ return {
       if (!isValidDateKey(raw) || raw > this.data.today) return wx.showToast({ title: '请选择正确的生日', icon: 'none' })
       patch.birthday = raw
       if (!this.data.pet.togetherSince || this.data.pet.togetherSince < raw) patch.togetherSince = raw
+    } else if (['chipId', 'neutered', 'allergies', 'clinic'].includes(field)) {
+      patch[field] = raw || (field === 'neutered' ? '未设置' : '未填写')
     }
     this.setData({ profileFieldSaving: true })
     return this.saveProfilePatch(patch)
@@ -834,6 +849,12 @@ return {
     this.setData({ careDetailOpen: false, careMenuOpen: false, careSubView: '' })
     showNativeTabBar()
   },
+  startAdvisorDrag(e) {
+    const touch = e.touches && e.touches[0]
+    if (touch) this._advisorDrag = { x: touch.clientX, y: touch.clientY }
+  },
+  moveAdvisorDrag() {},
+  endAdvisorDrag() { this._advisorDrag = null },
   noop() {},
   backCareView() {
     this.closeCareDetail()

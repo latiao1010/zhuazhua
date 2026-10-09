@@ -2,6 +2,7 @@ const store = require('../../utils/store')
 const cloudData = require('../../utils/cloud-data')
 const { buildWeightTrend } = require('../../utils/weight-trend')
 const { openTab } = require('../../utils/tab-navigation')
+const carePage = require('../shared/account-controller')({ careOnly: true, tabName: 'records' })
 
 const TYPES = [
   { key: 'feed', storeKey: 'feeds', label: '喂食', field: 'amount', unit: 'g', tone: 'peach' },
@@ -11,16 +12,18 @@ const TYPES = [
 ]
 const number = value => Number((String(value == null ? '' : value).match(/[\d.]+/) || [0])[0]) || 0
 Page({
-  data: { pet: {}, records: [], today: '', readOnly: false, weightTrendOpen: false, weightTrend: {}, weightCount: 0 },
+  ...carePage,
+  data: { ...carePage.data, pet: {}, records: [], today: '', readOnly: false, weightTrendOpen: false, weightTrend: {}, weightCount: 0, advisorStyle: '' },
   onShow() {
+    carePage.onShow.call(this)
     this.visible = true
-    if (wx.showTabBar) wx.showTabBar({ animation: false })
     this.refresh()
     cloudData.syncOnResume().then(() => { if (this.visible) this.refresh() }).catch(() => {})
   },
-  onHide() { this.visible = false; this.setData({ weightTrendOpen: false }) },
+  onHide() { this.visible = false; carePage.onHide.call(this); this.setData({ weightTrendOpen: false, careDetailOpen: false, supplyOpen: false }) },
   onUnload() { this.visible = false },
   refresh() {
+    this.refreshCareOverview()
     const today = store.todayKey()
     const pet = store.get('pet')
     const share = cloudData.getShareStatus()
@@ -51,5 +54,32 @@ Page({
   closeWeightTrend() { this.setData({ weightTrendOpen: false }) },
   editWeight() { if (!this.data.readOnly) openTab('account', 'weight') },
   openVisitData() { wx.navigateTo({ url: '/pages/manage/manage' }) },
+  startAdvisorDrag(e) {
+    const touch = e.touches && e.touches[0]
+    if (!touch) return
+    this._advisorDrag = { ...this._advisorPosition, x: touch.clientX, y: touch.clientY, moved: false }
+  },
+  moveAdvisorDrag(e) {
+    const drag = this._advisorDrag
+    const touch = e.touches && e.touches[0]
+    if (!drag || !touch) return
+    const dx = touch.clientX - drag.x
+    const dy = touch.clientY - drag.y
+    if (Math.abs(dx) + Math.abs(dy) < 4) return
+    drag.moved = true
+    const info = wx.getWindowInfo ? wx.getWindowInfo() : { windowWidth: 375, windowHeight: 667 }
+    const scale = info.windowWidth / 750
+    const cardWidth = 212 * scale
+    const cardHeight = 70 * scale
+    const left = Math.max(8, Math.min(info.windowWidth - cardWidth - 8, (drag.left == null ? info.windowWidth - cardWidth - 28 * scale : drag.left) + dx))
+    const top = Math.max(8, Math.min(info.windowHeight - cardHeight - 8, (drag.top == null ? info.windowHeight - cardHeight - 112 * scale : drag.top) + dy))
+    drag.left = left
+    drag.top = top
+    drag.x = touch.clientX
+    drag.y = touch.clientY
+    this._advisorPosition = { left, top }
+    this.setData({ advisorStyle: `left:${left}px;top:${top}px;right:auto;bottom:auto;` })
+  },
+  endAdvisorDrag() { this._advisorDrag = null },
   noop() {}
 })

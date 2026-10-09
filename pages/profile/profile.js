@@ -275,40 +275,112 @@ function buildWeatherTip(weather) {
   return '外出带好牵绳和饮水'
 }
 
-function buildRecentFindings(waters, stools, rangeDays) {
+function buildRecentOverview({ feeds, waters, walks, stools, careSchedule, supplies, rangeDays, feedGoal, waterGoal }) {
   const today = store.todayKey()
   const start = offsetDateKey(-(rangeDays - 1))
   const inRange = item => item.dayKey >= start && item.dayKey <= today
-  const waterRecords = (waters || []).filter(item => inRange(item) && numberFromText(item.amount) > 0)
-  const waterDays = new Set(waterRecords.map(item => item.dayKey)).size
-  const total = Math.round(waterRecords.reduce((sum, item) => sum + numberFromText(item.amount), 0) * 10) / 10
-  const average = waterDays ? Math.round(total / waterDays) : 0
+  const minimumRecordedDays = Math.max(3, Math.ceil(rangeDays * 0.7))
+  const items = []
+  const normalLabels = []
+
+  const add = item => {
+    items.push(item)
+    if (item.tone !== 'attention') normalLabels.push(item.label)
+  }
+
+  const summarizeRecord = ({ id, target, label, records, goal, lower = 0.7, upper = 1.4 }) => {
+    const recordedDays = new Set(records.map(item => item.dayKey)).size
+    const totalAmount = records.reduce((sum, item) => sum + numberFromText(item.amount), 0)
+    const average = recordedDays ? totalAmount / recordedDays : 0
+    const common = { id, target, label, icon: id, recordedDays, missingDays: rangeDays - recordedDays }
+
+    if (!recordedDays) {
+      return add({
+        ...common, tone: 'attention', title: `近 ${rangeDays} 天暂无${label}记录`, compactTitle: '待补充记录',
+        compactSummary: '先记下一次，才能判断趋势', text: `近 ${rangeDays} 天还没有保存${label}记录。`, note: '建议从下一次开始补充记录'
+      })
+    }
+    if (recordedDays < minimumRecordedDays) {
+      return add({
+        ...common, tone: 'attention', title: `近 ${rangeDays} 天${label}记录不完整`, compactTitle: '记录不完整',
+        compactSummary: `有 ${rangeDays - recordedDays} 天未记录`, text: `近 ${rangeDays} 天仅记录了 ${recordedDays} 天，暂不建议据此判断趋势。`, note: '补充记录后会给出更可靠的概况'
+      })
+    }
+    if (goal && average < goal * lower) {
+      return add({
+        ...common, tone: 'attention', title: `近期${label}偏少`, compactTitle: '偏少，需留意',
+        compactSummary: '日均低于已设置目标', text: `近 ${rangeDays} 天的日均${label}低于已设置目标。`, note: id === 'water' ? '注意少量多次补水；持续偏少可结合精神和排尿情况观察' : '留意食欲和精神状态，持续偏少可咨询兽医'
+      })
+    }
+    if (goal && average > goal * upper) {
+      return add({
+        ...common, tone: 'attention', title: `近期${label}偏多`, compactTitle: '偏多，需留意',
+        compactSummary: '日均高于已设置目标', text: `近 ${rangeDays} 天的日均${label}高于已设置目标。`, note: id === 'water' ? '若饮水量突然明显增加，建议继续观察并咨询兽医' : '可回顾零食和加餐，结合体重变化调整'
+      })
+    }
+    return add({
+      ...common, tone: 'mint', title: `近期${label}正常`, compactTitle: '正常',
+      compactSummary: `近 ${rangeDays} 天记录趋势平稳`, text: `近 ${rangeDays} 天${label}记录趋势平稳。`, note: '已按保存记录汇总'
+    })
+  }
+
+  summarizeRecord({ id: 'feed', target: 'feed', label: '饮食', records: (feeds || []).filter(item => inRange(item) && numberFromText(item.amount) > 0), goal: Number(feedGoal) })
+  summarizeRecord({ id: 'water', target: 'water', label: '饮水', records: (waters || []).filter(item => inRange(item) && numberFromText(item.amount) > 0), goal: Number(waterGoal) })
+  summarizeRecord({ id: 'walk', target: 'walk', label: '散步', records: (walks || []).filter(item => inRange(item) && numberFromText(item.duration) > 0), goal: 0 })
+
   const stoolRecords = (stools || []).filter(inRange)
   const stoolDays = new Set(stoolRecords.map(item => item.dayKey)).size
-  const abnormalCount = stoolRecords.filter(item => item.abnormal).length
-  return [
-    {
-      id: 'water', target: 'water', label: '饮水', icon: 'water', tone: 'mint',
-      title: waterDays ? `记录日均 ${average} ml` : `近 ${rangeDays} 天暂无饮水记录`,
-      compactTitle: waterDays ? `日均 ${average} ml` : '暂无记录',
-      compactSummary: `已记录 ${waterDays}/${rangeDays} 天`,
-      text: `累计 ${total} ml · 已记录 ${waterDays}/${rangeDays} 天`,
-      note: waterDays < rangeDays ? `${rangeDays - waterDays} 天未记录，不计入日均` : '日均按有记录的天数计算',
-      total, average, recordedDays: waterDays, missingDays: rangeDays - waterDays
-    },
-    {
-      id: 'stool', target: 'stool', label: '排便', icon: 'record', tone: abnormalCount ? 'attention' : 'mint',
-      title: stoolRecords.length ? `${stoolRecords.length} 次记录 · ${abnormalCount} 次标记异常` : `近 ${rangeDays} 天暂无排便记录`,
-      compactTitle: stoolRecords.length ? (abnormalCount ? `${abnormalCount} 次标记异常` : '未标记异常') : '暂无记录',
-      compactSummary: `共 ${stoolRecords.length} 次 · ${stoolDays}/${rangeDays} 天`,
-      text: `已记录 ${stoolDays}/${rangeDays} 天`,
-      note: abnormalCount ? '查看记录中的形态、颜色和备注' : '仅汇总已保存记录，不代表健康判断',
-      recordedDays: stoolDays, abnormalCount
+  const abnormalRecords = stoolRecords.filter(item => item.abnormal)
+  const abnormalCount = abnormalRecords.length
+  if (abnormalCount) {
+    const latestAbnormal = abnormalRecords.slice().sort((a, b) => `${b.dayKey || ''} ${b.time || ''}`.localeCompare(`${a.dayKey || ''} ${a.time || ''}`))[0]
+    const latestDetail = [shortDate(latestAbnormal.dayKey), latestAbnormal.condition, latestAbnormal.color].filter(Boolean).join(' · ')
+    add({ id: 'stool', target: 'stool', label: '排便', tone: 'attention', title: '近期排便有异常记录', compactTitle: `${abnormalCount} 次需留意`, compactSummary: latestDetail || '查看异常记录详情', text: `近 ${rangeDays} 天有 ${abnormalCount} 次排便记录标记异常。`, note: '可查看形态、颜色和备注；持续异常或伴随呕吐、无力时尽快咨询兽医' })
+  } else if (stoolDays < minimumRecordedDays) {
+    add({ id: 'stool', target: 'stool', label: '排便', tone: 'attention', title: `近 ${rangeDays} 天排便记录不完整`, compactTitle: '记录不完整', compactSummary: `有 ${rangeDays - stoolDays} 天未记录`, text: `近 ${rangeDays} 天仅记录了 ${stoolDays} 天排便情况。`, note: '补充记录后会给出更可靠的概况' })
+  } else {
+    add({ id: 'stool', target: 'stool', label: '排便', tone: 'mint', title: '近期排便正常', compactTitle: '正常', compactSummary: `近 ${rangeDays} 天记录趋势平稳`, text: `近 ${rangeDays} 天排便记录趋势平稳。`, note: '已按保存记录汇总' })
+  }
+
+  const medicineDays = careSchedule && careSchedule.medicine ? daysUntil(careSchedule.medicine) : null
+  if (Number.isFinite(medicineDays) && careSchedule.medicineLast !== today) {
+    if (medicineDays <= 3) {
+      const compactTitle = medicineDays < 0 ? `已超期 ${Math.abs(medicineDays)} 天` : medicineDays === 0 ? '今天需要用药' : `${medicineDays} 天后用药`
+      add({ id: 'medicine', target: 'care', key: 'medicine', label: '用药', tone: 'attention', title: '用药计划需要留意', compactTitle, compactSummary: careSchedule.medicine, text: medicineDays < 0 ? `用药计划已超期 ${Math.abs(medicineDays)} 天。` : `用药计划将在 ${medicineDays} 天后到期。`, note: '请按已设置的用药计划安排；不确定时先咨询兽医' })
+    } else {
+      add({ id: 'medicine', target: 'care', key: 'medicine', label: '用药', tone: 'mint', title: '用药计划正常', compactTitle: '正常', compactSummary: '近期无需处理', text: '当前用药计划暂无临近事项。', note: '已按设置的计划检查' })
     }
-  ]
+  }
+
+  const supplyConfigs = [{ key: 'dogFood', label: '狗粮余量' }, { key: 'snack', label: '零食余量' }]
+  supplyConfigs.forEach(config => {
+    const supply = supplies && supplies[config.key]
+    const packageAmount = Number(supply && supply.packageAmount)
+    if (!supply || !supply.openedDate || !packageAmount) return
+    const consumedRecords = (feeds || []).filter(item => item.dayKey >= supply.openedDate && item.dayKey <= today && (config.key === 'snack' ? item.type === '零食' : item.type !== '零食'))
+    const consumed = consumedRecords.reduce((sum, item) => sum + numberFromText(item.amount), 0)
+    const recordedDays = new Set(consumedRecords.map(item => item.dayKey)).size
+    const remaining = Math.max(0, Math.round(packageAmount - consumed))
+    const dailyAverage = recordedDays ? consumed / recordedDays : 0
+    const daysLeft = dailyAverage ? Math.max(0, Math.ceil(remaining / dailyAverage)) : null
+    if (remaining === 0 || (daysLeft !== null && daysLeft <= 7)) {
+      const compactTitle = remaining === 0 ? '建议补货' : `约剩 ${daysLeft} 天`
+      add({ id: `supply-${config.key}`, target: 'account', label: config.label, tone: 'attention', title: `${config.label}需要补货`, compactTitle, compactSummary: `剩余约 ${remaining}g`, text: remaining === 0 ? `${config.label}已按保存的喂食记录用完。` : `${config.label}预计还能使用 ${daysLeft} 天，剩余约 ${remaining}g。`, note: '可到“记录”里记录新包装或查看余量估算' })
+    } else if (daysLeft !== null) {
+      add({ id: `supply-${config.key}`, target: 'account', label: config.label, tone: 'mint', title: `${config.label}正常`, compactTitle: '正常', compactSummary: '余量充足', text: `${config.label}余量目前充足。`, note: '已按已保存的喂食记录估算' })
+    }
+  })
+
+  const alerts = items.filter(item => item.tone === 'attention')
+  return {
+    items,
+    alerts,
+    normalText: normalLabels.length ? `近期正常：${normalLabels.join('、')}` : '',
+    emptyText: alerts.length ? '' : '近期没有需要特别留意的事项'
+  }
 }
 
-function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, careRecords, weather, rangeDays = 7 }) {
+function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, careRecords, supplies, weather, rangeDays = 7 }) {
   const now = new Date()
   const today = store.todayKey()
   const todayRecords = records => (records || []).filter(item => item.dayKey === today)
@@ -320,6 +392,7 @@ function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, c
   const todayWater = total(todayWaters, 'amount')
   const waterTarget = Number(store.get('waterGoal')) || Math.round((Number(pet.weight) || 0) * 55)
   const abnormalCount = todayStools.filter(item => item.abnormal).length
+  const recentOverview = buildRecentOverview({ feeds, waters, walks, stools, careSchedule, supplies, rangeDays, feedGoal: store.get('feedGoal'), waterGoal: waterTarget })
   return {
     greeting: getGreeting(now.getHours()),
     dateLabel: `${now.getMonth() + 1}月${now.getDate()}日 · 星期${'日一二三四五六'[now.getDay()]}`,
@@ -331,7 +404,8 @@ function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, c
     ],
     careReminders: buildCareFindings(careSchedule, careRecords),
     weatherTip: buildWeatherTip(weather),
-    findings: buildRecentFindings(waters, stools, rangeDays),
+    findings: recentOverview.items,
+    recentOverview,
     knowledge: getPersonalizedKnowledge({ now, pet, weather, todayStools, todayWater, waterRecordCount: todayWaters.length })
   }
 }
@@ -342,7 +416,7 @@ Page({
     todayFeeds: [], todayFeedCount: 0, todayFeedTotal: 0, todayStools: [], todayStoolCount: 0, todayStoolAbnormalCount: 0, todayStoolStatus: '等待记录', waterTarget: 0, birthdayDays: 0, nextAge: 0, birthdayLabel: '',
     weatherLoading: false, weather: weatherService.emptyWeather(),
     seasonName: '', seasonTip: '', lifeStage: '', healthTips: [],
-    homeDashboard: { greeting: '', dateLabel: '', statusCards: [], careReminders: [], weatherTip: '', findings: [], knowledge: { detail: [] } },
+    homeDashboard: { greeting: '', dateLabel: '', statusCards: [], careReminders: [], weatherTip: '', findings: [], recentOverview: { alerts: [], normalText: '', emptyText: '' }, knowledge: { detail: [] } },
     insightRange: 7, demoMode: false, readOnly: false, careRemindersOpen: false, recentOpen: false, largeText: false,
     discoverySlides: DISCOVERY_SLIDES, discoveryIndex: 0
   },
@@ -414,6 +488,7 @@ Page({
     const waters = store.get('waters')
     const walks = store.get('walks')
     const careRecords = store.get('careRecords')
+    const supplies = store.get('supplies')
     const feedSummary = buildTodayFeeds(feeds)
     const todayFeedCount = feedSummary.todayFeeds.length
     const stoolSummary = buildTodayStools(stools)
@@ -425,7 +500,7 @@ Page({
     const careSchedule = store.normalizeCareSchedule(store.get('care'))
     const health = getHealthTips(pet, months / 12, careSchedule)
     const weightTrend = buildWeightTrend(store.get('weightRecords'), pet.weight, store.todayKey())
-    const homeDashboard = buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, careRecords, weather: this.data.weather, rangeDays: this.data.insightRange || 7 })
+    const homeDashboard = buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, careRecords, supplies, weather: this.data.weather, rangeDays: this.data.insightRange || 7 })
     const syncStatus = cloudData.getSyncStatus ? cloudData.getSyncStatus() : {}
     const shareStatus = cloudData.getShareStatus ? cloudData.getShareStatus() : {}
     const demoMode = !!(store.isDemoMode && store.isDemoMode())
@@ -499,9 +574,13 @@ Page({
     this.goDailyRecord(status.action || 'feed')
   },
   openFinding(event) {
-    const finding = this.data.homeDashboard.findings[Number(event.currentTarget.dataset.index)]
+    const id = event.currentTarget.dataset.id
+    const finding = id ? this.data.homeDashboard.findings.find(item => item.id === id) : this.data.homeDashboard.findings[Number(event.currentTarget.dataset.index)]
     if (!finding) return
     this.setData({ recentOpen: false })
+    if (finding.target === 'care') return tabNavigation.openTab('care', finding.key)
+    if (finding.target === 'account' && finding.id.startsWith('supply-')) return tabNavigation.openTab('records', finding.id.slice(7))
+    if (finding.target === 'account') return tabNavigation.openTab('account')
     this.goDailyRecord(finding.target)
   },
   openRecent() { this.refresh(); this.setData({ recentOpen: true }) },

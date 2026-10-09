@@ -61,14 +61,14 @@
 
   <view class="home-recent">
     <view class="home-section-head recent-heading"><view>近期情况</view><view class="insight-range-switch"><button class="home-button {{insightRange === 7 ? 'active' : ''}}" data-range="7" bindtap="setInsightRange">7 天</button><button class="home-button {{insightRange === 14 ? 'active' : ''}}" data-range="14" bindtap="setInsightRange">14 天</button></view></view>
-    <view class="recent-findings">
-      <button class="home-button finding-card finding-card-{{item.id}} {{item.tone === 'attention' ? 'finding-attention' : ''}}" wx:for="{{homeDashboard.findings}}" wx:key="id" data-index="{{index}}" bindtap="openFinding" hover-class="home-pressed" aria-label="{{item.label + '，' + item.title + '，' + item.text + '，' + item.note + '，点击查看记录'}}">
-        <view class="finding-heading"><text class="finding-label">{{item.label}}</text><text>›</text></view>
-        <view class="finding-title {{item.tone === 'attention' ? 'attention-text' : ''}}">{{item.compactTitle}}</view>
-        <text class="finding-summary">{{item.compactSummary}}</text>
+    <button class="home-button recent-normal-bar" wx:if="{{homeDashboard.recentOverview.normalText}}" bindtap="openRecent" hover-class="home-pressed"><text>✓</text><text>{{homeDashboard.recentOverview.normalText}}</text><text>›</text></button>
+    <view class="recent-alert-list" wx:if="{{homeDashboard.recentOverview.alerts.length}}">
+      <button class="home-button recent-alert-bar" wx:for="{{homeDashboard.recentOverview.alerts}}" wx:key="id" data-id="{{item.id}}" bindtap="openFinding" hover-class="home-pressed" aria-label="{{item.label + '，' + item.title + '，' + item.text + '，点击查看详情'}}">
+        <view class="recent-alert-line"><text class="recent-alert-label">{{item.label}}</text><text class="recent-alert-title">{{item.compactTitle}}</text><text class="recent-alert-summary">：{{item.compactSummary}}</text></view><text>›</text>
       </button>
     </view>
-    <button class="home-button record-note" bindtap="openRecent">日均按有记录天数计算 · 查看摘要 ›</button>
+    <text class="recent-empty" wx:if="{{homeDashboard.recentOverview.emptyText}}">{{homeDashboard.recentOverview.emptyText}}</text>
+    <button class="home-button record-note" bindtap="openRecent">查看近 {{insightRange}} 天完整概况 ›</button>
   </view>
   <button class="home-button recent-compact-entry" bindtap="openRecent" hover-class="home-pressed"><text>近期情况</text><text>近 {{insightRange}} 天 · 查看摘要 ›</text></button>
 

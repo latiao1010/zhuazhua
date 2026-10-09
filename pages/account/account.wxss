@@ -16,6 +16,25 @@
 .care-plan-copy { min-width: 0; flex: 1; margin-left: 16rpx; }
 .care-divider { margin-left: 74rpx; }
 .privacy-note { margin: 18rpx 0 10rpx; color: #aca29a; text-align: center; font-size: 22rpx; }
+.account-page .care-compact-list { margin-top: 4rpx; border: 1rpx solid #eee3dc; border-radius: 24rpx; background: #fff; overflow: hidden; }
+.account-page .care-compact-row { min-height: 76rpx; padding: 14rpx 20rpx; }
+.account-page .care-compact-row + .care-compact-row { border-top-color: #f2ebe6; }
+.account-page { background: #fafcf9; color: #2f3e38; }
+.account-page .profile-cover.display-profile-card { background: #fafcf9; }
+.account-page .care-compact-heading { margin-top: 28rpx; margin-bottom: 12rpx; }
+.account-page .care-compact-heading>view { color: #403735; }
+.account-page .care-compact-list { border-color: #e9eee9; background: #fff; }
+.account-page .care-compact-row>view { color: #405b49; }
+.account-page .care-compact-row>text { color: #6f7d75; }
+.account-page .care-compact-row>text:last-child { color: #9eafa2; }
+.account-page .pet-meta view { border-color: #e1ebe2; background: #f0f4ee; color: #627367; }
+.account-page .birthday-chip { background: #eef4ee; }
+.pet-record-list { border:1rpx solid #e9eee9; border-radius:24rpx; background:#fff; overflow:hidden; }
+.pet-record-row { display:flex; align-items:center; gap:12rpx; min-height:72rpx; padding:12rpx 20rpx; border-bottom:1rpx solid #eef2ed; }
+.pet-record-row:last-child { border-bottom:0; }
+.pet-record-row>view { flex:1; min-width:0; color:#405b49; font-size:24rpx; }
+.pet-record-row>text { color:#6f7d75; font-size:21rpx; }
+.pet-record-row>text:last-child { color:#9eafa2; font-size:26rpx; }
 .care-plan-row { align-items: center; min-height: 82rpx; padding: 15rpx 0; }
 .care-plan-icon { margin-top: 0; }
 .care-plan-copy>view { font-size: 23rpx; font-weight: 600; }

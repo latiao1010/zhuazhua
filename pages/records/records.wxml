@@ -1,22 +1,39 @@
 <view class="page records-page">
-  <view class="records-heading"><view><view class="eyebrow">{{pet.name}}的日常</view><view class="page-title">记录</view></view><text>{{today}}</text></view>
-  <view class="records-intro">点卡片看历史与趋势，点「＋」添加记录。</view>
-  <view class="records-readonly" wx:if="{{readOnly}}">当前为只读查看，可以查看记录与趋势。</view>
-  <view class="record-overview-grid">
-    <view class="record-overview {{item.tone}}" wx:for="{{records}}" wx:key="key">
-      <view class="record-overview-link" data-type="{{item.key}}" bindtap="openDetail">
-        <view class="record-overview-title">{{item.label}}<text>›</text></view>
-        <view class="record-overview-value">{{item.count ? item.total : '—'}}<text>{{item.unit}}</text></view>
-        <text class="record-overview-caption">{{item.count ? '今天已记录 ' + item.count + ' 次' : '今天还没有记录'}}</text>
-      </view>
-      <button wx:if="{{!readOnly}}" data-type="{{item.key}}" bindtap="addRecord">＋ 记{{item.label}}</button>
+  <view class="records-header">
+    <view class="records-heading"><text class="records-kicker">日常照护手记</text><text class="records-date">{{today}}</text></view>
+    <view class="records-identity">
+      <view><view class="records-title">{{pet.name || '宠物'}}的记录</view><text class="records-subtitle">日常点滴，都在这里</text></view>
+      <image class="records-avatar" src="{{pet.avatar}}" mode="aspectFill" />
     </view>
   </view>
-  <view class="section-title">体重变化</view>
-  <view class="weight-entry card">
-    <view class="weight-entry-link" bindtap="openWeightTrend"><view><text>当前体重</text><view>{{pet.weight || '—'}}<text>kg</text></view></view><view><text>{{weightCount ? weightCount + ' 条体重记录' : '完善体重，开始记录变化'}}</text><view>查看最近趋势 ›</view></view></view>
-    <button wx:if="{{!readOnly}}" bindtap="editWeight">更新当前体重</button>
+  <view class="records-readonly" wx:if="{{readOnly}}">当前为只读查看，可以查看记录与趋势。</view>
+
+  <view class="weight-strip">
+    <button class="record-button weight-detail" bindtap="openWeightTrend" hover-class="record-pressed" aria-label="查看体重变化与历史记录">
+      <view class="weight-copy"><view>体重变化</view><text>{{weightCount ? weightCount + ' 条记录 · 查看趋势 ›' : '查看体重趋势 ›'}}</text></view>
+      <view class="weight-number">{{pet.weight || '—'}}<text>kg</text></view>
+    </button>
+    <button class="record-button weight-update" wx:if="{{!readOnly}}" bindtap="editWeight" hover-class="record-pressed">更新体重</button>
   </view>
-  <view class="records-export" bindtap="openVisitData"><view><view>整理就诊资料</view><text>按日期汇总记录，方便就诊时出示</text></view><text>›</text></view>
+
+  <view class="records-section-head"><view>今天的日常</view><text>{{readOnly ? '点项目查看历史' : '点 ＋ 添加记录'}}</text></view>
+  <view class="daily-ledger">
+    <view class="ledger-row" wx:for="{{records}}" wx:key="key">
+      <button class="record-button ledger-detail" data-type="{{item.key}}" bindtap="openDetail" hover-class="record-pressed" aria-label="{{item.label + '，' + (item.count ? item.total + item.unit : '未记录') + '，查看历史与趋势'}}">
+        <view class="ledger-heading"><view class="ledger-icon ledger-icon-{{item.key}}" aria-hidden="true"><view class="record-icon icon-{{item.key}}"></view></view><text>{{item.label}}</text><text class="ledger-chevron">›</text></view>
+        <view class="ledger-number {{item.count ? '' : 'ledger-empty'}}">{{item.count ? item.total : '—'}}<text wx:if="{{item.count}}">{{item.unit}}</text></view>
+        <text class="ledger-caption">{{item.count ? '今天已记 ' + item.count + ' 次' : '今天还没记录'}}</text>
+      </button>
+      <button class="record-button ledger-add" wx:if="{{!readOnly}}" data-type="{{item.key}}" bindtap="addRecord" hover-class="record-pressed" aria-label="添加{{item.label}}记录"><text>＋</text></button>
+    </view>
+  </view>
+
+  <view id="care-overview" class="records-care"><include src="../shared/care-overview.wxml" /></view>
+
+  <button class="record-button records-export" bindtap="openVisitData" hover-class="record-pressed">
+    <view class="export-icon" aria-hidden="true"><view class="record-icon icon-document"></view></view>
+    <view class="export-copy"><view>整理就诊资料</view><text>汇总日常记录，就诊时更好说明</text></view><text class="export-arrow">↗</text>
+  </button>
 </view>
 <include src="../shared/weight-sheet.wxml" />
+<include src="../shared/care-panels.wxml" />

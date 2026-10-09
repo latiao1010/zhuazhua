@@ -23,12 +23,17 @@
     </view>
   </view>
 
-  <view id="care-overview" class="merged-care"><include src="../shared/care-overview.wxml" /></view>
   <view class="care-compact-heading"><view>档案管理</view></view>
   <view class="care-compact-list">
     <view class="care-compact-row" bindtap="openGrowthAlbum"><view>成长相册</view><text>{{growthPhotos.length}} 张照片</text><text>›</text></view>
     <view class="care-compact-row" bindtap="openFamilyManager"><view>家庭共享</view><text>{{familyMembers.length}} 位成员</text><text>›</text></view>
-    <view class="care-compact-row" bindtap="openDataManager"><view>数据与就诊资料</view><text>›</text></view>
+  </view>
+  <view class="care-compact-heading"><view>宠物档案</view><text>点击项目补充资料</text></view>
+  <view class="pet-record-list">
+    <view class="pet-record-row" data-field="chipId" bindtap="openProfileFieldEdit"><view>芯片号</view><text>{{pet.chipId || '未填写'}}</text><text>›</text></view>
+    <view class="pet-record-row" data-field="neutered" bindtap="openProfileFieldEdit"><view>绝育状态</view><text>{{pet.neutered || '未设置'}}</text><text>›</text></view>
+    <view class="pet-record-row" data-field="allergies" bindtap="openProfileFieldEdit"><view>过敏史</view><text>{{pet.allergies || '未填写'}}</text><text>›</text></view>
+    <view class="pet-record-row" data-field="clinic" bindtap="openProfileFieldEdit"><view>常用医院</view><text>{{pet.clinic || '未填写'}}</text><text>›</text></view>
   </view>
   <view class="privacy-note">资料在本机缓存，并支持云端同步与家庭共享；照片可上传云端。</view>
 </view>
@@ -107,7 +112,7 @@
       <view>修改{{profileFieldTitle}}</view>
       <text bindtap="closeProfileFieldEdit">×</text>
     </view>
-    <input cursor-spacing="24" wx:if="{{profileField === 'name'}}" class="profile-field-input" value="{{profileFieldValue}}" focus="{{true}}" bindinput="onProfileFieldInput" placeholder="请输入{{profileFieldTitle}}" />
+    <input cursor-spacing="24" wx:if="{{profileField === 'name' || profileField === 'chipId' || profileField === 'neutered' || profileField === 'allergies' || profileField === 'clinic'}}" class="profile-field-input" value="{{profileFieldValue}}" focus="{{true}}" bindinput="onProfileFieldInput" placeholder="请输入{{profileFieldTitle}}" />
     <picker wx:elif="{{profileField === 'breed'}}" mode="selector" range="{{breedOptions}}" value="{{profileFieldBreedIndex}}" bindchange="onProfileFieldBreed">
       <view class="profile-field-picker">{{profileFieldValue}}<text>›</text></view>
     </picker>
