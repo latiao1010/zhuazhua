@@ -1,0 +1,49 @@
+{
+  "province": "安徽省",
+  "city": "铜陵市",
+  "search_query": "铜陵 宠物友好",
+  "collected_at": "2026-10-03",
+  "published_at": "2025-05-02",
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "历史游记；犁桥大犬准入冲突需复核，其他场地现行要求待确认。",
+  "comment_notes": [
+    "大通、永泉、西湖湿地、滨江公园等未实际到访，不扩成已到访记录。"
+  ],
+  "id": "68144828000000002300c2fe",
+  "title": "铜陵宝藏小城带狗游",
+  "author": "Cici",
+  "date_text": "2025-05-02",
+  "summary": "作者携犬去天井湖和犁桥水镇，并到陈厨、山礼用餐。水镇大犬准入与后续读者反馈有冲突。",
+  "places": [
+    {
+      "name": "天井湖",
+      "category": "公园",
+      "conditions": "作者携犬沿林荫步道游览，提及园中庭院；具体设施准入未说明。",
+      "location_text": "天井湖",
+      "address": null
+    },
+    {
+      "name": "犁桥水镇",
+      "category": "景区",
+      "conditions": "作者2025年携大型犬未被拦；后续读者称10公斤以上或大型犬受限，作者不确定现行规则，存在冲突。船未体验。",
+      "location_text": "犁桥水镇",
+      "address": null
+    },
+    {
+      "name": "陈厨·下馆子",
+      "category": "餐厅",
+      "conditions": "作者实际到访并明确宠物友好；位于天井湖旁，现行座位安排待核实。",
+      "location_text": "天井湖旁",
+      "address": null
+    },
+    {
+      "name": "山礼乡村会客厅",
+      "category": "餐厅",
+      "conditions": "作者实际用餐，后续回复称当时所列到访地点友好；节假日称需预订，犬型及室内区域未细述。",
+      "location_text": "山礼乡村会客厅",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/68144828000000002300c2fe"
+}

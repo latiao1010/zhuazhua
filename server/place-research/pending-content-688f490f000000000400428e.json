@@ -1,0 +1,26 @@
+{
+  "province": "吉林省",
+  "city": "通化市",
+  "search_query": "通化 宠物友好",
+  "collected_at": "2026-10-03",
+  "read_status": "已读完整可见文字正文；已展开评论依下述记录，图片未读",
+  "id": "688f490f000000000400428e",
+  "title": "宠物友好咖啡店|通化",
+  "author": "老李的咖啡馆儿",
+  "date_text": "编辑于 2025-08-05",
+  "published_at": "2025-08-05",
+  "source_type": "咖啡馆账号宣传，身份未核查",
+  "summary": "标题和标签称宠物友好，正文为泛泛生活文案；标签提到通化宾水南精品咖啡店，未给携带自家宠物的具体经历或条件。",
+  "places": [],
+  "candidate_places": [
+    {
+      "name": "宾水南精品咖啡店（名称待核实）",
+      "location_text": "通化，正文标签提供名称线索",
+      "category": "咖啡馆",
+      "conditions": "外带宠物条件未写，待核实。"
+    }
+  ],
+  "comment_notes": [],
+  "verification_status": "正文实质信息不足，宠物准入待确认，不计入有效目标。",
+  "url": "https://www.xiaohongshu.com/explore/688f490f000000000400428e"
+}

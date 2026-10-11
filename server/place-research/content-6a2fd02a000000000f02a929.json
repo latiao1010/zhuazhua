@@ -1,0 +1,56 @@
+{
+  "id": "6a2fd02a000000000f02a929",
+  "title": "带狗在衢州吃住行都去哪？这篇汇总很清晰",
+  "author": "李李的旅行日记",
+  "date_text": "06-15",
+  "source_type": "携宠攻略汇总（逐项到访未确认）",
+  "summary": "作者汇总衢州携宠游玩、用餐和住宿线索；评论指出水亭门不能落地、可能有时段限制，以及孔庙不允许带犬，与正文推荐冲突。",
+  "places": [
+    {
+      "name": "府山公园（衢州）",
+      "category": "公园",
+      "conditions": "作者推荐遛犬草坪，逐项到访和现行管理尚未核实。",
+      "location_text": "府山公园（衢州）",
+      "address": null
+    },
+    {
+      "name": "水亭门",
+      "category": "街区",
+      "conditions": "正文推荐但评论称宠物不可落地，另有人询问8—18时限制；信息冲突，不能认定全天牵绳可进。",
+      "location_text": "水亭门",
+      "address": null
+    },
+    {
+      "name": "衢州孔庙",
+      "category": "景区",
+      "conditions": "正文称可带犬，08-24评论明确说不让带；准入冲突，当前须向场地方确认。",
+      "location_text": "衢州孔庙",
+      "address": null
+    },
+    {
+      "name": "江郎山",
+      "category": "景区",
+      "conditions": "汇总称小犬可乘景交车、大犬需步行，具体规则以现场确认为准。",
+      "location_text": "江郎山",
+      "address": null
+    },
+    {
+      "name": "见吾乡染江山",
+      "category": "民宿",
+      "conditions": "作者推荐为宠物友好、大小犬可接待，近江郎山有庭院；准确门店、费用和实际入住未独立确认。",
+      "location_text": "衢州江山，江郎山附近",
+      "address": null
+    }
+  ],
+  "comment_notes": [
+    "其余古村水库和餐馆仅列表泛推荐，缺乏逐项携犬入内细节，不全部扩入目录。"
+  ],
+  "verification_status": "攻略汇总非逐点核验，水亭门和孔庙有准入冲突，不应直接作为已核实推荐。",
+  "province": "浙江省",
+  "city": "衢州市",
+  "search_query": "衢州 宠物友好",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "url": "https://www.xiaohongshu.com/explore/6a2fd02a000000000f02a929",
+  "read_status": "已读可见正文及评论；图片和折叠回复未读"
+}

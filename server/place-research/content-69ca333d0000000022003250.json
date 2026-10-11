@@ -1,0 +1,50 @@
+{
+  "province": "辽宁省",
+  "city": "大连市",
+  "search_query": "大连 宠物友好",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "source_type": "个人携犬到访记录",
+  "id": "69ca333d0000000022003250",
+  "title": "带小狗逛大连｜宠物友好攻略🐶",
+  "author": "一只小哒哒～",
+  "date_text": "编辑于 07-30",
+  "read_status": "已读完整文字正文；评论尚在加载，未逐张解读照片",
+  "summary": "作者携犬到访大连水城、莲花山和海滨，记录乘索道下山及市区散步体验。住宿未具名，餐饮推荐也未逐家说明是否带犬入内，因此不作为住宿或餐饮准入证据。",
+  "places": [
+    {
+      "name": "威尼斯水城",
+      "location_text": "大连威尼斯水城，门牌未给",
+      "address": null,
+      "category": "户外街区",
+      "conditions": "作者携犬夜间到访，称人流较多；未确认各商户室内准入。"
+    },
+    {
+      "name": "莲花山观景台",
+      "location_text": "大连莲花山",
+      "address": null,
+      "category": "户外观景台",
+      "conditions": "作者称可携犬到达观景台并下山，节假日人流及开放规则需确认。"
+    },
+    {
+      "name": "海达索道",
+      "location_text": "大连莲花山至海边方向",
+      "address": null,
+      "category": "景区索道",
+      "conditions": "作者携犬乘下山索道，未给犬只体型要求；同城其他来源提醒暑假和黄金周可能限制，不能视为全年开放。"
+    },
+    {
+      "name": "星海广场",
+      "location_text": "大连星海广场",
+      "address": null,
+      "category": "户外广场",
+      "conditions": "出现在作者携犬夜间观景行程，未说明交通和室内区域许可。"
+    }
+  ],
+  "comment_notes": [
+    "评论未读；中山广场附近民宿未具名，不补造酒店。",
+    "日料店虽被推荐，但未明确宠物是否进入，未登记为宠物友好餐厅。"
+  ],
+  "verification_status": "个人到访经历，现行开放时段和细则未核实；页面仅月日。",
+  "url": "https://www.xiaohongshu.com/explore/69ca333d0000000022003250"
+}

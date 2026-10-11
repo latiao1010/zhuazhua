@@ -1,0 +1,28 @@
+{
+  "province": "安徽省",
+  "city": "六安市",
+  "search_query": "六安 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "市区酒店未具名，不计作地点；不推定所有犬均可乘摆渡车或下水。"
+  ],
+  "id": "69fa9d7900000000370377fa",
+  "title": "宠物友好景区-六安红石谷",
+  "author": "是慕慕呀😘",
+  "date_text": "编辑于 05-06",
+  "summary": "作者携犬游红石谷，远处停车后坐摆渡车，停留玩水约两三小时；称当次景区免费。",
+  "places": [
+    {
+      "name": "红石谷",
+      "category": "户外景区",
+      "conditions": "作者明确可携犬，当次远停车场到入口需摆渡；所述2元车费和免门票为历史体验，现行规定待核实。",
+      "location_text": "六安红石谷",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/69fa9d7900000000370377fa"
+}

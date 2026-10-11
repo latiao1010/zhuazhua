@@ -1,0 +1,28 @@
+{
+  "province": "辽宁省",
+  "city": "盘锦市",
+  "search_query": "盘锦 宠物友好",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "places": [],
+  "id": "6a123ff5000000003501c474",
+  "title": "盘锦宠物友好餐厅",
+  "author": "Angelalu荔枝味的岩",
+  "date_text": "编辑于 05-24",
+  "read_status": "已读完整文字正文；评论尚在加载，未逐张解读照片",
+  "source_type": "个人携犬首次用餐体验",
+  "summary": "作者记录带犬在盘锦一家餐厅吃烤肉，称店外有稻田、从兴隆台开车十多分钟。可见正文没有店名；评论尚未核对，留待补充定位。",
+  "candidate_places": [
+    {
+      "name": null,
+      "location_text": "盘锦兴隆台驾车十多分钟处，店外有稻田",
+      "category": "餐厅",
+      "conditions": "作者有携犬用餐经历，体型和座位规则未给；尚无准确店名。"
+    }
+  ],
+  "comment_notes": [
+    "尚未读取评论中的可能店名，待继续核对。"
+  ],
+  "verification_status": "店名和门牌未知，不计入有效目标，不进入目录。",
+  "url": "https://www.xiaohongshu.com/explore/6a123ff5000000003501c474"
+}

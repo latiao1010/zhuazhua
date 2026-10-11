@@ -1,0 +1,29 @@
+{
+  "province": "辽宁省",
+  "city": "盘锦市",
+  "search_query": "盘锦 宠物友好",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "read_status": "已读完整文字正文；评论尚在加载，未逐张解读照片",
+  "source_type": "个人携犬主题旅行记录",
+  "id": "6aa3f79400000000120037d5",
+  "title": "布宝旅行日记📍第52站 |辽宁盘锦🦀",
+  "author": "布里恩吃不饱",
+  "date_text": "09-11 天津",
+  "summary": "作者在带犬旅行主题的盘锦短游记中记录去过红海滩。可见文字很短，没有提供地址、收费或具体携宠规则，保留该证据边界。",
+  "places": [],
+  "candidate_places": [
+    {
+      "name": "红海滩景区",
+      "location_text": "辽宁盘锦红海滩",
+      "address": null,
+      "category": "景区",
+      "conditions": "带犬主题游记提到已到红海滩，但未逐项说明宠物入园、交通或体型规则；不能据短文确认全部区域准入。"
+    }
+  ],
+  "comment_notes": [
+    "可见短正文仅记录红海滩及用餐，未解读照片；餐厅未具名。"
+  ],
+  "verification_status": "文字不足以确认犬只入园，留待读图或补充来源；不计入有效目标，不进入目录。页面仅月日。",
+  "url": "https://www.xiaohongshu.com/explore/6aa3f79400000000120037d5"
+}

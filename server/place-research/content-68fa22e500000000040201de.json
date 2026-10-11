@@ -1,0 +1,87 @@
+{
+  "province": "内蒙古自治区",
+  "city": "呼伦贝尔市",
+  "search_query": "呼伦贝尔 宠物友好",
+  "author": "小狗luna",
+  "collected_at": "2026-10-03",
+  "id": "68fa22e500000000040201de",
+  "title": "呼伦贝尔这些景区宠物超友好！实测攻略",
+  "date_text": "2025-10-23",
+  "published_at": "2025-10-23",
+  "read_status": "已读完整文字正文；评论尚在加载，未逐张解读照片",
+  "source_type": "个人携犬环线景区汇总",
+  "summary": "作者携哈士奇旅行，按城市区分户外景区、交通及室内设施的携宠限制。本记录只整理呼伦贝尔辖区地点；未亲自入园的传闻和跨市地点没有混入肯定推荐。",
+  "places": [
+    {
+      "name": "呼伦贝尔古城",
+      "location_text": "呼伦贝尔市海拉尔区",
+      "address": null,
+      "category": "户外街区",
+      "conditions": "作者列为可携犬，未说明店铺室内规则。"
+    },
+    {
+      "name": "莫尔格勒河景区",
+      "location_text": "呼伦贝尔市，作者区分南北岸",
+      "address": null,
+      "category": "景区",
+      "conditions": "作者称南岸摆渡车拒绝宠物，北岸可自驾携犬；马背山当时封闭。开放区域及交通规则待确认。"
+    },
+    {
+      "name": "冷极广场",
+      "location_text": "呼伦贝尔根河市",
+      "address": null,
+      "category": "户外广场",
+      "conditions": "作者称可携犬合影，未给体型或活动范围要求。"
+    },
+    {
+      "name": "守望桥",
+      "location_text": "呼伦贝尔根河市",
+      "address": null,
+      "category": "户外景点",
+      "conditions": "作者列为可携犬，未提供门牌及通行细则。"
+    },
+    {
+      "name": "莫尔道嘎国家森林公园",
+      "location_text": "呼伦贝尔额尔古纳市莫尔道嘎",
+      "address": null,
+      "category": "景区",
+      "conditions": "作者称自驾可携犬，森林小火车不允许宠物乘坐。"
+    },
+    {
+      "name": "186彩带河",
+      "location_text": "呼伦贝尔额尔古纳地区",
+      "address": null,
+      "category": "景区",
+      "conditions": "作者称可携宠并体验滑草；具体项目须向运营方确认，不能推及所有犬只。"
+    },
+    {
+      "name": "室韦界河观景台",
+      "location_text": "呼伦贝尔额尔古纳市室韦",
+      "address": null,
+      "category": "户外观景台",
+      "conditions": "作者称可携犬观景；另提界河游船不可携犬，不能将观景台许可推及游船。"
+    },
+    {
+      "name": "中苏金街",
+      "location_text": "呼伦贝尔满洲里市",
+      "address": null,
+      "category": "户外街区",
+      "conditions": "作者称可携犬逛街，未说明各商户室内许可。"
+    },
+    {
+      "name": "呼伦湖金海岸旅游景点",
+      "location_text": "呼伦贝尔陈巴尔虎旗，位置来自作者标注",
+      "address": null,
+      "category": "景区",
+      "conditions": "作者称可驾车携犬到湖边；确切地址、开放和临水活动规则未核实。"
+    }
+  ],
+  "comment_notes": [
+    "读取时评论尚在加载。",
+    "正文另称乌兰山、套娃酒店、套娃广场及营业时段的国门景区不接待宠物，未将这些地点登记为宠物友好。",
+    "额尔古纳国家湿地公园仅为作者听说可带犬且未入园，不作为已实测地点。",
+    "乌兰浩特、阿尔山及太仆寺旗不属于本市，不挂到呼伦贝尔目录。"
+  ],
+  "verification_status": "个人2025年体验，交通和区域限制须单独确认；并非运营方现行核验，未复现非开放时段进入方式。",
+  "url": "https://www.xiaohongshu.com/explore/68fa22e500000000040201de"
+}

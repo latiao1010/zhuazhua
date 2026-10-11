@@ -1,0 +1,29 @@
+{
+  "province": "内蒙古自治区",
+  "city": "乌海市",
+  "search_query": "乌海 宠物友好",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "id": "6a9eaeb00000000019027ad6",
+  "title": "乌海📍最最正宗蒙餐",
+  "author": "今天也要睡懒觉",
+  "date_text": "09-07 内蒙古",
+  "read_status": "已读完整正文及全部1条评论；未逐张识别图片",
+  "source_type": "个人餐厅推荐，实际携犬就餐情况未明确",
+  "summary": "作者推荐乌海一家蒙餐店并称宠物友好，但正文没给店名、地址或具体准入条件。唯一评论询问是哪家，未见作者回答。",
+  "places": [],
+  "candidate_places": [
+    {
+      "name": null,
+      "location_text": "乌海市，具体餐厅待确定",
+      "category": "蒙餐餐厅",
+      "conditions": "正文称宠物友好，室内、体型、落地与费用条件均未说明。"
+    }
+  ],
+  "comment_notes": [
+    "唯一评论询问店名，未见答复。",
+    "平台推荐搜索词不属于作者提供的店名证据，不用于确定餐厅。"
+  ],
+  "verification_status": "已读但未具名，需核实店名和地址；不计有效正文数量，不进入地点目录。",
+  "url": "https://www.xiaohongshu.com/explore/6a9eaeb00000000019027ad6"
+}

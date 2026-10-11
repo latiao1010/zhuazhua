@@ -76,6 +76,7 @@ function seedAndSyncSixMonthDemo() { return syncAll() }
 const QUEUE_KEY = 'paw_pending_sync_v1'
 const RECORD_KEYS = new Set(['feeds', 'diaries', 'stools', 'waters', 'walks', 'careRecords', 'weightRecords'])
 let flushPromise = null
+let shareAcceptPromise = null
 const localRevisions = {}
 function pendingWrites() {
   const saved = wx.getStorageSync(QUEUE_KEY)
@@ -146,7 +147,8 @@ function retryPending() {
   if (store.isDemoMode && store.isDemoMode()) return Promise.resolve({ ok: true, skipped: true })
   if (flushPromise) return flushPromise
   if (!cloud.isAvailable()) { setStatus('pending'); return Promise.resolve({ ok: false, skipped: true }) }
-  flushPromise = (async () => {
+  // 先发布任务，再开始处理：空队列时也必须等赋值后才能释放锁。
+  flushPromise = Promise.resolve().then(async () => {
     try {
       setStatus('syncing')
       while (Object.keys(pendingWrites()).length) {
@@ -173,11 +175,12 @@ function retryPending() {
       const message = error.message || String(error)
       setStatus(/已被其他成员修改|只能修改或删除自己/.test(message) ? 'conflict' : 'fail', { error: message })
       return { ok: false, error: error.message || String(error) }
-    } finally { flushPromise = null }
-  })()
+    }
+  }).finally(() => { flushPromise = null })
   return flushPromise
 }
 function syncAll() {
+  if (shareAcceptPromise) return shareAcceptPromise
   if (store.isDemoMode && store.isDemoMode()) return Promise.resolve({ ok: true, skipped: true })
   if (seedPromise) return seedPromise
   if (!cloud.isAvailable()) return Promise.resolve({ ok: false, skipped: true })
@@ -203,6 +206,7 @@ function syncAll() {
   return seedPromise
 }
 function syncOnResume() {
+  if (shareAcceptPromise) return shareAcceptPromise
   const share = getShareStatus()
   if (share.shared && share.role === 'owner') return retryPending()
   return syncAll()
@@ -297,23 +301,52 @@ function createShareInvitation(payload = {}) {
 }
 
 function acceptShareInvitation(code, profile = {}) {
-  if (Object.keys(pendingWrites()).length) return Promise.resolve({ ok: false, error: '请先同步当前档案，再加入家庭共享' })
-  if (!cloud.isAvailable()) return Promise.resolve({ ok: false, skipped: true, error: 'cloud_unavailable' })
-  setStatus('syncing')
-  return cloud.callFunction('pet-data', {
-    action: 'acceptShareInvitation',
-    code,
-    profile
-  }).then(result => {
-    applyRemoteData(result.data)
+  if (shareAcceptPromise) return shareAcceptPromise
+  if (!cloud.isAvailable()) return Promise.resolve({ ok: false, error: '无法连接云端，请检查网络后重试' })
+  shareAcceptPromise = (async () => {
+    // 等启动同步完成，避免迟到的旧档案响应覆盖加入结果。
+    if (seedPromise) await seedPromise
+    const invitation = await cloud.callFunction('pet-data', { action: 'previewShareInvitation', code })
+    const currentShare = invitation.share || { shared: false }
+    const scope = currentShare.groupId || 'personal'
+    const queue = pendingWrites()
+    const wrongScope = Object.keys(queue).some(key => queue[key].scope !== scope)
+    setShareStatus(currentShare)
+    let warning = ''
+    if (wrongScope) {
+      warning = '本机有另一份档案的未同步修改，已保留在此设备，不能直接写入当前家庭。'
+    } else {
+      const flushed = await retryPending()
+      if (!flushed.ok || Object.keys(pendingWrites()).length) {
+        warning = `本机修改尚未同步成功，数据已保留。${flushed.error || '请检查网络后重试。'}`
+      }
+    }
+    if (warning) {
+      setStatus('fail', { error: warning })
+      // 只有服务端确认已在同一家庭，才允许打开；绝不清空队列或绕过跨档案保护。
+      if (invitation.alreadyJoined) return { ok: true, alreadyJoined: true, share: currentShare, syncWarning: warning }
+      return { ok: false, error: warning }
+    }
+    setStatus('syncing')
+    const before = { ...localRevisions }
+    const result = invitation.alreadyJoined
+      ? await cloud.callFunction('pet-data', { action: 'getAllData' })
+      : await cloud.callFunction('pet-data', { action: 'acceptShareInvitation', code, profile })
+    const pending = pendingWrites()
+    const safeData = { ...result.data }
+    DATA_KEYS.forEach(key => {
+      if (hasPendingForKey(pending, key) || before[key] !== localRevisions[key]) delete safeData[key]
+    })
+    applyRemoteData(safeData)
     setShareStatus(result.share)
-    setStatus('success', { share: result.share || {} })
-    return result
-  }).catch(error => {
+    setStatus(Object.keys(pending).length ? 'pending' : 'success', { share: result.share || {} })
+    return { ...result, alreadyJoined: !!invitation.alreadyJoined || !!result.alreadyJoined }
+  })().catch(error => {
     const message = error.message || String(error)
     setStatus('fail', { error: message })
     return { ok: false, error: message }
-  })
+  }).finally(() => { shareAcceptPromise = null })
+  return shareAcceptPromise
 }
 
 module.exports = { getSyncStatus, retryPending, discardPendingAndSync, previewRemoteChanges, applyRemoteChanges, syncOnResume, DATA_KEYS, RECORD_KEYS, seedAndSyncSixMonthDemo, syncAll, saveKey, syncBreedKnowledge, getLocalBreedKnowledge, createShareInvitation, acceptShareInvitation, getShareStatus, isReadOnly }

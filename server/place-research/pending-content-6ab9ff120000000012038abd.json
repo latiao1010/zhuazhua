@@ -1,0 +1,28 @@
+{
+  "id": "6ab9ff120000000012038abd",
+  "province": "辽宁省",
+  "city": "大连市",
+  "search_query": "大连 宠物友好",
+  "title": "大连｜宠物友好餐厅",
+  "author": "小狗莫莫",
+  "date_text": "5天前 辽宁",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "url": "https://www.xiaohongshu.com/explore/6ab9ff120000000012038abd",
+  "read_status": "已读完整文字正文；评论尚在加载，未逐张解读照片",
+  "source_type": "个人携犬室外用餐记录",
+  "summary": "作者带犬在大连一家餐厅的室外座位用餐，称店员欢迎犬只。可见正文没有餐厅名称或地址，也没有提供室内携宠许可。",
+  "places": [],
+  "candidate_places": [
+    {
+      "name": null,
+      "location_text": "大连市，店名和门牌未披露",
+      "category": "餐厅",
+      "conditions": "记录为室外携犬用餐，不能推断室内准入。"
+    }
+  ],
+  "comment_notes": [
+    "评论未读，尚不能判断回复中是否补充了店名。"
+  ],
+  "verification_status": "地点未确定，保留待核实，不计入每城目标或小程序目录；相对日期未换算。"
+}

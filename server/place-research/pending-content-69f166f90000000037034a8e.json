@@ -1,0 +1,35 @@
+{
+  "province": "辽宁省",
+  "city": "大连市",
+  "search_query": "大连 宠物友好",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "id": "69f166f90000000037034a8e",
+  "title": "【携宠出游】之大连篇",
+  "author": "-Nikooooo🥕",
+  "date_text": "编辑于 04-29",
+  "read_status": "已读完整文字正文及首批可见评论；共77条，多条折叠回复及后续评论未读；未解读照片",
+  "source_type": "出游前咨询与读者留言",
+  "summary": "作者在出发前征集大连携犬去处，正文为计划清单。读者留言推荐横山寺公园及户外用餐门店，也提醒不同门店会要求装包或坐室外。因正文非到访记录、评论尚未核实，暂不计入有效体验目标。",
+  "places": [],
+  "candidate_places": [
+    {
+      "name": "横山寺公园",
+      "location_text": "大连，门牌未给",
+      "category": "公园",
+      "conditions": "读者称经常前往，推荐携犬；尚未核实。"
+    },
+    {
+      "name": "威尔威尔东港店",
+      "location_text": "大连东港，门牌未给",
+      "category": "餐厅",
+      "conditions": "读者称可坐室外，尚未核实店名、体型及现行规则。"
+    }
+  ],
+  "comment_notes": [
+    "正文中的其他地点只是计划，不视为作者实测。",
+    "关于正黄旗的装包要求没有具体分店，未挂入正式地点目录。"
+  ],
+  "verification_status": "出游前咨询及评论线索待复核，不计入每城已到访内容；页面仅月日。",
+  "url": "https://www.xiaohongshu.com/explore/69f166f90000000037034a8e"
+}

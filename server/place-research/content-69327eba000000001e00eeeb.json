@@ -1,0 +1,42 @@
+{
+  "province": "安徽省",
+  "city": "亳州市",
+  "search_query": "亳州 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": "2025-12-05",
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "西关洪建牛肉馍只在店外吃，不能确认犬可进店。"
+  ],
+  "id": "69327eba000000001e00eeeb",
+  "title": "济南→亳州带狗自驾：来曹操和华佗老家了～",
+  "author": "一个话痨小刘",
+  "date_text": "2025-12-05",
+  "summary": "作者自述从济南带犬到亳州，走白布大街老巷和谯望楼广场；曹操运兵道不许犬进入。",
+  "places": [
+    {
+      "name": "白布大街老巷",
+      "category": "步行街",
+      "conditions": "作者携犬逛老巷，与摊贩互动；不推定相邻花戏楼景区可携宠。",
+      "location_text": "亳州花戏楼旁",
+      "address": null
+    },
+    {
+      "name": "谯望楼广场",
+      "category": "城市广场",
+      "conditions": "作者在运兵道门前广场带犬活动；具体草坪开放规定未提供。",
+      "location_text": "谯望楼广场",
+      "address": null
+    },
+    {
+      "name": "曹操运兵道",
+      "category": "不允许携犬的场所",
+      "conditions": "作者明确不让带狗，犬活动限于门外广场。",
+      "location_text": "曹操运兵道",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/69327eba000000001e00eeeb"
+}

@@ -1,0 +1,28 @@
+{
+  "id": "69f2b9700000000023004246",
+  "province": "吉林省",
+  "city": "白城市",
+  "search_query": "白城 宠物友好",
+  "title": "白城向海",
+  "author": "刘lu同学",
+  "date_text": "04-30",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "url": "https://www.xiaohongshu.com/explore/69f2b9700000000023004246",
+  "read_status": "可见正文仅标签，已读展开评论，图片未读",
+  "source_type": "实质正文不足的图文线索",
+  "summary": "标题和标签提到向海与宠物友好，评论仅推测周边可带宠物而观鹤区域可能不允许；作者也未提供实际确认。",
+  "places": [],
+  "candidate_places": [
+    {
+      "name": "向海国家级自然保护区",
+      "location_text": "白城向海",
+      "category": "自然保护区",
+      "conditions": "仅评论推测，未确认携宠可进入区域。"
+    }
+  ],
+  "comment_notes": [
+    "作者回复仍是推测语气，不能视为实地准入证据。"
+  ],
+  "verification_status": "携宠事实及范围待核实，不计入有效目标。"
+}

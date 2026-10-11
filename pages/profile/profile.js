@@ -1,3 +1,4 @@
+const { instrument } = require('../../utils/analytics-page')
 const { buildWeightTrend } = require('../../utils/weight-trend')
 const tabNavigation = require('../../utils/tab-navigation')
 const store = require('../../utils/store')
@@ -410,7 +411,7 @@ function buildHomeDashboard({ pet, feeds, stools, waters, walks, careSchedule, c
   }
 }
 
-Page({
+Page(instrument('home', {
   data: {
     pet: {}, festivalOpen: false, healthTipOpen: false, knowledgeOpen: false, weightTrendOpen: false, feedDetailOpen: false, stoolDetailOpen: false, weightTrend: { bars: [], history: [] }, selectedHealthTip: { careItems: [] }, careSchedule: {}, ageText: '', daysTogether: 0,
     todayFeeds: [], todayFeedCount: 0, todayFeedTotal: 0, todayStools: [], todayStoolCount: 0, todayStoolAbnormalCount: 0, todayStoolStatus: '等待记录', waterTarget: 0, birthdayDays: 0, nextAge: 0, birthdayLabel: '',
@@ -474,7 +475,7 @@ Page({
   refresh() {
     const pet = store.get('pet')
     const start = new Date(pet.birthday)
-    const togetherSince = pet.togetherSince || pet.birthday
+    const togetherSince = pet.togetherSince || ''
     const togetherStart = new Date(`${togetherSince}T00:00:00`)
     const now = new Date()
     const months = Number.isFinite(start.getTime()) ? Math.max(1, Math.floor((now - start) / 2629800000)) : 0
@@ -528,9 +529,13 @@ Page({
     const weather = this.data.weather
     if (this.data.weatherLoading) return
     const content = weather.live
-      ? [`${weather.location} · ${weather.condition} ${weather.temperature}℃`, `体感 ${weather.apparent}℃`, weather.rainText, this.data.homeDashboard.weatherTip, `${weather.updatedLabel} 更新 · 数据来源 Open-Meteo`].filter(Boolean).join('\n\n')
+      ? [`${weather.location} · ${weather.condition} ${weather.temperature}℃`, `体感 ${weather.apparent}℃`, weather.rainText, this.data.homeDashboard.weatherTip, `${weather.updatedLabel} 更新`].filter(Boolean).join('\n\n')
       : weather.rainText
-    wx.showModal({ title: '本地天气与外出建议', content, showCancel: false, confirmText: '知道了' })
+    wx.showModal({
+      title: '本地天气与外出建议', content, showCancel: weather.live,
+      confirmText: weather.live ? '天气来源' : '知道了', cancelText: '关闭',
+      success: result => { if (weather.live && result.confirm) this.openWeatherSources() }
+    })
   },
   onWeatherPrivacyAgreed() { this.loadWeather(true) },
   onWeatherSettings(event) {
@@ -539,11 +544,15 @@ Page({
   openWeatherPrivacy() {
     wx.openPrivacyContract({ fail: () => wx.showToast({ title: '隐私指引暂时无法打开', icon: 'none' }) })
   },
-  copyWeatherSources() {
-    wx.setClipboardData({ data: '天气：Open-Meteo https://open-meteo.com/（CC BY 4.0）\n城市识别：BigDataCloud https://www.bigdatacloud.com/' })
+  openWeatherSources() {
+    const content = '天气预报：Open-Meteo\nhttps://open-meteo.com/\n数据许可：CC BY 4.0\n\n授权后的大致位置经云函数查询天气，不写入宠物档案。\n\n城市识别：BigDataCloud\nhttps://www.bigdatacloud.com/\n识别不到城市名时显示“当前位置”，不影响天气查询。'
+    wx.showModal({
+      title: '天气来源', content, confirmText: '复制来源', cancelText: '关闭',
+      success: result => { if (result.confirm) wx.setClipboardData({ data: content }) }
+    })
   },
   openFestivals() {
-    if (!this.data.pet.togetherSince) return this.goAccount()
+    if (!this.data.pet.togetherSince) return tabNavigation.openTab('account', 'togetherSince')
     this.setData({ festivalOpen: true })
   },
   closeFestivals() { this.setData({ festivalOpen: false }) },
@@ -603,4 +612,4 @@ Page({
   goCare() { this.setData({ healthTipOpen: false, careRemindersOpen: false }); tabNavigation.openTab('care') },
   goAccount() { this.setData({ healthTipOpen: false }); wx.switchTab({ url: '/pages/account/account' }) },
   noop() {}
-})
+}))

@@ -8,9 +8,15 @@
     "pages/chat/chat",
     "pages/manage/manage",
     "pages/play/play",
-    "pages/play/result"
+    "pages/play/result",
+    "pages/analytics/analytics",
+    "pages/feedback/feedback"
   ],
   "subPackages": [
+    {
+      "root": "packages/operations",
+      "pages": ["analytics"]
+    },
     {
       "root": "packages/outings",
       "pages": [
@@ -22,28 +28,34 @@
   ],
   "window": {
     "navigationBarTitleText": "爪爪日常",
-    "navigationBarBackgroundColor": "#FFFAF7",
+    "navigationBarBackgroundColor": "#FAFCF9",
     "navigationBarTextStyle": "black",
-    "backgroundColor": "#FFFAF7",
+    "backgroundColor": "#FAFCF9",
     "backgroundTextStyle": "dark"
   },
   "tabBar": {
-    "color": "#978680",
-    "selectedColor": "#D96D4E",
+    "color": "#819087",
+    "selectedColor": "#52785E",
     "backgroundColor": "#FFFFFF",
     "borderStyle": "white",
     "list": [
       {
         "pagePath": "pages/profile/profile",
-        "text": "首页"
+        "text": "首页",
+        "iconPath": "assets/tabbar/home.png",
+        "selectedIconPath": "assets/tabbar/home-selected.png"
       },
       {
         "pagePath": "pages/records/records",
-        "text": "记录"
+        "text": "记录",
+        "iconPath": "assets/tabbar/records.png",
+        "selectedIconPath": "assets/tabbar/records-selected.png"
       },
       {
         "pagePath": "pages/account/account",
-        "text": "我的"
+        "text": "我的",
+        "iconPath": "assets/tabbar/account.png",
+        "selectedIconPath": "assets/tabbar/account-selected.png"
       }
     ]
   },

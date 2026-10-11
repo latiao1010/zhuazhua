@@ -1,0 +1,68 @@
+{
+  "province": "福建省",
+  "city": "厦门市",
+  "search_query": "厦门 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "历史携犬经历；希隐后续出现禁止携宠信息，应向门店复核。",
+  "comment_notes": [],
+  "id": "698dc46c000000001a023736",
+  "title": "2026携宠福建自驾游｜第三站：厦门",
+  "author": "天长与地久无关",
+  "date_text": "02-12",
+  "summary": "作者携犬在厦门住希隐、走黄厝海岸及市区街巷，记录可带犬餐厅；民宿后续平台标记与入住经历冲突。",
+  "places": [
+    {
+      "name": "希隐民宿",
+      "category": "民宿",
+      "conditions": "作者当次携犬入住、不另收清洁费、有停车；之后读者和作者均看到平台禁宠，现行准入存在冲突。",
+      "location_text": "黄厝海滩附近",
+      "address": null
+    },
+    {
+      "name": "黄厝海滩",
+      "category": "海滩",
+      "conditions": "作者携犬沿海岸步行，未明确沿岸书店与店铺室内准入。",
+      "location_text": "黄厝海滩",
+      "address": null
+    },
+    {
+      "name": "幸福路、新华路步行街巷",
+      "category": "步行街",
+      "conditions": "作者明确携犬漫步，店铺各自政策待确认。",
+      "location_text": "幸福路、新华路步行街巷",
+      "address": null
+    },
+    {
+      "name": "梦林夕烧酒档",
+      "category": "餐厅",
+      "conditions": "作者称可带犬，现场排号；具体分店和犬型未给。",
+      "location_text": "梦林夕烧酒档",
+      "address": null
+    },
+    {
+      "name": "海渔家",
+      "category": "餐厅",
+      "conditions": "作者实际用餐并称可带犬。",
+      "location_text": "黄厝海滩及希隐附近",
+      "address": null
+    },
+    {
+      "name": "blues coffee",
+      "category": "咖啡馆",
+      "conditions": "作者明确室外座位可带犬，不推定室内许可。",
+      "location_text": "梦林夕烧酒档附近约200米",
+      "address": null
+    },
+    {
+      "name": "山海健康步道（林海线）",
+      "category": "不允许携犬的场所",
+      "conditions": "作者明确不可以带宠物。",
+      "location_text": "山海健康步道（林海线）",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/698dc46c000000001a023736"
+}

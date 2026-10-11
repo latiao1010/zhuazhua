@@ -49,6 +49,10 @@
       {
         "value": "README.md",
         "type": "file"
+      },
+      {
+        "value": "cloud",
+        "type": "folder"
       }
     ],
     "include": []

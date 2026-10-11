@@ -1,0 +1,35 @@
+{
+  "province": "福建省",
+  "city": "莆田市",
+  "search_query": "莆田 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": "2025-09-25",
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "图片表格未读，不据其补酒店、路线或价格。"
+  ],
+  "id": "68d4f6990000000013036683",
+  "title": "带狗狗坐船到莆田湄洲岛游玩保姆级攻略",
+  "author": "in十月里",
+  "date_text": "编辑于 2025-09-25",
+  "summary": "作者带9个月金毛乘船到湄洲岛，评论称当次戴嘴套即可、不必航空箱，并称妈祖庙可带犬。详细行程在未读取的图片表格中。",
+  "places": [
+    {
+      "name": "湄洲岛",
+      "category": "海岛景区",
+      "conditions": "作者实际携金毛上岛并在评论说明乘船戴嘴套、入口可购；箱具与证件的当前规定需向轮渡确认。",
+      "location_text": "莆田湄洲岛",
+      "address": null
+    },
+    {
+      "name": "妈祖庙（湄洲岛）",
+      "category": "寺庙",
+      "conditions": "作者回复犬可带入，但未区分广场、院落和殿内，需确认具体允许区域。",
+      "location_text": "湄洲岛",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/68d4f6990000000013036683"
+}

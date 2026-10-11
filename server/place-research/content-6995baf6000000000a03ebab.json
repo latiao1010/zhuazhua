@@ -1,0 +1,40 @@
+{
+  "province": "安徽省",
+  "city": "阜阳市",
+  "search_query": "阜阳 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "酒店为作者经历；双清湾规则有冲突，不能作为已确认友好推荐。",
+  "comment_notes": [],
+  "id": "6995baf6000000000a03ebab",
+  "title": "自驾中国（宠物友好版）｜阜阳",
+  "author": "活在热爱里的安安",
+  "date_text": "编辑于 02-19",
+  "summary": "作者携犬住美悦假日酒店，称无另收清洁费、押金200元，步行逛水街和双清湾；读者指出公园规定禁宠。",
+  "places": [
+    {
+      "name": "美悦假日酒店",
+      "category": "酒店",
+      "conditions": "作者称可带犬、不另收清洁费，收200元宠物押金，有停车位；现行政策与犬型待确认。",
+      "location_text": "阜阳大剧院对面、水街步行范围",
+      "address": null
+    },
+    {
+      "name": "水街",
+      "category": "步行街",
+      "conditions": "作者称可携犬逛街；餐厅未具名，不能推定各店室内可进。",
+      "location_text": "水街",
+      "address": null
+    },
+    {
+      "name": "双清湾公园",
+      "category": "公园",
+      "conditions": "作者听前台建议进入未被拦，但本地读者明确说规则不允许宠物、管理不严；存在准入冲突，需先向管理方核实。",
+      "location_text": "双清湾公园",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6995baf6000000000a03ebab"
+}

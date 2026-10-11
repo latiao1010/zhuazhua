@@ -1,0 +1,56 @@
+{
+  "province": "辽宁省",
+  "city": "营口市",
+  "search_query": "营口 宠物友好",
+  "collected_at": "2026-10-03",
+  "id": "6a855a2c00000000260345ab",
+  "title": "第58站｜陪妈妈带小狗，两日慢游营口！",
+  "author": "金九岁｜爱旅行",
+  "date_text": "08-19",
+  "published_at": null,
+  "read_status": "已读完整文字正文；评论尚在加载，未逐张解读照片",
+  "source_type": "个人陪家人携犬两日游",
+  "summary": "作者陪母亲携犬在营口游览，记录团山、月亮湖和山海广场等地点，明确区分西炮台不允许犬只进入。门票和体验是当次行程，未核实当前价格与区域规则。",
+  "places": [
+    {
+      "name": "团山海洋公园",
+      "location_text": "营口市，具体门牌未提供",
+      "address": null,
+      "category": "公园",
+      "conditions": "作者实际陪家人携犬沿木栈道与海滩游览；未提供犬只体型和园内各区域的完整限制。"
+    },
+    {
+      "name": "月亮湖公园",
+      "location_text": "营口市，具体门牌未提供",
+      "address": null,
+      "category": "公园",
+      "conditions": "作者明确携犬在鲅鱼圈月亮湖沿湖散步，未说明体型及活动边界。"
+    },
+    {
+      "name": "山海广场",
+      "location_text": "营口市，具体门牌未提供",
+      "address": null,
+      "category": "户外广场",
+      "conditions": "作者在携犬行程中到访，未单独明确海滩及水域的犬只活动要求。"
+    },
+    {
+      "name": "望儿山",
+      "location_text": "营口市，具体门牌未提供",
+      "address": null,
+      "category": "景区",
+      "conditions": "作者把此次除西炮台外的景点列为可携犬，望儿山在行程内；未给索道或室内设施准入，需单独确认。"
+    },
+    {
+      "name": "西炮台",
+      "location_text": "营口市，具体门牌未提供",
+      "address": null,
+      "category": "不允许携犬的场所",
+      "conditions": "作者明确说该景点不允许犬只进入，保留为出行避误信息。"
+    }
+  ],
+  "comment_notes": [
+    "评论未读；没有由“其他景点可带狗”推广到营口全部景点。"
+  ],
+  "verification_status": "个人到访记录，区域限制需景区核实；页面仅月日，未推断年份。",
+  "url": "https://www.xiaohongshu.com/explore/6a855a2c00000000260345ab"
+}

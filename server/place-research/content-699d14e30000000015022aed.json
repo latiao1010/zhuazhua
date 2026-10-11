@@ -1,0 +1,26 @@
+{
+  "province": "安徽省",
+  "city": "阜阳市",
+  "search_query": "阜阳 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文；评论仍显示加载中，图片未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [],
+  "id": "699d14e30000000015022aed",
+  "title": "打卡阜阳宠物友好餐厅",
+  "author": "甜筒是只小猫狗",
+  "date_text": "02-24",
+  "summary": "作者在阜阳续住期间携犬到餐厅用餐，称当时只有自己这只犬，正文指向about the table。",
+  "places": [
+    {
+      "name": "about the table",
+      "category": "餐厅",
+      "conditions": "作者明确携犬就餐，正文@about the table🍴；正式门店名和地址需核实，犬型与座位未细述。",
+      "location_text": "阜阳，正文关联账号about the table🍴",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/699d14e30000000015022aed"
+}

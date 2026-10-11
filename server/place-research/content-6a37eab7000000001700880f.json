@@ -1,0 +1,51 @@
+{
+  "id": "6a37eab7000000001700880f",
+  "title": "合肥周边｜带狗自驾！淮南一日游太值了",
+  "author": "铁锤大土豆",
+  "date_text": "编辑于 06-27",
+  "published_at": null,
+  "summary": "作者自述携犬从合肥到淮南，游上窑山、益益牧场和一处称天目湖的野景点；晚餐一大碗室内不接待犬。页面声明含AI生成内容，需独立核验。",
+  "places": [
+    {
+      "name": "上窑山",
+      "category": "户外景区",
+      "conditions": "作者自述携犬南门进出约两小时；沿途寺庙室内未验证。",
+      "location_text": "上窑山",
+      "address": null
+    },
+    {
+      "name": "益益休闲牧场",
+      "category": "农场",
+      "conditions": "作者自述携犬前往，称需预约；买酸奶可直接入为作者后续回复，参观与购物可能不同条件。",
+      "location_text": "益益休闲牧场",
+      "address": null
+    },
+    {
+      "name": "一大碗（淮南）",
+      "category": "不允许携犬的场所",
+      "conditions": "作者明确门店室内不能带犬，分店地址未写；不将其留犬车内方式作为推荐。",
+      "location_text": "一大碗（淮南）",
+      "address": null
+    }
+  ],
+  "candidate_places": [
+    {
+      "name": "天目湖（淮南所称，地点待核实）",
+      "category": "户外湖泊",
+      "conditions": "作者称为野景点、道路碎石坑洼，没给准确地址，不能与常州天目湖混淆。",
+      "location_text": "天目湖（淮南所称，地点待核实）",
+      "address": null
+    }
+  ],
+  "comment_notes": [
+    "老马牛肉汤只是行程用餐，未明确犬入店，不收为宠物餐厅。"
+  ],
+  "source_type": "自述携犬游记（页面声明含AI生成内容）",
+  "verification_status": "含AI生成内容，未独立核验，不应直接作为已核实推荐；需分别确认场地规则。",
+  "province": "安徽省",
+  "city": "淮南市",
+  "search_query": "淮南 宠物友好",
+  "collected_at": "2026-10-03",
+  "url": "https://www.xiaohongshu.com/explore/6a37eab7000000001700880f",
+  "read_status": "已读可见正文及评论；图片和折叠回复未读"
+}

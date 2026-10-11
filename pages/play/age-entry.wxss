@@ -1,0 +1,175 @@
+/* The age form fits the available screen without clipping its inputs. */
+.play-page.age-entry {
+  min-height: 0;
+  height: 100vh;
+  box-sizing: border-box;
+  padding: 16rpx 28rpx calc(12rpx + env(safe-area-inset-bottom));
+}
+
+.age-entry .play-hero {
+  padding: 8rpx 0 20rpx;
+}
+
+.age-entry .play-hero .eyebrow {
+  font-size: 22rpx;
+  line-height: 1.4;
+}
+
+.age-entry .play-hero .page-title {
+  margin-top: 8rpx;
+  padding-right: 80rpx;
+  font-size: 36rpx;
+  line-height: 1.35;
+  white-space: normal;
+}
+
+.age-entry .play-icon {
+  top: 16rpx;
+  width: 68rpx;
+  height: 68rpx;
+  border-radius: 22rpx;
+}
+
+.age-entry .play-sub {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 1.5;
+}
+
+.age-entry .play-form {
+  padding: 22rpx;
+}
+
+.age-entry .label {
+  margin-bottom: 6rpx;
+  line-height: 1.4;
+}
+
+.age-entry .species-tabs {
+  margin: 8rpx 0 18rpx;
+}
+
+.age-entry .species-tabs button {
+  height: 76rpx;
+  min-height: 40px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  font-size: 27rpx;
+}
+
+.age-entry .field {
+  margin-bottom: 18rpx;
+  min-width: 0;
+}
+
+.age-entry .input {
+  height: 76rpx;
+  min-height: 40px;
+  padding: 0 20rpx;
+  font-size: 26rpx;
+}
+
+.age-entry .field-note {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  line-height: 1.4;
+}
+
+.age-entry .picker-placeholder {
+  color: var(--muted);
+}
+
+.age-entry .primary-btn {
+  height: 84rpx;
+  min-height: 44px;
+  font-size: 28rpx;
+}
+
+.age-entry .form-error {
+  padding: 0 0 12rpx;
+  font-size: 23rpx;
+  line-height: 1.4;
+}
+
+.age-entry .play-note {
+  margin: 14rpx 4rpx 0;
+  font-size: 22rpx;
+  line-height: 1.5;
+}
+
+@media (max-height: 680px) {
+  .play-page.age-entry {
+    padding-top: 10rpx;
+  }
+
+  .age-entry .play-hero {
+    padding: 4rpx 0 14rpx;
+  }
+
+  .age-entry .play-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 16rpx;
+  }
+
+  .age-entry .play-form > .label,
+  .age-entry .species-tabs,
+  .age-entry .field,
+  .age-entry .form-error,
+  .age-entry .primary-btn {
+    grid-column: 1 / -1;
+  }
+
+  .age-entry .name-field,
+  .age-entry .birthday-field {
+    grid-column: auto;
+  }
+
+  .age-entry .birthday-field .input {
+    padding: 0 14rpx;
+    gap: 4rpx;
+    font-size: 25rpx;
+  }
+
+  .age-entry .field {
+    margin-bottom: 12rpx;
+  }
+
+  .age-entry .species-tabs {
+    margin-bottom: 12rpx;
+  }
+}
+
+@media (max-height: 560px) {
+  .age-entry .play-hero .eyebrow,
+  .age-entry .play-sub {
+    display: none;
+  }
+
+  .age-entry .play-icon {
+    top: 0;
+    width: 56rpx;
+    height: 56rpx;
+    border-radius: 18rpx;
+  }
+
+  .age-entry .play-hero .page-title {
+    margin-top: 0;
+    font-size: 32rpx;
+  }
+
+  .age-entry .play-form {
+    padding: 16rpx 20rpx;
+  }
+
+  .age-entry .species-tabs {
+    margin-top: 4rpx;
+  }
+
+  .age-entry .play-note {
+    margin-top: 10rpx;
+  }
+}

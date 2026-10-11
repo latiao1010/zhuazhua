@@ -1,0 +1,35 @@
+{
+  "province": "安徽省",
+  "city": "六安市",
+  "search_query": "六安 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "周边两家餐厅未明确携犬用餐，不扩入地点。"
+  ],
+  "id": "6a8fb1b400000000040362d0",
+  "title": "从上海带狗自驾游｜六安金寨",
+  "author": "脆薯饼",
+  "date_text": "08-27",
+  "summary": "作者携犬自驾金寨，去马鬃岭瀑布，并列不知周白兰地庄园为宠物友好民宿。",
+  "places": [
+    {
+      "name": "马鬃岭瀑布",
+      "category": "山岳景区",
+      "conditions": "作者带犬到瀑布，回复车到中门后下几级台阶可达，其他徒步路线可另选；中午可能有旅行团。",
+      "location_text": "金寨县马鬃岭中门附近",
+      "address": null
+    },
+    {
+      "name": "不知周白兰地庄园民宿",
+      "category": "民宿",
+      "conditions": "作者携犬行程明确标为宠物友好民宿；费用、房型及犬型未写明。",
+      "location_text": "六安金寨",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6a8fb1b400000000040362d0"
+}

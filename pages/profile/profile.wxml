@@ -9,7 +9,7 @@
       </view>
     </view>
     <view class="home-pet-head">
-      <button class="home-button pet-avatar" bindtap="goAccount" aria-label="查看宠物档案" hover-class="home-pressed"><image src="{{pet.avatar}}" mode="aspectFill" /></button>
+      <button class="home-button pet-avatar" data-exposure="profile" bindtap="goAccount" aria-label="查看宠物档案" hover-class="home-pressed"><image src="{{pet.avatar}}" mode="aspectFill" /></button>
       <view class="home-pet-copy">
         <view class="home-title">{{pet.name}}<text>的日常</text></view>
         <view class="home-pet-meta">
@@ -32,7 +32,10 @@
     </view>
     <button class="home-button weather-forecast" bindtap="openWeatherDetails" disabled="{{weatherLoading}}" aria-label="{{weather.rainText + '，' + homeDashboard.weatherTip + '，点击查看天气详情'}}"><text>{{weatherLoading ? '正在获取当前位置天气…' : weather.rainText + (homeDashboard.weatherTip ? '；' + homeDashboard.weatherTip : '')}}</text><text>›</text></button>
     <button class="home-button weather-privacy" wx:if="{{weather.status === 'privacy'}}" bindtap="openWeatherPrivacy" aria-label="大致位置用于 Open-Meteo 天气查询和 BigDataCloud 城市识别，查看隐私保护指引">大致位置用于天气与城市识别 · 隐私说明 ›</button>
-    <button class="home-button weather-source" wx:if="{{weather.live}}" bindtap="copyWeatherSources">体感 {{weather.apparent}}° · {{weather.updatedLabel}} 更新 · Open-Meteo</button>
+    <view class="weather-meta" wx:if="{{weather.live}}">
+      <text>体感 {{weather.apparent}}° · {{weather.updatedLabel}} 更新</text>
+      <button class="home-button weather-source" bindtap="openWeatherSources" hover-class="home-pressed" aria-label="查看天气数据来源说明">天气来源 ›</button>
+    </view>
   </view>
 
   <view class="home-discovery">

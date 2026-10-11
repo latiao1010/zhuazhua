@@ -1,6 +1,6 @@
 {
-  "places": 591,
-  "citiesWithData": 37,
+  "places": 1062,
+  "citiesWithData": 117,
   "skippedUnidentified": [
     {
       "noteId": "6aaf50540000000011036959",
@@ -24,8 +24,8 @@
     }
   ],
   "statusCounts": {
-    "pending": 444,
-    "review": 133,
-    "denied": 14
+    "pending": 752,
+    "review": 264,
+    "denied": 46
   }
 }

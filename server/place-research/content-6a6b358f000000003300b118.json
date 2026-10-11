@@ -1,0 +1,28 @@
+{
+  "province": "安徽省",
+  "city": "黄山市",
+  "search_query": "黄山 宠物友好",
+  "collected_at": "2026-10-03",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "山地飞车可携犬是其他读者的历史经历，不能推定当前项目许可。"
+  ],
+  "id": "6a6b358f000000003300b118",
+  "title": "和小狗探索超级宠物友好地点—黄山芙蓉谷",
+  "author": "咂巴吴小团",
+  "date_text": "编辑于 07-31",
+  "summary": "作者记录携犬去芙蓉谷，评论回答走走停停约2至3小时、犬不另收门票；多位读者指出台阶较多。",
+  "places": [
+    {
+      "name": "芙蓉谷",
+      "category": "山岳景区",
+      "conditions": "作者自述携犬游览、回复犬不收票；台阶多，具体犬型限制和当期票务待确认。",
+      "location_text": "黄山芙蓉谷",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6a6b358f000000003300b118"
+}

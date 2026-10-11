@@ -1,0 +1,28 @@
+{
+  "province": "福建省",
+  "city": "三明市",
+  "search_query": "三明 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "买票截止、停靠与船班为作者冬季经历，当前安排需确认；不采用其适合所有犬的泛化说法。"
+  ],
+  "id": "69639d8f00000000220392ab",
+  "title": "福建宠物友好第二站——泰宁大金湖",
+  "author": "来勺奶酪酱～",
+  "date_text": "01-11",
+  "summary": "作者带当时34斤的犬游泰宁大金湖约4小时，签协议乘封闭游船，工作人员提示犬体型偏大。",
+  "places": [
+    {
+      "name": "大金湖",
+      "category": "山水景区",
+      "conditions": "作者实际携34斤犬乘船，入园签协议；更大犬需先问景区。甘露寺下行及一线天路段台阶陡，不适合所有犬，淡季末班部分点不开放。",
+      "location_text": "三明泰宁",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/69639d8f00000000220392ab"
+}

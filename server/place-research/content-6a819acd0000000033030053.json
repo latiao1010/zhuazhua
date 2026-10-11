@@ -1,0 +1,28 @@
+{
+  "province": "安徽省",
+  "city": "滁州市",
+  "search_query": "滁州 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "作者未发现蜱虫不等于场地无虫。"
+  ],
+  "id": "6a819acd0000000033030053",
+  "title": "滁州遛狗｜大柳草原",
+  "author": "Melody的小狗日记",
+  "date_text": "08-16",
+  "summary": "作者从南京开车约两小时，携边牧到滁州大柳草原活动，称当次没有见到牛。",
+  "places": [
+    {
+      "name": "大柳草原",
+      "category": "户外草地",
+      "conditions": "作者明确携犬到访；开放时间、收费和牧场管理范围未答复。",
+      "location_text": "大柳草原",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6a819acd0000000033030053"
+}

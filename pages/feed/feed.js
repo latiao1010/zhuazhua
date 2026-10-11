@@ -1,3 +1,5 @@
+const { instrument } = require('../../utils/analytics-page')
+const analytics = require('../../utils/analytics')
 const store = require('../../utils/store')
 const cloudData = require('../../utils/cloud-data')
 
@@ -14,6 +16,10 @@ function isReadOnlyMember() {
   if (store.isDemoMode && store.isDemoMode()) return false
   const share = wx.getStorageSync && wx.getStorageSync('paw_share_status')
   return !!(share && share.shared && share.role === 'viewer')
+}
+
+function recordDefaultsKey(type) {
+  return (store.isDemoMode && store.isDemoMode() ? 'demo_' : '') + 'paw_record_defaults_' + type
 }
 
 function parseNumber(value) {
@@ -223,7 +229,7 @@ function buildSummary(type, records, pet, isToday, feedGoal = FEED_GOAL, savedWa
   }
 }
 
-Page({
+Page(instrument('record_detail', {
   data: {
     pet: {}, day: '', month: '', today: '', selectedDate: '', trendEndDate: '', dateFilterText: '今天', emptyText: '', currentType: 'feed', singleMode: true, detailTitle: '喂食详情', detailEyebrow: 'FEEDING DETAIL', trendRange: 30,
     tabs: Object.keys(TYPES).map(key => ({ key, tab: TYPES[key].tab, icon: TYPES[key].icon })),
@@ -371,8 +377,9 @@ Page({
       water: { amount: '', note: '', time },
       walk: { duration: '', distance: '', note: '', time }
     }
-    const last = wx.getStorageSync ? wx.getStorageSync('paw_record_defaults_' + this.data.currentType) : null
+    const last = wx.getStorageSync ? wx.getStorageSync(recordDefaultsKey(this.data.currentType)) : null
     this.setData({ adding: true, editingRecordId: null, draft: { ...drafts[this.data.currentType], ...(['feed', 'water', 'walk'].includes(this.data.currentType) ? last || {} : {}), time, dayKey: this.data.selectedDate || store.todayKey() } })
+    this.recordFlow = analytics.beginFlow('record_' + this.data.currentType)
   },
   onDraftDate(e) { this.setData({ 'draft.dayKey': e.detail.value }) },
   persistRecord(key, record) {
@@ -391,10 +398,20 @@ Page({
     }
     const previous = id == null ? {} : records.find(item => item.id === id)
     const next = { ...previous, ...record, dayKey, date: dayKey, id: id == null ? record.id : id }
-    store.set(key, id == null ? [next, ...records] : records.map(item => item.id === id ? next : item))
+    const module = this.data.currentType
+    const saved = store.set(key, id == null ? [next, ...records] : records.map(item => item.id === id ? next : item))
+    analytics.track(module, 'complete', 'save_local')
+    if (id == null) analytics.stepFlow(this.recordFlow, 2)
+    this.recordSaveTask = Promise.resolve(saved).then(result => {
+      if (result && result.ok === false) analytics.failure(module, 'save_cloud', result.error)
+      return result
+    }).catch(error => {
+      analytics.failure(module, 'save_cloud', error)
+      return { ok: false }
+    })
     if (wx.setStorageSync) {
       const { dayKey: ignoredDate, time: ignoredTime, note: ignoredNote, ...defaults } = this.data.draft
-      wx.setStorageSync('paw_record_defaults_' + this.data.currentType, defaults)
+      wx.setStorageSync(recordDefaultsKey(this.data.currentType), defaults)
     }
     return true
   },
@@ -403,10 +420,11 @@ Page({
     const item = store.get(TYPES[this.data.currentType].storeKey).find(record => record.id === e.currentTarget.dataset.id)
     if (!item) return
     const draft = { ...item }
+    this.recordFlow = null
     if (item.amount) draft.amount = String(parseFloat(item.amount))
     this.setData({ adding: true, editingRecordId: item.id, draft })
   },
-  closeAdd() { this.setData({ adding: false }) },
+  closeAdd() { this.recordFlow = null; this.setData({ adding: false }) },
   openFeedGoalEditor() {
     if (this.data.currentType !== 'feed') return
     if (isReadOnlyMember()) return wx.showToast({ title: '只读成员不能修改目标', icon: 'none' })
@@ -466,8 +484,9 @@ Page({
   onInput(e) { this.setData({ [`draft.${e.currentTarget.dataset.key}`]: e.detail.value }) },
   onTime(e) { this.setData({ 'draft.time': e.detail.value }) },
   saveRecord() {
+    if (this.data.editingRecordId == null) analytics.stepFlow(this.recordFlow, 1)
     const savers = { feed: 'saveFeed', stool: 'saveStool', water: 'saveWater', walk: 'saveWalk' }
-    this[savers[this.data.currentType]]()
+    return this[savers[this.data.currentType]]()
   },
   saveFeed() {
     const d = this.data.draft
@@ -476,14 +495,14 @@ Page({
     if (!food || !Number.isFinite(amount) || amount <= 0) return wx.showToast({ title: '请补充正确的食物和分量', icon: 'none' })
     const feeds = [{ id: Date.now(), dayKey: store.todayKey(), date: '今天', time: d.time, type: d.type, food, amount: `${amount}g`, icon: d.type === '零食' ? '🦴' : '🥣' }, ...store.get('feeds')]
     if (!this.persistRecord('feeds', feeds[0])) return
-    this.finishSave('喂食记录已保存')
+    return this.finishSave('喂食记录已保存')
   },
   saveStool() {
     const d = this.data.draft
     const abnormal = ['稀便', '便秘/干硬'].includes(d.condition) || ['黑色', '红色'].includes(d.color)
     const stools = [{ id: Date.now(), dayKey: store.todayKey(), date: '今天', time: d.time, condition: d.condition, color: d.color, note: d.note || '', icon: '💩', abnormal }, ...store.get('stools')]
     if (!this.persistRecord('stools', stools[0])) return
-    this.finishSave(abnormal ? '已保存，建议持续观察' : '排便记录已保存')
+    return this.finishSave(abnormal ? '已保存，建议持续观察' : '排便记录已保存')
   },
   saveWater() {
     const d = this.data.draft
@@ -491,7 +510,7 @@ Page({
     if (!Number.isFinite(amount) || amount <= 0) return wx.showToast({ title: '请填写正确的饮水量', icon: 'none' })
     const waters = [{ id: Date.now(), dayKey: store.todayKey(), date: '今天', time: d.time, amount: `${amount}ml`, note: (d.note || '').trim(), icon: '💧' }, ...store.get('waters')]
     if (!this.persistRecord('waters', waters[0])) return
-    this.finishSave('饮水记录已保存')
+    return this.finishSave('饮水记录已保存')
   },
   saveWalk() {
     const d = this.data.draft
@@ -502,13 +521,22 @@ Page({
     if (distance && (!Number.isFinite(distanceValue) || distanceValue < 0)) return wx.showToast({ title: '请填写正确的散步距离', icon: 'none' })
     const walks = [{ id: Date.now(), dayKey: store.todayKey(), date: '今天', time: d.time, duration, distance, note: (d.note || '').trim(), icon: '🐾' }, ...store.get('walks')]
     if (!this.persistRecord('walks', walks[0])) return
-    this.finishSave('散步记录已保存')
+    return this.finishSave('散步记录已保存')
   },
   finishSave(title) {
+    const task = this.recordSaveTask
+    const feedback = this.saveFeedback = (this.saveFeedback || 0) + 1
+    const demo = store.isDemoMode()
     const dayKey = this.data.draft.dayKey || store.todayKey()
     this.setData({ adding: false, editingRecordId: null, selectedDate: dayKey, trendEndDate: dayKey })
     this.refresh()
-    wx.showToast({ title, icon: 'none' })
+    wx.showToast({ title: demo ? title : '已保存在本机，正在同步', icon: 'none' })
+    return Promise.resolve(task).then(result => {
+      if (feedback !== this.saveFeedback || demo !== store.isDemoMode()) return result
+      const pending = cloudData.getSyncStatus().pending
+      wx.showToast({ title: !demo && (pending || result && result.ok === false) ? '已保存在本机，云端尚未同步' : title, icon: 'none' })
+      return result
+    })
   },
   removeRecord(e) {
     if (isReadOnlyMember()) return wx.showToast({ title: '只读成员不能删除记录', icon: 'none' })
@@ -527,4 +555,4 @@ Page({
       }
     })
   }
-})
+}))

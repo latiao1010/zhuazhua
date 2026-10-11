@@ -1,0 +1,28 @@
+{
+  "province": "福建省",
+  "city": "莆田市",
+  "search_query": "莆田 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "莆田其他寺院和餐饮未具体确认犬准入；泉州、漳州行程不归入莆田地点。"
+  ],
+  "id": "69f9f3de00000000380217bc",
+  "title": "🐾带狗自驾｜莆田湄洲岛太宠了！不堵车慢游",
+  "author": "芜湖是初五",
+  "date_text": "05-05",
+  "summary": "作者携犬自驾到莆田并登湄洲岛，称轮渡需牵绳、嘴套，自己用背带，岛上电瓶车可带犬。",
+  "places": [
+    {
+      "name": "湄洲岛（妈祖祖庙广场及海边栈道）",
+      "category": "海岛景区",
+      "conditions": "作者携犬乘轮渡、岛上电瓶车，提到祖庙广场和海边栈道；不等同庙内建筑可进。轮渡现行容器、证件和犬型要求需核实。",
+      "location_text": "莆田湄洲岛",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/69f9f3de00000000380217bc"
+}

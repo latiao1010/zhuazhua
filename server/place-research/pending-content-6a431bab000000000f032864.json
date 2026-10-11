@@ -1,0 +1,45 @@
+{
+  "id": "6a431bab000000000f032864",
+  "province": "黑龙江省",
+  "city": "双鸭山市",
+  "search_query": "双鸭山 宠物友好",
+  "title": "黑龙江宠物友好景区及漂流推荐",
+  "author": "一千八百昼_",
+  "date_text": "编辑于 07-05",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "url": "https://www.xiaohongshu.com/explore/6a431bab000000000f032864",
+  "read_status": "已读完整可见文字正文与展开评论；图片及折叠回复未读",
+  "source_type": "跨城市亲历与咨询混合分享",
+  "summary": "作者寻找可携犬漂流点，实际到访和近期咨询主要涉及牡丹江、伊春及哈尔滨，没有双鸭山地点。不把搜索命中当作城市归属。",
+  "places": [],
+  "candidate_places": [],
+  "out_of_city_places": [
+    {
+      "name": "鸳鸯峰",
+      "conditions": "作者称去年实际携犬游玩；需在对应城市整理并核实规则。",
+      "author_claimed_city": "牡丹江市",
+      "city": "行政归属待核实"
+    },
+    {
+      "name": "响水河漂流",
+      "conditions": "作者称从直播间咨询可携犬，自己尚未到访；非到访记录。",
+      "author_claimed_city": "牡丹江市",
+      "city": "行政归属待核实"
+    }
+  ],
+  "comment_notes": [
+    "关于绕过体重限制的猜测不作为许可依据，不保存为操作建议。"
+  ],
+  "verification_status": "无双鸭山有效地点；同名景区或跨行政区情况待核实，不直接按作者描述指定城市。",
+  "geography_sources": [
+    {
+      "url": "https://wlt.hlj.gov.cn/wlt/c114254/202410/c00_31776354.shtml",
+      "claim": "省文旅厅2024报道写鸳鸯峰位于方正县。"
+    },
+    {
+      "url": "https://www.hlj.gov.cn/hlj/c108551/202502/c00_31814910.shtml",
+      "claim": "省政府2025报道将鸳鸯峰活动点写作牡丹江林口县三道通镇藏富村。"
+    }
+  ]
+}

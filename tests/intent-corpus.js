@@ -28,6 +28,10 @@ const suggestions = require(path.join(__dirname, '..', 'utils', 'chat-suggestion
 
 // [问句, 期望意图, 不能是的意图]
 const CORPUS = [
+  ['糯米今天吃了多少，喝了多少水？', 'intakeRecords', 'feed'],
+  ['最近七天的喂食和饮水记录', 'intakeRecords', 'water'],
+  ['今天喝了多少', 'water', 'status'],
+  ['吃了多少，喝了多少水，误食老鼠药了', 'danger', 'intakeRecords'],
   // 商品选购：问「什么 + 商品类目」
   ['能吃什么狗粮', 'recommendation:mainFood', 'foodSafety'],
   ['吃什么狗粮好', 'recommendation:mainFood', 'supply'],
@@ -183,6 +187,35 @@ TITLES.forEach(title => {
     console.log(`  ✗ ${error.message}`)
   }
 })
+
+console.log('饮食与饮水联合查询')
+{
+  const store = require('../utils/store')
+  const today = store.todayKey()
+  const yesterday = new Date(`${today}T00:00:00`)
+  yesterday.setDate(yesterday.getDate() - 1)
+  const yesterdayKey = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`
+  DB.paw_feeds = [{ id: 1, dayKey: today, amount: '203g' }, { id: 2, dayKey: yesterdayKey, amount: '80g' }]
+  DB.paw_water_records = [{ id: 3, dayKey: today, amount: '140ml' }, { id: 4, dayKey: yesterdayKey, amount: '90ml' }]
+  const cases = [
+    ['糯米今天吃了多少，喝了多少水？', /共 203g/, /共 140ml/],
+    ['昨天吃了多少，喝了多少水？', /共 80g/, /共 90ml/],
+    ['最近七天的喂食和饮水记录', /共 283g/, /共 230ml/]
+  ]
+  cases.forEach(([question, feed, water]) => {
+    const reply = knowledge.createReply(question, DB.paw_pet)
+    try {
+      assert.match(reply, /饮食与饮水记录/)
+      assert.match(reply, feed); assert.match(reply, water)
+      assert.ok(!/换粮|比目标少/.test(reply))
+      passed++
+    } catch (error) { failed++; console.log(`  ✗ ${question}: ${error.message}`) }
+  })
+  DB.paw_feeds = []; DB.paw_water_records = []
+  const empty = knowledge.createReply('今天吃了多少，喝了多少水？', DB.paw_pet)
+  if (empty.includes('喂食：暂无记录') && empty.includes('饮水：暂无记录') && !empty.includes('共 0')) passed++
+  else { failed++; console.log('  ✗ 空记录不应被当作摄入为零') }
+}
 
 console.log(`\n${passed}/${passed + failed} 通过`)
 process.exit(failed ? 1 : 0)

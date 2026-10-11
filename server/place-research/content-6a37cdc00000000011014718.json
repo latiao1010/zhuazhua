@@ -1,0 +1,28 @@
+{
+  "province": "福建省",
+  "city": "福州市",
+  "search_query": "福州 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "个体当天凉爽的感受不当作常年天气或安全保证。"
+  ],
+  "id": "6a37cdc00000000011014718",
+  "title": "福州永泰云顶天池⛰️小狗的staycation",
+  "author": "Dodo",
+  "date_text": "06-21",
+  "summary": "作者携西高地到永泰云顶天池，回复可从门口乘小飞鼠上山，不乘则需走台阶约20分钟。",
+  "places": [
+    {
+      "name": "云顶天池",
+      "category": "山岳景区",
+      "conditions": "作者携犬登顶并分享小飞鼠交通方式；停车在入口附近、需买票。设备适用犬型与安全要求应向景区确认。",
+      "location_text": "福州永泰云顶",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6a37cdc00000000011014718"
+}

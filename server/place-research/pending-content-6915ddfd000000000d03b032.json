@@ -1,0 +1,28 @@
+{
+  "province": "黑龙江省",
+  "city": "鸡西市",
+  "search_query": "兴凯湖 带狗",
+  "collected_at": "2026-10-03",
+  "read_status": "已读简短文字及展开评论，并查看当前视频静帧；未观看完整视频",
+  "source_type": "个人携犬自驾旅行",
+  "id": "6915ddfd000000000d03b032",
+  "title": "带着狗狗自驾巡边第12站|兴凯湖，该上班了",
+  "author": "历历回家吧",
+  "date_text": "2025-11-13",
+  "published_at": "2025-11-13",
+  "url": "https://www.xiaohongshu.com/explore/6915ddfd000000000d03b032",
+  "summary": "作者记录携犬到兴凯湖边，当前静帧能见犬在沙地活动，但未说明具体岸段、入口或许可；其他来源有景区拒绝记录，需要进一步定位。",
+  "places": [],
+  "candidate_places": [
+    {
+      "name": "兴凯湖湖边（岸段待核实）",
+      "location_text": "未明确兴凯湖哪一岸段",
+      "category": "湖岸",
+      "conditions": "只有简短打卡与单帧，不能据此认定收费景区允许犬只进入。"
+    }
+  ],
+  "comment_notes": [
+    "作者称是此前行程存货，实际到访日期未确认。"
+  ],
+  "verification_status": "视频和地点范围待核实，不计入有效正文目标。"
+}

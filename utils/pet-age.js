@@ -49,7 +49,8 @@ function calculateAge(input, today) {
   if (input.togetherSince) {
     const together = dateParts(input.togetherSince)
     if (!together || together.time < birth.time || together.time > now.time) throw new Error('相伴日期应在出生日期与今天之间')
-    days = Math.round((now.time-together.time)/DAY); hasCompanion = true
+    // 与首页的相伴纪念日一致：相遇当天计为第 1 天。
+    days = Math.round((now.time-together.time)/DAY) + 1; hasCompanion = true
   }
   let birthdayTime = anniversary(birth,(now.y-birth.y)*12)
   if (birthdayTime < now.time) birthdayTime = anniversary(birth,(now.y-birth.y+1)*12)

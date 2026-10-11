@@ -747,7 +747,7 @@ async function createShareInvitation(openid, payload = {}) {
   return { ok: true, code: finalCode, groupId: group._id, members: await listShareMembers(group._id) }
 }
 
-async function acceptShareInvitation(openid, code, profile = {}) {
+async function findShareInvitation(code) {
   await ensureShareCollections()
   const cleanCode = inviteCode(code)
   if (!cleanCode) throw new Error('请输入有效共享码')
@@ -758,6 +758,25 @@ async function acceptShareInvitation(openid, code, profile = {}) {
   const invite = (invitePage.data || [])[0]
   if (!invite) throw new Error('共享码不存在或已失效')
   if (Number(invite.expiresAt) && Number(invite.expiresAt) < Date.now()) throw new Error('共享码已过期，请让主人重新生成')
+  return invite
+}
+
+async function previewShareInvitation(openid, code) {
+  const invite = await findShareInvitation(code)
+  const scope = await getActiveScope(openid)
+  return {
+    ok: true,
+    groupId: invite.groupId,
+    alreadyJoined: !!scope.shared && scope.groupId === invite.groupId,
+    share: await getShareInfoForScope(scope)
+  }
+}
+
+async function acceptShareInvitation(openid, code, profile = {}) {
+  const invite = await findShareInvitation(code)
+  const scope = await getActiveScope(openid)
+  // 重复打开当前家庭的邀请无需重新写入昵称、关系或成员角色。
+  if (scope.shared && scope.groupId === invite.groupId) return { ...await getAllData(openid), alreadyJoined: true }
   const now = Date.now()
   const name = cleanText(profile.name || '我', 16)
   const relation = cleanText(profile.relation || '家人', 12)
@@ -856,6 +875,7 @@ exports.main = async (event = {}) => {
     if (event.action === 'setDataItem') return await setDataItem(openid, event.key, event.value)
     if (event.action === 'mutateDataRecord') return await mutateDataRecord(openid, event)
     if (event.action === 'createShareInvitation') return await createShareInvitation(openid, event)
+    if (event.action === 'previewShareInvitation') return await previewShareInvitation(openid, event.code)
     if (event.action === 'acceptShareInvitation') return await acceptShareInvitation(openid, event.code, event.profile)
     return { ok: false, error: '不支持的云函数操作' }
   } catch (error) {

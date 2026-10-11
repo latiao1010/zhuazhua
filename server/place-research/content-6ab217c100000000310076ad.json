@@ -1,0 +1,28 @@
+{
+  "province": "黑龙江省",
+  "city": "鸡西市",
+  "search_query": "兴凯湖 带狗",
+  "collected_at": "2026-10-03",
+  "read_status": "已读可见完整文字正文；评论范围见comment_notes，图片未读取",
+  "source_type": "个人携犬自驾旅行",
+  "id": "6ab217c100000000310076ad",
+  "title": "两人一狗，环国自驾",
+  "author": "自驾旅行日记（环国旅行中）",
+  "date_text": "09-22 黑龙江",
+  "published_at": null,
+  "summary": "作者记录两人一犬自驾途经兴凯湖后到鸡西，在动植物园营地停留整理床车。其称外省车辆当次可免费停两天；这是车辆营地经历，不能推断狗可进入动植物展示区域。",
+  "places": [
+    {
+      "name": "鸡西动植物园营地",
+      "location_text": "鸡西市动植物园相关车辆营地，具体入口未写",
+      "address": null,
+      "category": "营地",
+      "conditions": "携犬床车行程中实际停留，作者称外省车免费两天；犬只在营地活动、收费及停车资格须另问管理方，不代表动植物园展区允许携犬。"
+    }
+  ],
+  "comment_notes": [
+    "页面未呈现可读评论；正文未确认博物馆、纪念园、餐厅或动植物园展区携犬入内。"
+  ],
+  "verification_status": "个人携犬车辆停留线索；营地与园区展区必须分开，当前规则待核实。",
+  "url": "https://www.xiaohongshu.com/explore/6ab217c100000000310076ad"
+}

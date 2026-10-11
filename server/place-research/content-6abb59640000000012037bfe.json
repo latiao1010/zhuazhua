@@ -1,0 +1,37 @@
+{
+  "province": "安徽省",
+  "city": "宣城市",
+  "search_query": "宣城 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "带犬折扣为作者当次价格，购买条件及当前活动需核实。"
+  ],
+  "id": "6abb59640000000012037bfe",
+  "title": "带小狗自驾安徽｜皖南宣城·平垣秘境",
+  "author": "蛋黄派🥞",
+  "date_text": "4天前 浙江",
+  "summary": "作者携犬游平垣秘境，乘船串联四号码头、森林乐园和枫林市集，称中秋到访停车方便。",
+  "places": [
+    {
+      "name": "平垣秘境",
+      "category": "户外景区",
+      "conditions": "导航A出入口，带犬检票后领取贴纸与船票；乘船牵引、人穿救生衣。农场动物区域需看管犬，作者提到犬曾被马踢；小火车未体验。",
+      "location_text": "皖南宣城平垣秘境",
+      "address": null
+    }
+  ],
+  "candidate_places": [
+    {
+      "name": "女儿谷木屋民宿",
+      "category": "民宿",
+      "conditions": "作者评论称实际住过带小院的该民宿，但地址与行政归属未给。",
+      "location_text": "女儿谷木屋民宿",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6abb59640000000012037bfe"
+}

@@ -1,0 +1,33 @@
+{
+  "province": "安徽省",
+  "city": "宣城市",
+  "search_query": "宣城 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "鳄鱼湖为作者经历；敬亭山为二手限制线索，不作官方规定。",
+  "comment_notes": [],
+  "id": "6a7f477700000000290316c5",
+  "title": "宣城市区带狗旅游攻略",
+  "author": "圆的日志",
+  "date_text": "08-15",
+  "summary": "作者放弃敬亭山，携犬游鳄鱼湖约两小时，明确所述准入要求为肩高不超过40厘米。",
+  "places": [
+    {
+      "name": "鳄鱼湖（中国扬子鳄景区）",
+      "category": "景区",
+      "conditions": "作者携犬到访，称宠物肩高不能超过40厘米、犬不另收费；当期规则与开放情况需确认。",
+      "location_text": "宣城市区鳄鱼湖",
+      "address": null
+    },
+    {
+      "name": "敬亭山",
+      "category": "景区",
+      "conditions": "作者因查到不能带犬而放弃，评论承认来源为其他攻略，未本人到入口核实；禁犬信息待管理方确认。",
+      "location_text": "敬亭山",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6a7f477700000000290316c5"
+}

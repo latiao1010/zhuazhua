@@ -1,0 +1,28 @@
+{
+  "province": "黑龙江省",
+  "city": "鸡西市",
+  "search_query": "鸡西 宠物友好",
+  "collected_at": "2026-10-03",
+  "read_status": "已读完整可见文字正文与展开评论；折叠回复、图片未读取",
+  "source_type": "个人携犬自驾分享",
+  "id": "6a3f7426000000000803db30",
+  "title": "鸡西露营",
+  "author": "（まるちゃん)",
+  "date_text": "06-27",
+  "published_at": null,
+  "summary": "作者自驾到鸡西某营地住一晚，描述靠近道路、公园及购物区域，但未给营地名称；评论对其相对位置说法有异议，暂不能定位。",
+  "places": [],
+  "candidate_places": [
+    {
+      "name": "未具名营地",
+      "location_text": "鸡西，正文称临路近公园，精确地点未知",
+      "category": "营地",
+      "conditions": "带犬旅行标签与露营经历有关，营地管理和宠物准入未确认。"
+    }
+  ],
+  "comment_notes": [
+    "作者让读者查看页面定位，当前文字没有呈现该定位；评论质疑靠近万达的说法。"
+  ],
+  "verification_status": "地点待核实，不计入有效城市目标。",
+  "url": "https://www.xiaohongshu.com/explore/6a3f7426000000000803db30"
+}

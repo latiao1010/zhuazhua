@@ -161,7 +161,10 @@ function loadPage(relativePath, store, wx, weather) {
   Module._load = function patchedLoad(request, parent, isMain) {
     if (request === '../../utils/store') return store
     if (request === './store' && parent && parent.filename === knowledgePath) return store
-    if (request === '../../utils/weather') return weather || { getWeather: () => Promise.resolve({ apparent: 25, rainTime: '' }) }
+    if (request === '../../utils/weather') {
+      const actual = originalLoad.call(this, request, parent, isMain)
+      return { ...actual, getWeather: () => Promise.resolve({ ...actual.emptyWeather(), apparent: 25, rainTime: '' }), ...weather }
+    }
     return originalLoad.call(this, request, parent, isMain)
   }
   try {
@@ -215,6 +218,24 @@ function withTimers(run) {
 }
 
 async function main() {
+  await scenario('演示记录的默认输入与正式记录隔离', () => {
+    const state = makeState()
+    const store = makeStore(state)
+    let demo = true
+    store.isDemoMode = () => demo
+    const { wx } = makeWx()
+    wx.setStorageSync('paw_record_defaults_feed', { food: '正式主粮', amount: '100' })
+    const page = pageContext(loadPage('pages/feed/feed.js', store, wx))
+    page.onLoad({ type: 'feed' }); page.refresh(); page.openAdd()
+    assert.strictEqual(page.data.draft.food, '')
+    page.setData({ draft: { ...page.data.draft, food: '演示主粮', amount: '80' } })
+    page.saveRecord()
+    assert.strictEqual(wx.getStorageSync('paw_record_defaults_feed').food, '正式主粮')
+    assert.strictEqual(wx.getStorageSync('demo_paw_record_defaults_feed').food, '演示主粮')
+    page.openAdd(); assert.strictEqual(page.data.draft.food, '演示主粮')
+    demo = false
+    page.openAdd(); assert.strictEqual(page.data.draft.food, '正式主粮')
+  })
   await scenario('空存储能初始化覆盖六个月的全部模块假数据', () => {
     const backing = { paw_data_mode: 'demo' }
     const storage = new Proxy(backing, { get(target, key) { return target[key] }, set(target, key, value) { target[key] = value; if (String(key).startsWith('demo_')) target[String(key).slice(5)] = value; return true } })
@@ -626,13 +647,14 @@ async function main() {
     assert.strictEqual(calls.tabShows, 4)
   })
 
-  await scenario('照护入口跳入合并页，保留护理目标且不会污染档案跳转', () => {
+  await scenario('照护入口跳入记录页，保留护理目标且不会污染档案跳转', () => {
     const { wx, calls } = makeWx()
-    const page = loadPage('pages/account/account.js', makeStore(makeState()), wx)
+    const store = makeStore(makeState())
+    const page = loadPage('pages/records/records.js', store, wx)
     const context = pageContext(page)
     const navigation = require('../utils/tab-navigation')
     navigation.openTab('care', 'dental')
-    assert.strictEqual(calls.switches.pop(), '/pages/account/account')
+    assert.strictEqual(calls.switches.pop(), '/pages/records/records')
     page.onShow.call(context)
     assert.strictEqual(context.data.careDetailOpen, true)
     assert.strictEqual(context.data.selectedCare.key, 'dental')
@@ -642,12 +664,14 @@ async function main() {
     wx.pageScrollTo = options => { selector = options.selector }
     navigation.openTab('care')
     page.onShow.call(context)
-    assert.strictEqual(selector, '#care-overview')
+    assert.strictEqual(selector, undefined, '护理概览已常驻首屏，不应再滚动记录页')
+    assert.strictEqual(navigation.takeTarget('records'), undefined, '护理跳转目标应已消费')
     assert.strictEqual(context.data.careDetailOpen, false)
     navigation.openTab('account', 'weight')
-    page.onShow.call(context)
-    assert.strictEqual(context.data.profileField, 'weight')
-    assert.strictEqual(context.data.profileFieldEditOpen, true)
+    const account = pageContext(loadPage('pages/account/account.js', store, wx))
+    account.onShow()
+    assert.strictEqual(account.data.profileField, 'weight')
+    assert.strictEqual(account.data.profileFieldEditOpen, true)
     navigation.openTab('account')
     assert.strictEqual(navigation.takeTarget('account'), undefined)
   })
@@ -820,7 +844,11 @@ async function main() {
       shareReadOnly: true
     })
     page.openProfileFieldEdit.call(context, { currentTarget: { dataset: { field: 'name' } } })
-    assert.strictEqual(context.data.profileFieldEditOpen, false)
+    assert.strictEqual(context.data.profileFieldEditOpen, true)
+    assert.strictEqual(context.data.profileFieldValue, state.pet.name)
+    context.data.profileFieldValue = '不应写入'
+    page.saveProfileFieldEdit.call(context)
+    assert.strictEqual(state.pet.name, '糯米')
     page.editAvatar.call(context)
     page.openAddFamilyMember.call(context)
     assert.strictEqual(context.data.familyDraftOpen, false)
@@ -1226,7 +1254,7 @@ async function main() {
     }
   })
 
-  await scenario('摘要模块按20条展开，加载和折叠不影响完整复制', () => {
+  await scenario('摘要模块按5条展开，加载和折叠不影响完整复制', () => {
     const { wx, calls } = makeWx()
     const context = pageContext(loadPage('pages/manage/manage.js', makeStore(makeState()), wx))
     const summary = require('../utils/visit-summary')
@@ -1239,10 +1267,10 @@ async function main() {
       context.updateSummaryPreview()
       assert.strictEqual(context.data.summarySections[0].entries.length, 0)
       context.toggleSummarySection(event)
-      assert.strictEqual(context.data.summarySections[0].entries.length, 20)
+      assert.strictEqual(context.data.summarySections[0].entries.length, 5)
       context.moreSummaryRecords(event)
-      assert.strictEqual(context.data.summarySections[0].entries.length, 40)
-      context.moreSummaryRecords(event)
+      assert.strictEqual(context.data.summarySections[0].entries.length, 10)
+      for (let i = 0; i < 7; i++) context.moreSummaryRecords(event)
       assert.strictEqual(context.data.summarySections[0].entries.length, 45)
       context.toggleSummarySection(event)
       assert.strictEqual(context.data.summarySections[0].entries.length, 0)
@@ -1947,7 +1975,7 @@ async function main() {
     assert.ok(!appConfig.pages.includes('pages/avatar/avatar'))
   })
 
-  await scenario('首页在所有记录为空时仍能生成完整状态和 AI 预测', () => {
+  await scenario('首页空记录显示缺失状态，新增饮水后概况更新', () => {
     const state = makeState({
       feeds: [], stools: [], waters: [], walks: [], careRecords: [], weightRecords: []
     })
@@ -1955,32 +1983,35 @@ async function main() {
     const profile = loadPage('pages/profile/profile.js', makeStore(state), wx, { getWeather: () => Promise.resolve({ apparent: 25, rainTime: '' }) })
     const context = pageContext(profile)
     profile.refresh.call(context)
-    assert.strictEqual(context.data.homeDashboard.tasks.length, 6)
-    assert.strictEqual(context.data.homeDashboard.findings.length, 2)
+    assert.strictEqual(context.data.homeDashboard.statusCards.length, 4)
+    assert.ok(context.data.homeDashboard.recentOverview.alerts.some(item => item.id === 'water'))
     assert.strictEqual(context.data.todayFeedCount, 0)
     assert.strictEqual(context.data.todayStoolCount, 0)
     assert.strictEqual(context.data.weightTrend.history.length, 1)
     state.waters = [{ dayKey: TODAY, amount: 100 }]
     profile.refresh.call(context)
-    assert.strictEqual(context.data.homeDashboard.tasks.find(item => item.key === 'water').done, false)
+    assert.strictEqual(Number(context.data.homeDashboard.statusCards.find(item => item.action === 'water').value), 100)
     state.waters = [{ dayKey: TODAY, amount: 1000 }]
     profile.refresh.call(context)
-    assert.strictEqual(context.data.homeDashboard.tasks.find(item => item.key === 'water').done, true)
+    assert.strictEqual(Number(context.data.homeDashboard.statusCards.find(item => item.action === 'water').value), 1000)
   })
 
-  await scenario('天气定位和网络都失败时会回退到离线提示', async () => {
+  await scenario('天气定位失败时显示明确提示且不伪造温度', async () => {
     const weatherPath = path.join(ROOT, 'utils/weather.js')
     delete require.cache[require.resolve(weatherPath)]
     const originalWx = global.wx
     global.wx = {
-      getLocation(options) { options.fail(new Error('permission denied')) },
+      getSetting(options) { options.success({ authSetting: {} }) },
+      getFuzzyLocation(options) { options.fail({ errMsg: 'getFuzzyLocation:fail system error' }) },
       request(options) { options.fail(new Error('offline')) }
     }
     const weather = await require(weatherPath).getWeather()
     global.wx = originalWx
     assert.strictEqual(weather.live, false)
-    assert.strictEqual(weather.location, '本地提示')
-    assert.ok(weather.rainText.includes('审核版暂不获取定位'))
+    assert.strictEqual(weather.location, '')
+    assert.strictEqual(weather.temperature, '--')
+    assert.strictEqual(weather.status, 'location_failed')
+    assert.ok(weather.rainText.includes('无法定位'))
   })
 
   await scenario('合并照护后，三个 Tab 路由都指向真实文件', () => {
@@ -2265,25 +2296,24 @@ async function main() {
       .map(name => path.join(ROOT, `pages/${name}/${name}.wxml`))
     wxmlFiles.forEach(file => {
       const wxml = fs.readFileSync(file, 'utf8')
-      const scrollViews = [...wxml.matchAll(/<scroll-view\b[^>]*>/g)].map(match => match[0])
+      const scrollViews = [...wxml.matchAll(/<scroll-view\b(?:[^"'>]|"[^"]*"|'[^']*')*>/g)].map(match => match[0])
       scrollViews.forEach(tag => {
-        assert.ok(/show-scrollbar="false"/.test(tag), `${path.relative(ROOT, file)} exposes a scrollbar`)
+        assert.ok(/show-scrollbar="(?:false|\{\{false\}\})"/.test(tag), `${path.relative(ROOT, file)} exposes a scrollbar`)
       })
     })
 
     const chatWxml = fs.readFileSync(path.join(ROOT, 'pages/chat/chat.wxml'), 'utf8')
     assert.ok(/<scroll-view class="chat-scroll"[^>]*scroll-y[^>]*show-scrollbar="false"/.test(chatWxml))
     assert.ok(/@media[^\{]*max-height\s*:\s*620px/.test(chatStyles))
-    // The home page now scrolls naturally at every height, rather than
-    // requiring a short-screen override to undo a fixed viewport height.
+    // 首页按当前需求保持一屏；大字体和短屏的适配由专用规则承接。
     const profileWxml = fs.readFileSync(path.join(ROOT, 'pages/profile/profile.wxml'), 'utf8')
-    assert.ok(/class="page journal-home"/.test(profileWxml))
-    assert.ok(!/\.journal-home\s*\{[^}]*height\s*:\s*100vh/.test(profileStyles))
-    assert.ok(!/\.journal-home\s*\{[^}]*overflow\s*:\s*hidden/.test(profileStyles))
+    assert.ok(/class="page journal-home(?:\s|")/.test(profileWxml))
+    assert.strictEqual(JSON.parse(fs.readFileSync(path.join(ROOT, 'pages/profile/profile.json'), 'utf8')).disableScroll, true)
+    assert.ok(profileStyles.includes('home-large-text'))
     const feedStyles = fs.readFileSync(path.join(ROOT, 'pages/feed/feed.wxss'), 'utf8')
     assert.ok(/\.sheet\s*\{[^}]*max-height\s*:\s*88vh[^}]*overflow-y\s*:\s*auto/s.test(feedStyles))
     assert.ok(/@media[^\{]*max-width\s*:\s*360px/.test(chatStyles))
-    assert.ok(/@media[^\{]*max-width\s*:\s*360px/.test(profileStyles))
+    assert.ok(/@media[^\{]*max-height\s*:\s*480px/.test(profileStyles))
     assert.ok(/@media[^\{]*max-width\s*:\s*360px/.test(accountStyles))
     assert.ok(/\.profile-edit-page[\s\S]*safe-area-inset-bottom/.test(accountStyles))
 

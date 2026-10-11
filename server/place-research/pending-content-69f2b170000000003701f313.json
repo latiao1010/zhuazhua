@@ -1,0 +1,26 @@
+{
+  "province": "黑龙江省",
+  "city": "牡丹江市",
+  "search_query": "牡丹江 宠物友好",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "read_status": "已读可见完整文字正文及展开评论；图片、折叠回复未读取",
+  "id": "69f2b170000000003701f313",
+  "title": "牡丹江宠物友好餐厅",
+  "author": "Bosco",
+  "date_text": "04-30",
+  "source_type": "个人携犬餐厅体验",
+  "summary": "作者电话询问后获店主同意带小型犬到烤肉店，记录用餐体验，但正文没有店名或地址。",
+  "places": [],
+  "candidate_places": [
+    {
+      "name": "未具名烤肉店",
+      "location_text": "牡丹江，具体店铺未知",
+      "category": "餐厅",
+      "conditions": "作者称仅小型犬可入，需事先电话询问；门店身份待图片或作者信息核实。"
+    }
+  ],
+  "comment_notes": [],
+  "verification_status": "店名待核实，不计入有效目标。",
+  "url": "https://www.xiaohongshu.com/explore/69f2b170000000003701f313"
+}

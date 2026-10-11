@@ -1,0 +1,100 @@
+{
+  "province": "辽宁省",
+  "city": "鞍山市",
+  "search_query": "鞍山 宠物友好",
+  "collected_at": "2026-10-03",
+  "id": "67f3a24a000000001e007344",
+  "title": "鞍山！宠物友好信息汇总❤️",
+  "author": "喜棠的猫",
+  "date_text": "编辑于 07-23",
+  "published_at": null,
+  "read_status": "已读完整文字正文；评论尚在加载，未逐张解读照片",
+  "source_type": "作者体验、店员答复与读者反馈混合汇总",
+  "summary": "作者汇总鞍山携宠信息，区分商场区域和体型要求，并提供部分餐厅店员答复。多处公园的内容只是曾未被劝离或传闻，不将这些经历等同于正式准入。",
+  "places": [
+    {
+      "name": "yoyo公园",
+      "location_text": "鞍山市，名称按作者原文保留",
+      "address": null,
+      "category": "公园",
+      "conditions": "作者称草坪新增宠物区域；区域位置、牵绳和体型要求需园方确认。"
+    },
+    {
+      "name": "鞍山万象汇",
+      "location_text": "鞍山市万象汇",
+      "address": null,
+      "category": "商场",
+      "conditions": "作者称母婴和餐饮区域不允许犬只进入，其余区域有体型限制；柯基仅为体验举例，不是正式体型标准。"
+    },
+    {
+      "name": "鞍山大悦城",
+      "location_text": "鞍山市大悦城",
+      "address": null,
+      "category": "商场",
+      "conditions": "作者记载身高65以下及中大型犬戴嘴套要求，未注明单位和测量方法；另一来源对红线以上犬只的解释有差异，阈值及现行规则需向商场确认。"
+    },
+    {
+      "name": "碧乐城",
+      "location_text": "鞍山市碧乐城",
+      "address": null,
+      "category": "商场",
+      "conditions": "作者记载肩高40及小型犬友好，但未注明测量单位、完整条款或区域，需核实正式准入标准。"
+    },
+    {
+      "name": "鞍山万达广场",
+      "location_text": "鞍山市，具体分店未写明",
+      "address": null,
+      "category": "商场",
+      "conditions": "作者称商场部分区域可携犬，餐厅与超市不允许；同文又列出部分餐厅，存在区域或门店差异，不推定所有区域通行。"
+    },
+    {
+      "name": "东山烤肉（二部）",
+      "location_text": "鞍山市，二部，门牌未给",
+      "address": null,
+      "category": "餐厅",
+      "conditions": "作者称询问店员获知大型犬也可，须管理好犬只；当前座位和体型规则待再次确认。"
+    },
+    {
+      "name": "鲜明村烧烤",
+      "location_text": "鞍山市，分店未给",
+      "address": null,
+      "category": "餐厅",
+      "conditions": "汇总中有28斤柯基入店经历，不能推定所有分店或更大犬只均可进入。"
+    },
+    {
+      "name": "湘小信",
+      "location_text": "鞍山市，分店未给",
+      "address": null,
+      "category": "餐厅",
+      "conditions": "来源称安排宠物专区，具体分店、体型及座位需核实。"
+    },
+    {
+      "name": "串肉王（明达夜市）",
+      "location_text": "鞍山市明达夜市",
+      "address": null,
+      "category": "餐厅",
+      "conditions": "来源记载成年金毛可进入，未交代室内外座位或其他要求。"
+    },
+    {
+      "name": "台町1919cafe",
+      "location_text": "鞍山市，门牌未给",
+      "address": null,
+      "category": "咖啡馆",
+      "conditions": "作者称店员确认成年秋田体型可入，当前体型和区域要求需确认。"
+    },
+    {
+      "name": "博学派",
+      "location_text": "鞍山市，门牌未给",
+      "address": null,
+      "category": "餐饮",
+      "conditions": "来源称要求犬只体型较小、安静且不乱跑，未给正式尺寸标准。"
+    }
+  ],
+  "comment_notes": [
+    "评论未读；正文内容混合亲身经历、店员询问和读者转述，未统一标为作者实测。",
+    "219、湖南、烈士山、永乐、孟泰等公园有设牌或保安阻拦信息，未以无人管理或未被驱赶作为宠物友好许可。",
+    "其余仅列名称、未给分店或具体条件的商户未逐个挂入目录；原帖链接保留供复核。"
+  ],
+  "verification_status": "混合来源汇总，不是官方规则；商场体型阈值与餐饮区域存在差异待核实，未将未被劝离视为准入。页面仅月日。",
+  "url": "https://www.xiaohongshu.com/explore/67f3a24a000000001e007344"
+}

@@ -1,0 +1,34 @@
+{
+  "province": "辽宁省",
+  "city": "盘锦市",
+  "search_query": "盘锦 宠物友好",
+  "collected_at": "2026-10-03",
+  "places": [],
+  "id": "6ab76af700000000180174f0",
+  "title": "16天带猫沿海自驾｜渤海-黄海第2站盘锦🌊",
+  "author": "小猫的远方诗",
+  "date_text": "7天前 北京",
+  "published_at": null,
+  "read_status": "已读完整文字正文；页面显示暂无评论；未解读照片",
+  "source_type": "携猫自驾系列的风景篇",
+  "summary": "正文主要介绍金帛滩与黑风关古镇风景和游乐安排，虽然属于带猫旅行系列，没有逐景点说明猫是否随行进入，也未说明犬只准入。",
+  "candidate_places": [
+    {
+      "name": "金帛滩",
+      "location_text": "盘锦大洼行程",
+      "category": "沙滩",
+      "conditions": "有景点到访文字，没有单独的携宠准入证据。"
+    },
+    {
+      "name": "黑风关古镇",
+      "location_text": "盘锦大洼行程",
+      "category": "景区",
+      "conditions": "有游乐和演出介绍，但未明确携猫入园或允许动物参加项目。"
+    }
+  ],
+  "comment_notes": [
+    "无评论补充；不由系列标题推定每个地点或项目允许宠物。"
+  ],
+  "verification_status": "携宠到访细节待核实，不计入有效目标；相对时间未换算。",
+  "url": "https://www.xiaohongshu.com/explore/6ab76af700000000180174f0"
+}

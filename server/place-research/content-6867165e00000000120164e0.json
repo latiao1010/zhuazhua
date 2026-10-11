@@ -1,0 +1,28 @@
+{
+  "province": "安徽省",
+  "city": "滁州市",
+  "search_query": "滁州 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": "2025-07-04",
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "住宿酒店未具名，不收为地点。"
+  ],
+  "id": "6867165e00000000120164e0",
+  "title": "胖哥打卡101：安徽滁州",
+  "author": "梧桐雨221106",
+  "date_text": "2025-07-04",
+  "summary": "作者到琅琊山时明确景区不让犬进，只让柴犬在山脚活动后回酒店，家人另乘车游山。",
+  "places": [
+    {
+      "name": "琅琊山景区",
+      "category": "不允许携犬的场所",
+      "conditions": "作者明确景区禁止犬进入，未携犬上山；山脚活动不能推定景区准入，小路与夜间入园说法不作为许可。",
+      "location_text": "滁州琅琊山",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6867165e00000000120164e0"
+}

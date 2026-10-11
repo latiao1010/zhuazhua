@@ -1,0 +1,33 @@
+{
+  "province": "安徽省",
+  "city": "马鞍山市",
+  "search_query": "马鞍山 宠物友好",
+  "collected_at": "2026-10-03",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [],
+  "id": "6a116866000000000702f0ef",
+  "title": "带小叮当去马鞍山打卡雨山湖公园",
+  "author": "小叮当",
+  "date_text": "05-23",
+  "summary": "作者携比熊游雨山湖公园，提到绣球景观、附近鹃岛公园及湖边连接小路；自述牵绳拾便。",
+  "places": [
+    {
+      "name": "雨山湖公园",
+      "category": "公园",
+      "conditions": "作者明确自述宠物友好并携犬游园，现行范围与规定需确认。",
+      "location_text": "马鞍山雨山湖公园",
+      "address": null
+    },
+    {
+      "name": "鹃岛公园及连接湖边步道",
+      "category": "公园",
+      "conditions": "作者同次游记提到邻近公园与湖边路线，未分别说明室内设施及管理规定。",
+      "location_text": "雨山湖公园附近",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6a116866000000000702f0ef"
+}

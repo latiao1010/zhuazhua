@@ -1,0 +1,28 @@
+{
+  "province": "安徽省",
+  "city": "池州市",
+  "search_query": "池州 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "作者所述不到500元为历史房价，非当前报价。"
+  ],
+  "id": "6a85549b000000002403d7db",
+  "title": "池州小清迈·九子岩下的宠物友好酒店",
+  "author": "白芷的红旗",
+  "date_text": "08-19",
+  "summary": "作者携犬住九子岩附近德懋堂，房间外有草地，评价安静但建筑较旧、潮湿。",
+  "places": [
+    {
+      "name": "德懋堂（九子岩附近）",
+      "category": "酒店",
+      "conditions": "作者携犬入住，称房门外可到草地；其他读者说指定宠物房型不收清洁费，非作者直接确认，预订需核实。",
+      "location_text": "池州九子岩附近",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6a85549b000000002403d7db"
+}

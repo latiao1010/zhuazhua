@@ -1,0 +1,121 @@
+<view class="stats-page">
+ <view class="stats-heading"><view><text class="eyebrow">运营数据</text><view class="stats-title">运营看板</view></view><button class="refresh" loading="{{loading}}" disabled="{{loading}}" bindtap="refresh">刷新</button></view>
+ <view class="source-switch" wx:if="{{debug}}"><button class="{{source === 'local' ? 'active' : ''}}" data-source="local" bindtap="changeSource" disabled="{{releaseEdit || releaseSaving || feedbackSaving}}">本机调试</button><button class="{{source === 'cloud' ? 'active' : ''}}" data-source="cloud" bindtap="changeSource" disabled="{{releaseEdit || releaseSaving || feedbackSaving}}">正式用户</button></view>
+ <view class="stats-note">{{source === 'local' ? '仅当前设备的开发、体验和演示数据，与正式统计分开保存。' : '仅统计正式版的非演示操作；人数按微信用户去重。'}}</view>
+ <view class="range-switch"><button class="{{days === 1 ? 'active' : ''}}" data-days="1" bindtap="changeRange">今天</button><button class="{{days === 7 ? 'active' : ''}}" data-days="7" bindtap="changeRange">近7天</button><button class="{{days === 30 ? 'active' : ''}}" data-days="30" bindtap="changeRange">近30天</button></view>
+ <scroll-view scroll-x class="dashboard-tabs" show-scrollbar="{{false}}"><view class="dashboard-tabs-inner">
+  <button class="{{tab === 'overview' ? 'active' : ''}}" data-tab="overview" bindtap="changeTab">概况</button>
+  <button class="{{tab === 'exposures' ? 'active' : ''}}" data-tab="exposures" bindtap="changeTab">首页曝光</button>
+  <button class="{{tab === 'funnels' ? 'active' : ''}}" data-tab="funnels" bindtap="changeTab">使用流程</button>
+  <button class="{{tab === 'channels' ? 'active' : ''}}" data-tab="channels" bindtap="changeTab">拉新来源</button>
+  <button class="{{tab === 'versions' ? 'active' : ''}}" data-tab="versions" bindtap="changeTab">版本对比</button>
+  <button class="{{tab === 'health' ? 'active' : ''}}" data-tab="health" bindtap="changeTab">运行与维护</button>
+  <button class="{{tab === 'modules' ? 'active' : ''}}" data-tab="modules" bindtap="changeTab">功能明细</button>
+  <button class="{{tab === 'feedback' ? 'active' : ''}}" data-tab="feedback" bindtap="changeTab">用户反馈</button>
+ </view></scroll-view>
+ <view class="error-card" wx:if="{{error}}">{{error}}<button bindtap="refresh">重新加载</button></view>
+ <block wx:elif="{{summary}}">
+  <view class="date-caption">{{range}} · {{updated}} 更新</view>
+  <view class="error-card" wx:if="{{operationsError && tab !== 'modules' && tab !== 'feedback'}}">{{operationsError}}<button bindtap="refresh">重新加载</button></view>
+  <block wx:if="{{operations}}">
+   <view class="alert-banner" wx:if="{{health.alerts.length && tab !== 'health'}}" data-tab="health" bindtap="changeTab">有 {{health.alerts.length}} 项运营提醒 · 查看详情 ›</view>
+   <view class="stats-note attention" wx:if="{{operations.metricsLimited}}">部分维度达到汇总容量上限，当前结果可能不完整。</view>
+   <block wx:if="{{tab === 'overview'}}">
+    <view class="totals ops-totals"><view><text>{{operations.users}}</text><text>{{source === 'local' ? '活跃设备' : '活跃用户'}}</text></view><view><text>{{operations.newUsers}}</text><text>首次使用</text></view><view><text>{{operations.returningUsers}}</text><text>期间老用户</text></view><view><text>{{operations.recordUsers}}</text><text>完成新增记录</text></view></view>
+    <view class="stats-note">老用户指首次使用早于所选时段、期间又有活动的用户。新增记录仅含喂食、饮水、排便、散步，编辑旧记录不计入。</view>
+    <view class="retention-grid"><view class="stats-card" wx:for="{{operations.retention}}" wx:key="day"><view class="section-heading">第 {{item.day}} 天留存</view><view class="retention-value">{{item.rate}}</view><view class="stats-note">{{item.returned}} / {{item.eligible}} {{source === 'local' ? '台设备' : '人'}} 回访</view><view class="stats-note" wx:if="{{item.pending}}">{{item.pending}} {{source === 'local' ? '台设备' : '人'}}尚待观察</view></view></view>
+    <view class="stats-note stats-footer">以所选时段内首次被新版统计到的用户为一批，按北京时间自然日计算；观察日完整结束后才计入分母。近7天的新用户尚未满7天，可切到近30天查看。首次使用不代表首次安装。</view>
+    <view class="stats-card"><view class="section-heading">每日活跃</view><view class="trend"><view class="trend-day" wx:for="{{operations.daily}}" wx:key="day"><view class="trend-bar-space"><view class="trend-bar" style="height:{{item.height}}%"></view></view><text wx:if="{{days <= 7 || index % 5 === 0}}">{{item.label}}</text></view></view><view class="daily-metrics"><view wx:for="{{operations.daily}}" wx:key="day"><text>{{item.label}}</text><text>活跃 {{item.users}} · 新增 {{item.newUsers}}</text></view></view></view>
+    <view class="stats-card"><view class="section-heading">版本记录</view><view class="action-row" wx:for="{{operations.versions}}" wx:key="version"><text>{{item.version}}</text><text>{{item.events}} 条事件</text></view><view class="empty" wx:if="{{!operations.versions.length}}">发布新版后开始累计</view><view class="stats-note">用于识别数据所属版本；事件数不是版本质量评分。{{operations.versionsLimited ? '仅列事件最多的20个版本。' : ''}}</view></view>
+   </block>
+   <block wx:if="{{tab === 'exposures'}}">
+    <view class="stats-note">入口至少一半出现在屏幕中并持续 0.5 秒，或被主动点击，才计一次曝光。同一次首页停留，同一入口的曝光和点击各计一次；点击率只包含有对应曝光的点击。</view>
+    <view class="stats-card"><view class="exposure-head"><text>首页入口</text><text>曝光</text><text>点击</text><text>点击率</text></view><view class="exposure-row" wx:for="{{exposureRows}}" wx:key="entry"><text>{{item.label}}</text><text>{{item.impressions}}</text><text>{{item.clicks}}</text><text>{{item.rate}}</text></view></view>
+    <view class="stats-note stats-footer">“一起发现”仅统计当前卡片。切到后台、打开遮挡弹层后停止计时。旧版本没有曝光事件时显示 0，不使用页面访问数代替曝光。</view>
+   </block>
+   <block wx:if="{{tab === 'versions'}}">
+    <view class="stats-note">选择两个版本，比较同一时段的流程完成率、操作失败率和耗时。用户取消单独计数，不计入失败率；不同版本人群和来源可能不同，不能直接推断改版的因果效果。</view>
+    <include src="release-records.wxml" />
+    <view class="version-pickers" wx:if="{{versionOptions.length}}"><picker range="{{versionOptions}}" value="{{versionA}}" data-field="versionA" bindchange="chooseVersion"><view>版本 A · {{versionOptions[versionA]}} ⌄</view></picker><picker range="{{versionOptions}}" value="{{versionB}}" data-field="versionB" bindchange="chooseVersion"><view>版本 B · {{versionOptions[versionB]}} ⌄</view></picker></view>
+    <view class="stats-note" wx:if="{{versionOptions.length < 2}}">{{versionOptions.length ? '目前只有一个版本；发布后续版本后即可对比。' : '暂无新版统计数据。'}}</view>
+    <view class="stats-card" wx:if="{{comparisonRows.length}}"><view class="comparison-row" wx:for="{{comparisonRows}}" wx:key="key"><view class="comparison-label">{{item.label}}<text wx:if="{{item.small}}">样本不足 20 次，仅供观察</text></view><view class="comparison-values"><view>{{item.a}}<text>{{item.noteA}}</text></view><view>{{item.b}}<text>{{item.noteB}}</text></view></view></view></view>
+   </block>
+   <block wx:if="{{tab === 'health'}}">
+    <view class="stats-card delivery-card">
+     <view class="section-heading">统计数据完整度<button wx:if="{{source === 'cloud'}}" bindtap="loadQuality" loading="{{qualityLoading}}">刷新</button></view>
+     <view class="stats-note" wx:if="{{source === 'local'}}">开发、体验和演示事件只保存在本机，无网络上报样本。切换“正式用户”查看接收和发送诊断。</view>
+     <block wx:else>
+      <view class="error-card" wx:if="{{qualityError}}">{{qualityError}}</view>
+      <view class="empty" wx:elif="{{qualityLoading && !quality}}">正在加载发送诊断…</view>
+      <block wx:if="{{quality}}">
+       <view class="delivery-totals"><view><text>{{quality.received}}</text>云端收到</view><view><text>{{quality.snapshots ? quality.failedBatches : '—'}}</text>报告失败批次</view><view><text>{{quality.snapshots ? quality.dropped : '—'}}</text>报告丢弃事件</view></view>
+       <view class="stats-note attention" wx:if="{{quality.limited}}">部分版本超出汇总容量，当前结果不完整。</view>
+       <view class="empty" wx:if="{{!quality.rows.length}}">暂无接收或诊断样本，不能据此判断用户没有使用。</view>
+       <view class="delivery-row" wx:for="{{quality.rows}}" wx:key="version">
+        <view class="delivery-version">{{item.version}}</view>
+        <view>收到 {{item.received}} 条 · 延迟超过 1 分钟 {{item.delayed}} 条</view>
+        <view>平均接收延迟 {{item.latencyLabel}} · 最长 {{item.maxLatencyLabel}}</view>
+        <view>最近收到事件：{{item.lastReceivedLabel}}</view>
+        <block wx:if="{{item.snapshots}}">
+         <view>发送失败 {{item.failedBatches}} 批 · 部分确认 {{item.partialBatches}} 批</view>
+         <view class="{{item.overflow + item.expired + item.rejected ? 'attention' : ''}}">缓存超限 {{item.overflow}} 条 · 过期 {{item.expired}} 条 · 无效 {{item.rejected}} 条</view>
+         <view>缓存写入失败 {{item.storageFailures}} 次</view>
+         <view>诊断快照 {{item.snapshots}} 份 · 最近补报 {{item.lastReportLabel}}</view>
+        </block>
+        <view class="attention" wx:else>尚未收到此版本的发送诊断</view>
+       </view>
+      </block>
+      <view class="stats-note">云端收到按事件发生日期统计；客户端诊断按失败或丢弃发生日期统计。重试失败批次不等于事件丢失。延迟包含离线与排队时间，受设备时钟影响，不是接口响应耗时。</view>
+      <view class="stats-note">诊断恢复联网后才能补报，关闭统计、清除缓存、长时间离线或旧版本无诊断时仍会缺失。这里不能推算全体用户的数据完整率。</view>
+     </block>
+    </view>
+    <view class="stats-card"><view class="section-heading">今日告警<button bindtap="loadHealth" loading="{{healthLoading}}">刷新</button></view><view class="error-card" wx:if="{{healthError}}">{{healthError}}</view><view class="alert-item" wx:for="{{health.alerts}}" wx:key="key"><view>{{item.title}}</view><text>{{item.version ? item.version + ' · ' : ''}}{{item.detail}}</text></view><view class="empty" wx:if="{{health && !health.alerts.length}}">当前未触发告警阈值</view><view class="stats-note">每天独立统计：至少 20 次操作、5 次失败且失败率达到 10%，或至少 5 次慢操作且慢操作占比达到 20%，触发提醒。今日统计事件达到 10 万条提示检查云资源用量；这不是账单金额告警。</view></view>
+    <view class="stats-card"><view class="section-heading">操作稳定性</view><view class="measure-row" wx:for="{{operations.measures}}" wx:key="index"><view>{{item.version}} · {{item.moduleLabel}} · {{item.label}}</view><text>成功 {{item.success}} · 失败 {{item.failure}} · 取消 {{item.cancelled}}</text><text>平均 {{item.avgMs === null ? '—' : item.avgMs}} ms · 慢操作 {{item.slow}} 次</text></view><view class="empty" wx:if="{{!operations.measures.length}}">该时段暂无耗时样本</view></view>
+    <view class="stats-card"><view class="section-heading">自动汇总与清理</view><view class="stats-note" wx:if="{{source === 'local'}}">调试数据只保存在本机；云端任务在“正式用户”中查看。</view><block wx:else><view class="stats-note">最近成功：{{health.lastRun || '尚无成功记录'}}</view><view class="stats-note">明细与流程保留 90 天；处理完毕的反馈保留 180 天；反馈限额凭证到期后清理。先封存完整日报，再清理对应明细，未处理反馈继续保留。</view><view class="stats-note">日报保留汇总，不含账号或反馈正文；首次使用日期和来源摘要继续保留，避免回访用户被重新计为新增。封存等待 15 天，覆盖离线补报与跨日流程。</view></block></view>
+    <view class="stats-card" wx:if="{{source === 'cloud'}}"><view class="section-heading">已保存日报<button bindtap="refreshHistory" loading="{{historyLoading}}">刷新</button></view><view class="stats-note">当前与封存日报按日期展示；人数不可跨日相加。</view><view class="error-card" wx:if="{{historyError}}">{{historyError}}</view><view class="history-row" wx:for="{{historyRows}}" wx:key="day"><view>{{item.day}} · {{item.finalized ? '已封存' : '待封存'}}</view><text>活跃 {{item.users}} · 新增 {{item.newUsers}} · 事件 {{item.events}}</text></view><view class="empty" wx:if="{{!historyRows.length && !historyLoading}}">定时任务运行后生成日报</view><button class="feedback-more" wx:if="{{historyCursor}}" bindtap="moreHistory" loading="{{historyLoading}}">更早日报</button></view>
+   </block>
+   <block wx:if="{{tab === 'funnels'}}">
+    <view class="stats-note">每次打开新增表单、进入制作页或查询地点列表算一次流程。同一次流程按先后顺序累计，百分比以第一步为分母；离开后返回原流程可继续完成。</view>
+    <view class="stats-card funnel-card" wx:for="{{operations.funnels}}" wx:key="name"><view class="section-heading">{{item.label}}</view><view class="funnel-step" wx:for="{{item.steps}}" wx:for-item="step" wx:for-index="stepIndex" wx:key="label"><view class="step-number">{{stepIndex + 1}}</view><view class="step-label"><view>{{step.label}}</view><text wx:if="{{stepIndex > 0}}">较上一步减少 {{step.drop}} 次</text></view><view class="step-count">{{step.count}}<text>{{step.rate}}</text></view></view></view>
+    <view class="stats-note stats-footer">分享入口不等于已发送成功。直接打开好友结果页或地点详情，不会伪造前面的制作或查询步骤。开发/演示流程与正式流程分别统计。</view>
+   </block>
+   <block wx:if="{{tab === 'channels'}}">
+    <view class="stats-note">按首次被统计到的入口归属渠道，期间再次进入不会重复算新增；无法识别的来源保留为“未识别”。</view>
+    <view class="stats-card channel-card" wx:for="{{operations.channels}}" wx:key="channel"><view class="section-heading">{{item.label}}</view><view class="channel-metrics"><view><text>{{item.users}}</text><text>新增{{source === 'local' ? '设备' : '用户'}}</text></view><view><text>{{item.activation}}</text><text>完成新增记录</text></view><view><text>{{item.retention}}</text><text>第7天留存</text></view></view></view>
+    <view class="empty" wx:if="{{!operations.channels.length}}">这个时段暂无首次使用数据</view>
+    <view class="stats-card"><view class="section-heading">来源口径</view><view class="stats-note">年龄卡、性格卡、宾果卡的小程序码按卡片类型区分。聊天和朋友圈分享链接也带功能来源标记，不追踪分享给了谁。推广渠道需使用带标记的入口；未带标记的访问无法事后还原来源。</view><view class="stats-note">“完成新增记录”指该批新增用户在所选时段内至少完成一次日常新增记录的比例。没有足够观察样本时留存显示“—”。</view></view>
+   </block>
+   <view wx:if="{{operations.limited && tab !== 'modules' && tab !== 'feedback'}}" class="stats-note stats-footer">本机仅保留最近3000条流程事件，部分旧流程可能不完整；正式汇总不使用此本机上限。</view>
+  </block>
+  <block wx:if="{{tab === 'feedback'}}">
+   <view class="stats-note">反馈列表不受上方日期范围限制，按处理状态筛选；{{source === 'local' ? '当前只显示本机调试反馈。' : '仅管理员可查看所有用户反馈。'}}</view>
+   <view class="feedback-filters"><button wx:for="{{feedbackStates}}" wx:key="value" class="{{feedbackStatus === item.value ? 'active' : ''}}" data-status="{{item.value}}" bindtap="filterFeedback">{{item.label}}</button></view>
+   <view class="error-card" wx:if="{{feedbackError}}">{{feedbackError}}<button bindtap="refreshFeedback">重新加载</button></view>
+   <view class="stats-card feedback-item" wx:for="{{feedbackRows}}" wx:key="id">
+    <view class="section-heading">{{item.typeLabel}}<text class="feedback-status">{{item.statusLabel}}</text></view><view class="stats-note">{{item.moduleLabel}} · {{item.version}} · {{item.platform}}</view><text class="feedback-message" selectable>{{item.message}}</text>
+    <view class="feedback-reply" wx:if="{{item.reply}}"><view>已回复用户</view><text class="feedback-message" selectable>{{item.reply}}</text><view class="stats-note" wx:if="{{item.fixVersion}}">对应修复版本：{{item.fixVersion}}</view><view class="stats-note">{{item.replyDateLabel}}</view></view>
+    <view class="feedback-foot"><text>{{item.dateLabel}}</text><button data-id="{{item.id}}" bindtap="changeFeedback" disabled="{{feedbackSaving}}">{{item.reply ? '编辑处理结果' : '处理与回复'}}</button></view>
+    <view class="reply-editor" wx:if="{{feedbackEdit.id === item.id}}">
+     <picker range="{{replyStates}}" range-key="label" value="{{feedbackEdit.statusIndex}}" bindchange="chooseReplyStatus" disabled="{{feedbackSaving}}"><view class="reply-state">处理状态：{{replyStates[feedbackEdit.statusIndex].label}} ⌄</view></picker>
+     <textarea value="{{feedbackEdit.reply}}" data-field="reply" bindinput="editReply" maxlength="1000" disabled="{{feedbackSaving}}" placeholder="写给用户的处理说明，例如已修复的问题、解决办法或需要补充的信息。" cursor-spacing="100" />
+     <view class="reply-count">{{feedbackEdit.reply.length}} / 1000</view>
+     <input value="{{feedbackEdit.fixVersion}}" data-field="fixVersion" bindinput="editReply" maxlength="32" disabled="{{feedbackSaving}}" placeholder="对应修复版本（选填），例如 1.2.3" />
+     <view class="stats-note">回复和版本会显示在用户的“我的反馈”中。标记已处理时请填写说明；只有已确认的修复才填写版本。</view>
+     <view class="error-card" wx:if="{{replyError}}">{{replyError}}</view>
+     <button class="reply-rebase" wx:if="{{feedbackEdit.updatedAt !== item.updatedAt}}" bindtap="acceptLatestReply" disabled="{{feedbackSaving}}">核对最新回复后继续编辑</button>
+     <view class="reply-actions"><button bindtap="cancelReply" disabled="{{feedbackSaving}}">收起</button><button class="reply-save" bindtap="saveReply" loading="{{feedbackSaving}}" disabled="{{feedbackSaving}}">保存处理结果</button></view>
+    </view>
+   </view>
+   <view class="empty" wx:if="{{feedbackLoading}}">正在加载反馈…</view><view class="empty" wx:elif="{{!feedbackRows.length && !feedbackError}}">暂无{{feedbackStatus ? '此状态的' : ''}}反馈</view>
+   <button class="feedback-more" wx:if="{{feedbackCursor}}" bindtap="moreFeedback" loading="{{feedbackLoading}}">查看更多</button>
+  </block>
+  <block wx:if="{{tab === 'modules'}}">
+  <view class="totals"><view><text>{{summary.users}}</text><text>{{source === 'local' ? '访问设备' : '访问人数'}}</text></view><view><text>{{summary.views}}</text><text>模块访问</text></view><view><text>{{summary.clicks}}</text><text>操作点击</text></view><view><text>{{summary.completes}}</text><text>操作完成</text></view><view><text>{{summary.shares}}</text><text>分享入口</text></view><view class="{{summary.errors ? 'attention' : ''}}"><text>{{summary.errors}}</text><text>操作失败</text></view></view>
+  <view class="stats-card"><view class="section-heading">点击趋势</view><view class="trend"><view class="trend-day" wx:for="{{daily}}" wx:key="day"><view class="trend-bar-space"><view class="trend-bar" style="height:{{item.height}}%"></view></view><text wx:if="{{days <= 7 || index % 5 === 0}}">{{item.label}}</text></view></view></view>
+  <view class="stats-card"><view class="section-heading">模块统计<button bindtap="toggleEmpty">{{showEmpty ? '隐藏未使用' : '显示全部模块'}}</button></view><view class="module-table"><view class="table-head"><text>模块 / 人数</text><text>访问</text><text>点击</text><text>完成</text><text>失败</text></view><button class="module-row {{selectedModule === item.module ? 'selected' : ''}}" wx:for="{{rows}}" wx:key="module" data-module="{{item.module}}" bindtap="chooseModule"><view>{{item.label}}<text>{{item.users}} {{source === 'local' ? '台设备' : '人'}} · 分享入口 {{item.shares}}</text></view><text>{{item.views}}</text><text>{{item.clicks}}</text><text>{{item.completes}}</text><text class="{{item.errors ? 'attention' : ''}}">{{item.errors}}</text></button></view><view class="empty" wx:if="{{!rows.length}}">该时段暂无数据，使用功能后即可在这里看到。</view></view>
+  <view class="stats-card"><view class="section-heading">{{moduleLabel || '全部模块'}} · 操作明细</view><view class="stats-note">点击模块可筛选，按次数展示前30项。</view><view class="action-row" wx:for="{{actions}}" wx:key="id"><view><text>{{item.moduleLabel}} · {{item.kindLabel}}</text><view>{{item.actionLabel}}{{item.reasonLabel ? ' · ' + item.reasonLabel : ''}}</view></view><text>{{item.count}}</text></view><view class="empty" wx:if="{{!actions.length}}">暂无操作记录</view><view class="stats-note" wx:if="{{actionsLimited}}">当前明细显示最常用的1000种操作组合，模块汇总不受影响。</view></view>
+  <view class="stats-note stats-footer">访问按页面进入计数；点击含筛选、切换等操作。完成在业务成功节点计数，一次使用可有多个完成动作。分享入口只表示发起分享，不代表已发送或被好友打开。人数不能跨模块相加。</view>
+  </block>
+ </block>
+ <view class="empty" wx:elif="{{loading}}">正在获取统计…</view>
+</view>

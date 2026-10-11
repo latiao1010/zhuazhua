@@ -1,0 +1,35 @@
+{
+  "id": "6a3d3f310000000016027c68",
+  "title": "宠物友好商场为什么不继续友好了",
+  "author": "友善很友善",
+  "date_text": "06-25",
+  "summary": "作者报告合肥高新龙湖天街先有宠物设施，后来其盒马停止宠物进入，再发现商场整体禁止宠物入内。具体公告和恢复情况未独立核查。",
+  "places": [
+    {
+      "name": "合肥高新龙湖天街",
+      "category": "不允许携犬的场所",
+      "conditions": "作者报告原宠物友好商场已禁止宠物入内，为时间明确的限制线索；现行状态需向商场核实。",
+      "location_text": "合肥高新龙湖天街",
+      "address": null
+    },
+    {
+      "name": "盒马（合肥高新龙湖天街店）",
+      "category": "不允许携犬的场所",
+      "conditions": "作者称原有宠物购物车，后改为犬在店外寄放，不能跟随购物；外部寄放条件未核实，不作为推荐服务。",
+      "location_text": "盒马（合肥高新龙湖天街店）",
+      "address": null
+    }
+  ],
+  "comment_notes": [
+    "评论对其他分店、罚款和法律的说法均未核实，不移植为本店事实。"
+  ],
+  "verification_status": "用户报告禁入与政策变化，未见独立官方公告；作为限制待核实记录。",
+  "province": "安徽省",
+  "city": "合肥市",
+  "search_query": "合肥 宠物友好",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "url": "https://www.xiaohongshu.com/explore/6a3d3f310000000016027c68",
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人报告的场所准入变化"
+}

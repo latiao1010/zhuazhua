@@ -1359,6 +1359,21 @@ function answerWater(ctx, question) {
   })
 }
 
+function answerIntakeRecords(ctx, question) {
+  const range = detectTimeRange(question) || { days: 1, offset: 0, label: '今天' }
+  const all = ctx.allRecords || {}
+  const feed = rangeStats(all.feeds || [], 'amount', range.days, range.offset)
+  const water = rangeStats(all.waters || [], 'amount', range.days, range.offset)
+  // 同时询问两项记录时分别列出，不让通用摘要重新挑选其中一个主题。
+  return [
+    `【${range.label}饮食与饮水记录】`,
+    `${ctx.name}${range.label}已记录：`,
+    feed.count ? `喂食：${feed.count} 次，共 ${feed.total}g。` : '喂食：暂无记录。',
+    water.count ? `饮水：${water.count} 次，共 ${water.total}ml。` : '饮水：暂无记录。',
+    '以上只统计已保存的记录，未记录不代表没有进食或饮水。'
+  ].join('\n')
+}
+
 function compareWord(current, previous, unit = '') {
   if (!previous && current) return `之前几乎没记录到，现在是 ${current}${unit}`
   if (!previous && !current) return '之前和现在都还没什么记录'
@@ -2940,7 +2955,11 @@ function detectIntent(question) {
   if (matchSupplementReminder(text) && /提醒|多久|周期|计划|检查|记录/.test(text)) return 'supplementReminder'
   if (matchSupplementSymptom(text) && /索引|观察什么|观察哪些|危险信号|风险|要看什么/.test(text)) return 'supplementSymptom'
   if (/尿血|血尿|尿不出|尿闭|尿少|尿黄|尿尿|小便|频繁蹲|猫砂|尿垫|舔尿道/.test(text)) return 'urine'
-  if (/饮水|喝水|水分|补水/.test(text)) return 'water'
+  if (/多少|几次|几餐|记录|统计|总共|一共/.test(text)
+    && !/吐|腹泻|没精神|不吃|不喝|血/.test(text)
+    && /喂食|饮食|吃饭|吃了|吃得|吃的|吃多少|喂了/.test(text)
+    && /饮水|喝水|喝了|喝多少|喝.*水/.test(text)) return 'intakeRecords'
+  if (/饮水|喝水|喝了|喝多少|喝.*水|水分|补水/.test(text)) return 'water'
   if (/中暑|体温|发烧|高温|太热|热晕|一直喘|喘得厉害/.test(text)) return 'heat'
   if (/出行|旅行|寄养|坐车|托运|搬家|应激/.test(text)) return 'travel'
   if (isPostCareQuestion(text)) return 'postCare'
@@ -2987,6 +3006,7 @@ function createReply(question, pet, options = {}) {
   question = enrichQuestionWithContext(originalQuestion, history)
   activeReplyMeta = { ctx, question, originalQuestion, history, followup: question !== originalQuestion }
   const intent = detectIntent(question)
+  if (intent === 'intakeRecords' && !isComparisonQuestion(originalQuestion)) return answerIntakeRecords(ctx, originalQuestion)
   // 只能由当前这句话触发“对比”，不能带入上一轮的对比关键词。
   // 「对比两款主粮」问的是商品，不是记录。加入“对比”一词后这类问句会被
   // 记录对比截胡，所以商品对比优先。

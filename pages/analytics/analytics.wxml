@@ -1,0 +1,1 @@
+<view class="redirect-page"><text>{{failed ? '暂未打开运营看板，请重试。' : '正在打开运营看板…'}}</text><button wx:if="{{failed}}" bindtap="open">重新打开</button></view>

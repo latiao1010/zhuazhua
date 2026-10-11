@@ -1,0 +1,26 @@
+{
+  "id": "698430b200000000220209d9",
+  "province": "吉林省",
+  "city": "长春市",
+  "search_query": "长春 宠物友好",
+  "title": "铁腚回东北（长春站）之宠物友好酒店",
+  "author": "爱生气的腿毛",
+  "date_text": "02-05",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "url": "https://www.xiaohongshu.com/explore/698430b200000000220209d9",
+  "read_status": "休眠后当前页面呈现与候选标题一致的正文；评论仍加载，图片未读取",
+  "source_type": "个人携犬住宿体验",
+  "summary": "作者称入住的酒店有草地露营场，楼下便利店接受大型犬，需提前预约宠物房；正文未写酒店或便利店名称，暂不能定位。",
+  "places": [],
+  "candidate_places": [
+    {
+      "name": "未具名酒店",
+      "location_text": "长春，街道及店名未知",
+      "category": "酒店",
+      "conditions": "作者称需提前预约宠物房，酒店有露营草地；不能由此推断所有房型、犬种均可入住。"
+    }
+  ],
+  "comment_notes": [],
+  "verification_status": "地点待核实，正文无店名，不计入有效目标。"
+}

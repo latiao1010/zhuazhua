@@ -1,0 +1,63 @@
+{
+  "province": "福建省",
+  "city": "三明市",
+  "search_query": "三明 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "桂峰住宿未具名，餐饮也未明确犬入店，不补录为友好商户。"
+  ],
+  "id": "698e9807000000000c03588e",
+  "title": "携宠年前自驾｜福建三明沙县、桂峰村寻味游",
+  "author": "🐶初一出门小满归",
+  "date_text": "02-13",
+  "summary": "作者携两犬游沙县及桂峰，介绍老车站、古街、文化城和土堡，并反馈住宿后续改为收费携宠。",
+  "places": [
+    {
+      "name": "沙县老火车站",
+      "category": "户外景点",
+      "conditions": "作者携犬到旧月台拍照，称场地开阔；轨道及杂草较多，需确认开放边界与安全。",
+      "location_text": "导航老火车站牛肉粉附近",
+      "address": null
+    },
+    {
+      "name": "东门古街",
+      "category": "步行街",
+      "conditions": "作者明确整街可携犬逛，商户室内未逐一确认。",
+      "location_text": "沙县",
+      "address": null
+    },
+    {
+      "name": "沙县小吃文化城",
+      "category": "商业街",
+      "conditions": "作者称宠物可进街区；不等同所有餐饮店室内准入。",
+      "location_text": "沙县小吃文化城",
+      "address": null
+    },
+    {
+      "name": "水美土堡群",
+      "category": "古村景区",
+      "conditions": "作者携犬走村内石板路，土堡室内准入未明确。",
+      "location_text": "水美村附近",
+      "address": null
+    },
+    {
+      "name": "桂峰古村落",
+      "category": "古村景区",
+      "conditions": "作者称宠物友好，但台阶、水坑多，住宿区山路窄且多弯。历史票价不作现价。",
+      "location_text": "桂峰古村落",
+      "address": null
+    },
+    {
+      "name": "三明馨居智慧酒店",
+      "category": "酒店",
+      "conditions": "作者携犬行程入住，后续检索称改为收费携宠，未列金额；预订前确认。停车较方便，临街房可能吵。",
+      "location_text": "沙县",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/698e9807000000000c03588e"
+}

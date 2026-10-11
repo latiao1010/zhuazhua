@@ -1,0 +1,41 @@
+{
+  "province": "福建省",
+  "city": "莆田市",
+  "search_query": "莆田 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "无明确莆田携犬地点，不计莆田达标；跨城线索待分类复核。",
+  "comment_notes": [],
+  "id": "69987912000000000d00a228",
+  "title": "带小狗从上海到莆田往返自驾过年🧨part2",
+  "author": "Yohann-DD",
+  "date_text": "编辑于 02-20",
+  "summary": "作者跨城携犬旅行，莆田段仅写人类活动及用餐，无明确犬准入地点；误导航到的南少林寺位于福清。",
+  "places": [],
+  "candidate_places": [
+    {
+      "name": "九曲馨悦",
+      "category": "民宿",
+      "conditions": "作者武夷山段实际住宿，未细述携宠规则。",
+      "location_text": "南平武夷山",
+      "address": null
+    },
+    {
+      "name": "难得怪味（奥体店）",
+      "category": "餐厅",
+      "conditions": "作者明确可带犬。",
+      "location_text": "福州",
+      "address": null
+    },
+    {
+      "name": "仓山希尔顿惠庭",
+      "category": "酒店",
+      "conditions": "跨城携犬行程住宿，政策未细述。",
+      "location_text": "福州仓山",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/69987912000000000d00a228"
+}

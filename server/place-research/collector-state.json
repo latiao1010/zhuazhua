@@ -1,16 +1,19 @@
 {
   "paused": true,
-  "reason": "After user brought Chrome forward, page text and search field setValue work, but coordinate click still returns noWindowsAvailable and key events do not submit. Chrome and in-app browser getTab each timed out. No authentication warning observed. Search field contains 包头 宠物友好; awaiting manual submit.",
-  "resumed_at": "2026-09-25T13:51:28.581777+00:00",
-  "paused_at": "2026-09-25T13:43:14.999404+00:00",
-  "user_authorized_at": "2026-09-25T05:31:07.232314+00:00",
-  "updated_at": "2026-09-25T14:50:35.029966+00:00",
-  "last_resume_attempt": {
-    "checked_at": "2026-09-25T14:50:35.029966+00:00",
-    "new_content_this_attempt": 0,
-    "native_view": "After user brought Chrome forward, page text and search field setValue work, but coordinate click still returns noWindowsAvailable and key events do not submit. Chrome and in-app browser getTab each timed out. No authentication warning observed. Search field contains 包头 宠物友好; awaiting manual submit.",
-    "auth_prompt_observed": false,
-    "next_action": "User submits current Baotou search; inspect results and try opening an observed note link. Complete Baotou 1 remaining, then Wuhai and Chifeng."
+  "reason": "验证过于频繁，请稍后重试",
+  "paused_at": "2026-10-04T01:51:36.606383+00:00",
+  "blocker_type": "platform_warning",
+  "updated_at": "2026-10-04T01:51:36.717183+00:00",
+  "next_action": "常用Chrome泉州结果正常，但原采集配置被要求App扫码验证；专用验证页现显示验证过于频繁，请稍后重试，已关闭窗口停止操作。待平台恢复，勿连续刷新或重试。",
+  "last_batch_finished_at": "2026-10-03T11:07:20.829523+00:00",
+  "recovery_evidence": {
+    "method": "read-only CUA accessibility observation of user-opened Chrome window",
+    "query": "泉州 宠物友好",
+    "observed_titles": [
+      "泉州2日游结束，宠物友好目的地在这里",
+      "2026携宠福建自驾游|第二站:泉州"
+    ],
+    "collector_home_authenticated": true
   },
-  "next_action": "User submits current Baotou search; inspect results and try opening an observed note link. Complete Baotou 1 remaining, then Wuhai and Chifeng."
+  "verification_evidence": "/var/folders/r3/nbf44hsj3r5gwqfgn5djsxv80000gn/T/place-login-1791078661148.png"
 }
