@@ -4,6 +4,7 @@
     "pages/records/records",
     "pages/care/care",
     "pages/account/account",
+    "pages/pets/pets",
     "pages/feed/feed",
     "pages/chat/chat",
     "pages/manage/manage",

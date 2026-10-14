@@ -4,6 +4,7 @@ const store = require('../../utils/store')
 const cloudAlbum = require('../../utils/cloud-album')
 const cloud = require('../../utils/cloud')
 const cloudData = require('../../utils/cloud-data')
+const petContext = require('../../utils/pet-context')
 const analytics = require('../../utils/analytics')
 const { buildFamilyMemberViews } = require('../../utils/family-members')
 const { PERSONALITY_OPTIONS, MAX_PERSONALITY_TAGS, normalizePersonalityTags } = require('../../utils/pet-profile')
@@ -359,6 +360,7 @@ return {
     const code = options.shareCode ? decodeURIComponent(options.shareCode) : ''
     if (code) this.setData({ pendingShareCode: code })
   },
+  openPetSwitcher() { wx.navigateTo({ url: '/pages/pets/pets' }) },
   openAdvisor() { wx.navigateTo({ url: '/pages/chat/chat' }) },
   openDataManager() { wx.navigateTo({ url: '/pages/manage/manage' }) },
   refreshCareOverview() {
@@ -392,6 +394,7 @@ return {
     const breedOptions = buildBreedOptions(draft.breed)
     const pendingShareCode = this.data.pendingShareCode
     const shareStatus = cloudData.getShareStatus()
+    this.setData({ demoMode: store.isDemoMode(), currentPetKind: require('../../utils/pet-context').current() === 'personal' ? '我的宠物' : '共享宠物' })
     const shareRole = shareStatus.role || 'owner'
     this.setData({ pet, draft, profileEditOpen: false, careDraft, careView: buildCareView(careDraft), careRecords: store.get('careRecords'), careDetailOpen: false, careMenuOpen: false, careSubView: '', selectedCare: {}, selectedCareRecords: [], selectedRecordDate: today, selectedMonth: today.slice(0, 7), selectedMonthText: monthText(today.slice(0, 7)), careCalendar: [], supplies, supplyView, supplyOpen: false, selectedSupplyKey: '', selectedSupply: {}, supplyDraft: {}, supplyHistory: [], growthPhotos, growthAlbumOpen: false, uploadingGrowthPhotos: false, newAvatarTemp: '', saving: false, changed: false, today, sexIndex: draft.sex === '女孩' ? 1 : 0, profileFieldEditOpen: false, profileField: '', profileFieldTitle: '', profileFieldValue: '', profileFieldSexIndex: draft.sex === '女孩' ? 1 : 0, profileFieldBreedIndex: Math.max(0, breedOptions.indexOf(draft.breed)), breedOptions, weightPickerRanges: WEIGHT_PICKER_RANGES, weightPickerValue: buildWeightPickerValue(draft.weight), profileFieldSaving: false, familyMembers, familyOpen: false, familyInviteCode: this.data.familyInviteCode || shortInviteCode(pet.name), familyDraftOpen: false, familyDraft: {}, familyEditingIndex: -1, familyRoleIndex: 0, familyRelationIndex: 0, familySaving: false, familyInviteLoading: false, pendingShareCode, shareShared: !!shareStatus.shared, shareRole, shareRoleLabel: FAMILY_ROLE_LABELS[shareRole] || '主人', shareReadOnly: !!shareStatus.shared && shareRole === 'viewer' })
     if (this.data.shareReadOnly && this.data.careProfileEditing) {
@@ -595,33 +598,11 @@ return {
         if (!result || result.ok === false) {
           throw new Error(result && result.error ? result.error : '加入失败，请检查共享码')
         }
-        const pet = store.get('pet')
-        const careDraft = store.normalizeCareSchedule(store.get('care'))
-        const supplies = store.normalizeSupplies(store.get('supplies'))
-        const familyMembers = buildFamilyMemberViews(result.share && result.share.members || store.get('familyMembers'), result.share || cloudData.getShareStatus())
-        this.setData({
-          pet,
-          draft: { ...pet, togetherSince: pet.togetherSince || '', sex: pet.sex || '男孩' },
-          careDraft,
-          careView: buildCareView(careDraft),
-          supplies,
-          supplyView: buildSupplyView(supplies, store.get('feeds')),
-          growthPhotos: getGrowthPhotos(),
-          familyMembers,
-          familyOpen: true,
-          shareAccepting: false,
-          pendingShareCode: '',
-          sharePromptOpen: false,
-          sharePromptCode: '',
-          shareJoinError: '',
-          shareShared: true,
-          shareRole: result.share && result.share.role || 'admin',
-          shareRoleLabel: FAMILY_ROLE_LABELS[result.share && result.share.role || 'admin'] || '共同照护',
-          shareReadOnly: result.share && result.share.role === 'viewer'
-        })
-        hideNativeTabBar()
-        if (result.syncWarning) wx.showModal({ title: '已在这个家庭中', content: result.syncWarning, showCancel: false, confirmText: '知道了' })
-        else wx.showToast({ title: result.alreadyJoined ? '已在这个家庭中' : '已加入家庭共享', icon: 'none' })
+        this.setData({ shareAccepting: false, pendingShareCode: '', sharePromptOpen: false,
+          sharePromptCode: '', shareJoinError: '', familyOpen: false })
+        this.onShow()
+        showNativeTabBar()
+        wx.showToast({ title: result.alreadyJoined ? '已在宠物列表中' : '已加入，可切换宠物查看', icon: 'none' })
         return result
       })
       .catch(error => {
@@ -688,10 +669,12 @@ return {
     wx.showToast({ title: `${config.label}拆封记录已保存`, icon: 'none' })
   },
   openGrowthAlbum() {
+    const context = petContext.capture()
     hideNativeTabBar()
     const localPhotos = getGrowthPhotos()
     this.setData({ growthAlbumOpen: true, growthPhotos: localPhotos })
     cloudAlbum.loadGrowthPhotos(localPhotos).then(growthPhotos => {
+      petContext.assertCurrent(context)
       store.set('growthPhotos', growthPhotos)
       if (this.data.growthAlbumOpen) this.setData({ growthPhotos })
     }).catch(() => {})
@@ -703,12 +686,14 @@ return {
   chooseGrowthPhotos() {
     if (this.data.uploadingGrowthPhotos) return
     if (!this.ensureWritable()) return
+    const context = petContext.capture()
     wx.chooseMedia({
       count: 9,
       mediaType: ['image'],
       sourceType: ['camera', 'album'],
       sizeType: ['compressed'],
       success: res => {
+        if (!petContext.isCurrent(context)) return
         const tempPaths = (res.tempFiles || []).map(item => item.tempFilePath).filter(Boolean)
         if (!tempPaths.length) return
         this.setData({ uploadingGrowthPhotos: true })
@@ -717,6 +702,7 @@ return {
         const dayKey = store.todayKey()
         cloudAlbum.saveGrowthPhotos(tempPaths, { createdAt, dayKey, time: timeText(captured) })
           .then(savedPhotos => {
+            petContext.assertCurrent(context)
             if (savedPhotos.length) analytics.track('album', 'complete', 'save_local')
             else analytics.failure('album', 'save_local', 'unavailable')
             const growthPhotos = [...savedPhotos, ...getGrowthPhotos()].sort((a, b) => b.createdAt - a.createdAt)
@@ -743,14 +729,16 @@ return {
     const index = Number(e.currentTarget.dataset.index)
     const photo = this.data.growthPhotos[index]
     if (!photo) return
+    const context = petContext.capture()
     wx.showModal({
       title: '删除照片',
       content: '确定从成长相册里删除这张照片吗？删除后不会再显示在相册里。',
       confirmText: '删除',
       confirmColor: '#ff674a',
       success: res => {
-        if (!res.confirm) return
+        if (!res.confirm || !petContext.isCurrent(context)) return
         const removeFromAlbum = toastTitle => {
+          if (!petContext.isCurrent(context)) return
           analytics.track('album', 'complete', 'deleteGrowthPhoto')
           const growthPhotos = this.data.growthPhotos.filter(item => !sameGrowthPhoto(item, photo))
           store.set('growthPhotos', growthPhotos)
@@ -786,6 +774,7 @@ return {
   editAvatar() {
     if (this.data.profileFieldSaving || this.data.saving) return
     if (!this.ensureWritable()) return
+    const context = petContext.capture()
     return new Promise(resolve => {
       wx.chooseMedia({
         count: 1,
@@ -793,12 +782,16 @@ return {
         sourceType: ['album', 'camera'],
         sizeType: ['compressed'],
         success: res => {
+          if (!petContext.isCurrent(context)) return resolve()
           const tempFilePath = res.tempFiles && res.tempFiles[0] && res.tempFiles[0].tempFilePath
           if (!tempFilePath) return resolve()
           this.setData({ profileFieldSaving: true })
           const cloudPath = `pet-avatars/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${avatarExtension(tempFilePath)}`
           const task = cloud.uploadFile(cloudPath, tempFilePath)
-            .then(fileID => this.saveProfilePatch({ avatar: fileID }, { toast: '头像已更新', oldAvatar: this.data.pet.avatar }))
+            .then(fileID => {
+              petContext.assertCurrent(context)
+              return this.saveProfilePatch({ avatar: fileID }, { toast: '头像已更新', oldAvatar: this.data.pet.avatar })
+            })
             .catch(() => {
               this.setData({ profileFieldSaving: false })
               wx.showToast({ title: '头像保存失败', icon: 'none' })
@@ -1201,6 +1194,7 @@ return {
   },
   savePet() {
     if (this.data.saving || !this.ensureWritable()) return
+    const context = petContext.capture()
     const draft = { ...this.data.draft, togetherSince: this.data.draft.togetherSince || '' }
     const careDraft = { ...this.data.careDraft }
     const weight = Number(draft.weight)
@@ -1220,6 +1214,7 @@ return {
 
     const weightChanged = Number(draft.weight) !== Number(this.data.pet.weight)
     const commit = avatar => {
+      petContext.assertCurrent(context)
       const oldAvatar = this.data.pet.avatar
       const pet = { ...draft, avatar }
       const entries = [['pet', pet], ['care', careDraft]]

@@ -17,6 +17,7 @@ async function run() {
       init(options) { calls.init.push(options) },
       callFunction(options) {
         calls.functions.push(options)
+        if (options.data.action === 'getPetProfiles') return Promise.resolve({ result: { ok:true, petContextVersion:1, profiles:[] } })
         if (options.name === 'pet-data' && options.data.action === 'listGrowthPhotos') {
           return Promise.resolve({ result: { ok: true, photos: [{ id: 'remote-1', path: 'cloud://env/growth.jpg', dayKey: '2026-08-04', time: '09:00', createdAt: 10 }] } })
         }
@@ -64,7 +65,7 @@ async function run() {
           ] } })
         }
         if (options.name === 'pet-data' && options.data.action === 'previewShareInvitation') {
-          return Promise.resolve({ result: { ok: true, groupId: 'group-1', alreadyJoined: false, share: storage.paw_share_status || { shared: false } } })
+          return Promise.resolve({ result: { ok: true, groupId: 'group-1', alreadyJoined: false, share: storage[require('../utils/pet-context').storageKey('paw_share_status')] || { shared: false } } })
         }
         if (options.name === 'pet-data' && options.data.action === 'acceptShareInvitation') {
           return Promise.resolve({ result: { ok: true, data: {
@@ -133,6 +134,7 @@ async function run() {
   assert.strictEqual(deletedPhoto.deleted, 1)
   assert.ok(calls.functions.some(item => item.name === 'pet-data' && item.data.action === 'deleteGrowthPhoto'))
 
+  const context = require('../utils/pet-context')
   const store = fresh('utils/store.js')
   store.ensureSeedData()
   const cloudData = fresh('utils/cloud-data.js')
@@ -140,21 +142,21 @@ async function run() {
   assert.strictEqual(seeded.ok, true)
   assert.ok(calls.functions.some(item => item.name === 'pet-data' && item.data.action === 'getAllData'))
   await cloudData.syncAll()
-  assert.strictEqual(storage.paw_feed_goal, 288)
+  assert.strictEqual(storage[context.storageKey('paw_feed_goal')], 288)
   const breedSync = await cloudData.syncBreedKnowledge({ force: true })
   assert.strictEqual(breedSync.ok, true)
   assert.strictEqual(storage.paw_external_breed_knowledge.items[0].aliases[0], '柯基')
   assert.ok(calls.functions.some(item => item.name === 'pet-data' && item.data.action === 'getBreedKnowledge'))
-  storage.paw_share_status = { shared: true, role: 'viewer' }
+  storage[require('../utils/pet-context').storageKey('paw_share_status')] = { shared: true, role: 'viewer' }
   await store.set('feedGoal', 301)
-  assert.strictEqual(storage.paw_feed_goal, 288)
-  storage.paw_share_status = { shared: true, role: 'owner' }
+  assert.strictEqual(storage[context.storageKey('paw_feed_goal')], 288)
+  storage[require('../utils/pet-context').storageKey('paw_share_status')] = { shared: true, role: 'owner' }
   const invite = await cloudData.createShareInvitation({ petName: '糯米' })
   assert.strictEqual(invite.code, 'ZZ-NM-123456')
   const accepted = await cloudData.acceptShareInvitation('ZZ-NM-123456', { name: '妈妈' })
   assert.strictEqual(accepted.share.shared, true)
-  assert.strictEqual(storage.paw_pet.name, '共享糯米')
-  assert.strictEqual(storage.paw_family_members.length, 2)
+  assert.strictEqual(store.get('pet').name, '我的宠物')
+  assert.strictEqual(context.current(), 'personal')
   assert.ok(calls.functions.some(item => item.name === 'pet-data' && item.data.action === 'acceptShareInvitation'))
 
   assert.strictEqual(calls.init.length, 1)
@@ -162,7 +164,7 @@ async function run() {
   console.log('✓ 本地知识库回答不依赖 AI 接口')
   console.log('✓ 审核版天气不上传定位')
   console.log('✓ 成长相册云同步与多图上传')
-  console.log('✓ 半年假数据会写入并同步微信云数据库')
+  console.log('✓ 真实模式仅同步云端数据，不写入演示数据')
   console.log('✓ 只读共享成员本地写入会被拦截')
   console.log('✓ 家庭共享邀请码云端生成与接受')
   console.log('✓ TheDogAPI/TheCatAPI 品种知识可同步并缓存到本地')

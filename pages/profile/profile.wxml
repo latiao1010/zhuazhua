@@ -12,6 +12,7 @@
       <button class="home-button pet-avatar" data-exposure="profile" bindtap="goAccount" aria-label="查看宠物档案" hover-class="home-pressed"><image src="{{pet.avatar}}" mode="aspectFill" /></button>
       <view class="home-pet-copy">
         <view class="home-title">{{pet.name}}<text>的日常</text></view>
+        <button class="home-button pet-switch-entry" wx:if="{{!demoMode}}" bindtap="openPetSwitcher">{{currentPetKind}} · 切换宠物 ›</button>
         <view class="home-pet-meta">
           <button class="home-button" bindtap="openWeightTrend" hover-class="home-pressed">{{pet.weight ? pet.weight + ' kg' : '完善体重'}} <text>›</text></button>
           <text class="meta-dot">·</text>
@@ -73,7 +74,6 @@
     <text class="recent-empty" wx:if="{{homeDashboard.recentOverview.emptyText}}">{{homeDashboard.recentOverview.emptyText}}</text>
     <button class="home-button record-note" bindtap="openRecent">查看近 {{insightRange}} 天完整概况 ›</button>
   </view>
-  <button class="home-button recent-compact-entry" bindtap="openRecent" hover-class="home-pressed"><text>近期情况</text><text>近 {{insightRange}} 天 · 查看摘要 ›</text></button>
 
   <view class="home-footer">
     <button class="home-button knowledge-entry" bindtap="openKnowledge" hover-class="home-pressed" aria-label="{{'每日知识，' + homeDashboard.knowledge.title}}"><view class="home-icon home-icon-book"></view><view class="knowledge-entry-copy"><text>每日知识</text><view>{{homeDashboard.knowledge.title}}</view></view><text>›</text></button>

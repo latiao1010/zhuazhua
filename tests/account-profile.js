@@ -31,15 +31,16 @@ function setup({ demo = false, role = 'owner', now } = {}) {
     nextTick: fn => fn()
   }
   const cloud = { isAvailable: () => false }
-  const store = load('utils/store.js', { './cloud-data': { saveKey: () => Promise.resolve(saveResult) } }, wx)
+  const petContext = load('utils/pet-context.js', {}, wx)
+  const store = load('utils/store.js', { './pet-context': petContext, './cloud-data': { saveKey: () => Promise.resolve(saveResult) } }, wx)
   store.ensureSeedData()
   disk[store.KEYS.pet] = clone(fixture)
   const cloudData = {
-    getShareStatus: () => clone(disk.paw_share_status),
+    getShareStatus: () => clone(disk[petContext.storageKey('paw_share_status')]),
     createShareInvitation: () => Promise.resolve({ ok: false, skipped: true })
   }
   const factory = load('pages/shared/account-controller.js', {
-    '../../utils/store': store, '../../utils/cloud': cloud,
+    '../../utils/pet-context': petContext, '../../utils/store': store, '../../utils/cloud': cloud,
     '../../utils/cloud-data': cloudData,
     '../../utils/cloud-album': { loadGrowthPhotos: photos => Promise.resolve(photos) },
     '../../utils/tab-navigation': { takeTarget: () => '' }
@@ -90,11 +91,11 @@ for (const role of ['owner', 'admin']) test(`${role} 可统一保存五个照护
   for (const key of ['dietHabits', 'outingHabits', 'familiarCommands', 'careNotes']) assert.equal(c.store.get('pet')[key], '新内容\n第二行')
   assert.equal(c.store.get('pet').personalityTags.includes('亲人'), false)
   assert.equal(c.store.get('pet').clinic, fixture.clinic); assert.equal(c.page.data.careProfileEditing, false)
-  assert.equal(c.writes.filter(k => k === 'paw_pet').length, 1)
+  assert.equal(c.writes.filter(k => k === c.store.KEYS.pet).length, 1)
 })
 test('只合并修改项，保留其他同步更新', async () => {
   const c = setup(); c.begin(); c.page.onCareProfileInput(event('dietHabits', '新的饮食记录'))
-  c.disk.paw_pet.clinic = '其他家人更新的医院'; c.disk.paw_pet.outingHabits = '其他家人更新的外出习惯'
+  c.disk['paw_pet_space:personal:paw_pet'].clinic = '其他家人更新的医院'; c.disk['paw_pet_space:personal:paw_pet'].outingHabits = '其他家人更新的外出习惯'
   await c.page.saveCareProfile()
   assert.equal(c.store.get('pet').clinic, '其他家人更新的医院')
   assert.equal(c.store.get('pet').outingHabits, '其他家人更新的外出习惯')
@@ -110,8 +111,8 @@ test('选填字段和性格标签可清空', async () => {
   assert.equal(c.store.get('pet').careNotes, '')
 })
 test('空白内容仅有空格时按未填写显示', () => {
-  const c = setup(); for (const key of ['dietHabits', 'outingHabits', 'familiarCommands', 'careNotes']) c.disk.paw_pet[key] = '  '
-  c.disk.paw_pet.personalityTags = []; c.page.openProfileSection(event('care'))
+  const c = setup(); for (const key of ['dietHabits', 'outingHabits', 'familiarCommands', 'careNotes']) c.disk['paw_pet_space:personal:paw_pet'][key] = '  '
+  c.disk['paw_pet_space:personal:paw_pet'].personalityTags = []; c.page.openProfileSection(event('care'))
   assert.equal(c.page.data.careProfileHasContent, false)
 })
 test('标签最多六个，非法选项不写入', () => {
@@ -120,7 +121,7 @@ test('标签最多六个，非法选项不写入', () => {
   assert.ok(c.toasts.some(text => text.includes('最多选择')))
 })
 test('兼容旧自定义性格标签', () => {
-  const c = setup(); c.disk.paw_pet.personalityTags = ['习惯独处']; c.begin()
+  const c = setup(); c.disk['paw_pet_space:personal:paw_pet'].personalityTags = ['习惯独处']; c.begin()
   assert.ok(c.page.data.careProfileTagOptions.some(item => item.label === '习惯独处' && item.selected))
 })
 for (const [key, max] of [['dietHabits', 300], ['outingHabits', 300], ['familiarCommands', 300], ['careNotes', 500]]) {
@@ -146,7 +147,7 @@ test('保存中防重复提交和误关闭', async () => {
   const c = setup(); c.begin(); c.page.onCareProfileInput(event('careNotes', '保存内容'))
   const first = c.page.saveCareProfile(); c.page.saveCareProfile(); c.page.closeProfileSection()
   assert.equal(c.page.data.profileSection, 'care'); await first
-  assert.equal(c.writes.filter(k => k === 'paw_pet').length, 1)
+  assert.equal(c.writes.filter(k => k === c.store.KEYS.pet).length, 1)
 })
 test('临时切出再返回保留草稿和底栏状态', () => {
   const c = setup(); c.begin(); c.page.onCareProfileInput(event('careNotes', '尚未保存'))
@@ -162,11 +163,11 @@ test('只读成员可查看长资料，不能编辑和保存', async () => {
   assert.equal(c.writes.length, 0); assert.equal(c.page.data.familyDraftOpen, false)
 })
 test('编辑途中权限降为只读时撤掉编辑入口', () => {
-  const c = setup(); c.begin(); c.disk.paw_share_status.role = 'viewer'; c.page.onShow()
+  const c = setup(); c.begin(); c.disk['paw_pet_space:personal:paw_share_status'].role = 'viewer'; c.page.onShow()
   assert.equal(c.page.data.shareReadOnly, true); assert.equal(c.page.data.careProfileEditing, false)
 })
 test('即使页面权限过期，存储层仍拒绝只读写入', async () => {
-  const c = setup(); c.begin(); c.page.onCareProfileInput(event('careNotes', '非法修改')); c.disk.paw_share_status.role = 'viewer'
+  const c = setup(); c.begin(); c.page.onCareProfileInput(event('careNotes', '非法修改')); c.disk['paw_pet_space:personal:paw_share_status'].role = 'viewer'
   await c.page.saveCareProfile(); assert.equal(c.store.get('pet').careNotes, fixture.careNotes)
 })
 test('基本资料可保存，非法生日被拒绝', async () => {
@@ -187,9 +188,9 @@ test('相册和家庭面板可打开并返回', async () => {
   c.page.closeFamilyManager(); assert.equal(c.tabVisible(), true)
 })
 test('演示模式不会覆盖正式资料', async () => {
-  const c = setup({ demo: true }); c.disk.paw_pet = { name: '真实资料' }; c.begin()
+  const c = setup({ demo: true }); c.disk['paw_pet_space:personal:paw_pet'] = { name: '真实资料' }; c.begin()
   c.page.onCareProfileInput(event('careNotes', '假数据')); await c.page.saveCareProfile()
-  assert.equal(c.disk.paw_pet.name, '真实资料'); assert.equal(c.disk.demo_paw_pet.careNotes, '假数据')
+  assert.equal(c.disk['paw_pet_space:personal:paw_pet'].name, '真实资料'); assert.equal(c.disk.demo_paw_pet.careNotes, '假数据')
 })
 test('相册只读视图隐藏上传和删除入口', () => {
   const wxml = fs.readFileSync(path.join(root, 'pages/account/account.wxml'), 'utf8')
@@ -249,7 +250,7 @@ for (const [role, currentMemberId, expected] of [
   ['admin', 'other-id', ['主人', '家人', '爸爸（我）']]
 ]) test(`按当前成员ID显示我：${currentMemberId}`, () => {
   const c = setup({ role })
-  c.disk.paw_share_status.currentMemberId = currentMemberId
+  c.disk['paw_pet_space:personal:paw_share_status'].currentMemberId = currentMemberId
   c.disk[c.store.KEYS.familyMembers] = clone(sharedMembers)
   c.page.onShow()
   assert.deepEqual(c.page.data.familyMembers.map(item => item.displayName), expected)
@@ -267,7 +268,7 @@ test('旧接口未返回当前成员ID时不根据昵称或共同照护角色猜
 })
 test('成员顺序变化不把第一位家人变成主人', () => {
   const c = setup({ role: 'admin' })
-  c.disk.paw_share_status.currentMemberId = 'member-id'
+  c.disk['paw_pet_space:personal:paw_share_status'].currentMemberId = 'member-id'
   c.disk[c.store.KEYS.familyMembers] = [sharedMembers[1], sharedMembers[0]]
   c.page.openFamilyManager()
   assert.deepEqual(c.page.data.familyMembers.map(item => item.role), ['admin', 'owner'])
@@ -276,7 +277,7 @@ test('成员顺序变化不把第一位家人变成主人', () => {
 })
 test('保存成员时不把相对显示名或我标记写进共享昵称', async () => {
   const c = setup({ role: 'owner' })
-  c.disk.paw_share_status.currentMemberId = 'owner-id'
+  c.disk['paw_pet_space:personal:paw_share_status'].currentMemberId = 'owner-id'
   c.disk[c.store.KEYS.familyMembers] = clone(sharedMembers)
   c.page.onShow()
   await c.page.saveFamilyMembers(c.page.data.familyMembers, '已保存')

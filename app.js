@@ -5,6 +5,9 @@ const analytics = require('./utils/analytics')
 
 App({
   onLaunch() {
+    const petContext = require('./utils/pet-context')
+    petContext.initialize()
+    petContext.select('personal')
     cloud.init()
     ensureSeedData()
     cloudData.seedAndSyncSixMonthDemo()

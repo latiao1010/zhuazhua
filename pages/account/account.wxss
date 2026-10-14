@@ -525,3 +525,5 @@
 /* 入口图标独立占位，文字仍可自然换行。 */
 .account-shortcuts .growth-album-entry>.archive-symbol { flex:none; margin-left:0; }
 .account-shortcuts .archive-symbol .warm-icon,.account-shortcuts .family-share-icon .warm-icon { width:36rpx; height:36rpx; }
+
+.account-switch-pet { display: block; width: auto; margin: 6px 0 0; padding: 0; color: #52785e; font-size: 13px; line-height: 26px; text-align: left; }

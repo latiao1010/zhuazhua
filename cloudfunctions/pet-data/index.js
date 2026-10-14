@@ -271,9 +271,9 @@ async function getBreedKnowledge(force = false) {
   return { ok: true, data: current.data, updatedAt: current.updatedAt }
 }
 
-async function listGrowthPhotos(openid) {
+async function listGrowthPhotos(openid, petScope) {
   await ensureCollection()
-  const scope = await getActiveScope(openid)
+  const scope = await getActiveScope(openid, petScope)
   const result = []
   const pageSize = 100
   const where = scope.shared ? { scopeId: scope.scopeId } : { _openid: openid }
@@ -285,7 +285,7 @@ async function listGrowthPhotos(openid) {
       .limit(pageSize)
       .get()
     const rows = page.data || []
-    rows.forEach(item => result.push({
+    rows.filter(item => samePhotoScope(item, scope, openid)).forEach(item => result.push({
       id: item._id,
       path: item.path,
       dayKey: item.dayKey,
@@ -297,9 +297,9 @@ async function listGrowthPhotos(openid) {
   return { ok: true, photos: result }
 }
 
-async function addGrowthPhotos(openid, items) {
+async function addGrowthPhotos(openid, items, petScope) {
   await ensureCollection()
-  const scope = await getActiveScope(openid)
+  const scope = await getActiveScope(openid, petScope)
   assertCanWrite(scope, 'growthPhotos')
   const photos = (Array.isArray(items) ? items : []).slice(0, 9).map(normalizePhoto).filter(Boolean)
   if (!photos.length) throw new Error('没有可保存的成长照片')
@@ -313,12 +313,12 @@ async function addGrowthPhotos(openid, items) {
 function samePhotoScope(photo, scope, openid) {
   if (!photo) return false
   if (scope.shared) return photo.scopeId === scope.scopeId
-  return photo._openid === openid
+  return photo._openid === openid && ((!photo.scopeId && !photo.groupId) || photo.scopeId === scope.scopeId)
 }
 
 async function deleteGrowthPhoto(openid, event = {}) {
   await ensureCollection()
-  const scope = await getActiveScope(openid)
+  const scope = await getActiveScope(openid, event.petScope)
   assertCanWrite(scope, 'growthPhotos')
   const id = cleanText(event.id, 128)
   const path = cleanText(event.path, 1000)
@@ -334,7 +334,7 @@ async function deleteGrowthPhoto(openid, event = {}) {
   if (!targets.length && path) {
     const where = scope.shared ? { scopeId: scope.scopeId, path } : { _openid: openid, path }
     const page = await db.collection(COLLECTION).where(where).limit(20).get()
-    ;(page.data || []).forEach(item => targets.push(item))
+    ;(page.data || []).filter(item => samePhotoScope(item, scope, openid)).forEach(item => targets.push(item))
   }
 
   const unique = []
@@ -393,27 +393,73 @@ async function removeDocs(docs) {
 
 async function listMemberDocs(openid) {
   await ensureShareCollections()
-  const page = await db.collection(SHARE_MEMBER_COLLECTION)
-    .where({ memberOpenid: openid, status: 'active' })
-    .limit(20)
-    .get()
-  return page.data || []
+  const members = []
+  for (let offset = 0; offset < 1000; offset += 100) {
+    const page = await db.collection(SHARE_MEMBER_COLLECTION)
+      .where({ memberOpenid: openid, status: 'active' }).skip(offset).limit(100).get()
+    members.push(...(page.data || []))
+    if ((page.data || []).length < 100) break
+  }
+  return members
 }
 
-async function getActiveScope(openid) {
+async function getActiveScope(openid, petScope) {
   const memberships = await listMemberDocs(openid)
-  if (memberships.length) {
-    const member = memberships.sort((a, b) => (Number(b.updatedAt) || 0) - (Number(a.updatedAt) || 0))[0]
+  let member
+  let petName = ''
+  if (petScope === 'personal') {
+    const owned = await findOwnedGroup(openid)
+    if (owned) {
+      petName = owned.petName || ''
+      if (owned.migrationPending) await migrateLegacyDataToGroup(openid, owned._id)
+      member = memberships.find(item => item.groupId === owned._id && item.role === 'owner')
+      if (!member) member = { _id: await ensureOwnerMember(owned._id, openid), groupId: owned._id, role: 'owner', ownerOpenid: openid }
+    }
+  } else if (petScope !== undefined) {
+    member = memberships.find(item => item.groupId === petScope)
+    if (!member) throw new Error('你已不在这只宠物的共享成员中，请切回自己的宠物')
+    const group = await db.collection(SHARE_GROUP_COLLECTION).doc(member.groupId).get()
+    if (!group.data || group.data.status !== 'active') throw new Error('这只宠物的共享已关闭')
+    petName = group.data.petName || ''
+  } else {
+    // 旧体验包仍使用原来的范围；新版每次请求都明确携带 petScope。
+    member = memberships.sort((a, b) => (Number(b.updatedAt) || 0) - (Number(a.updatedAt) || 0))[0]
+  }
+  if (member) {
     return {
       scopeId: `group:${member.groupId}`,
       groupId: member.groupId,
       memberId: member._id,
       role: member.role || 'admin',
       ownerOpenid: member.ownerOpenid || '',
+      petName: cleanText(petName, 32),
       shared: true
     }
   }
   return { scopeId: `user:${openid}`, groupId: '', role: 'owner', ownerOpenid: openid, shared: false, legacy: true }
+}
+
+async function getPetProfiles(openid) {
+  const own = await getActiveScope(openid, 'personal')
+  const memberships = await listMemberDocs(openid)
+  const scopes = [{ id: 'personal', scope: own, kind: 'own' }]
+  for (const member of memberships) {
+    if (member.role === 'owner' || member.groupId === own.groupId) continue
+    const group = await db.collection(SHARE_GROUP_COLLECTION).doc(member.groupId).get().catch(() => ({ data: null }))
+    if (!group.data || group.data.status !== 'active') continue
+    scopes.push({ id: member.groupId, kind: 'shared', scope: {
+      scopeId: `group:${member.groupId}`, groupId: member.groupId,
+      memberId: member._id, ownerOpenid: member.ownerOpenid, role: member.role || 'admin', petName: group.data.petName || '', shared: true
+    } })
+  }
+  const profiles = await Promise.all(scopes.map(async item => {
+    const docs = await listScopedDataDocs(item.scope, { key: 'pet' })
+    const pet = docs[0] && docs[0].value || {}
+    return { id: item.id, kind: item.kind, role: item.scope.role,
+      name: cleanText(pet.name || item.scope.petName || (item.kind === 'own' ? '我的宠物' : '共享宠物'), 32),
+      avatar: cleanText(pet.avatar, 1000), configured: !!docs.length }
+  }))
+  return { ok: true, profiles }
 }
 
 async function listScopedDataDocs(scope, extraWhere = {}) {
@@ -430,7 +476,9 @@ async function listScopedDataDocs(scope, extraWhere = {}) {
     }
     return result
   }
-  return await listDataDocs(openidFromScope(scope), extraWhere)
+  const rows = await listDataDocs(openidFromScope(scope), extraWhere)
+  // 共享记录的 _openid 也可能是当前操作者，不能据此归到其私人宠物。
+  return rows.filter(item => (!item.scopeId && !item.groupId) || item.scopeId === scope.scopeId)
 }
 
 function openidFromScope(scope) {
@@ -473,7 +521,7 @@ async function actorForScope(scope, openid) {
 async function mutateDataRecord(openid, event) {
   const key = cleanKey(event.key)
   if (!RECORD_KEYS.has(key)) throw new Error('该数据不支持单条同步')
-  const scope = await getActiveScope(openid)
+  const scope = await getActiveScope(openid, event.petScope)
   assertCanWrite(scope, key)
   await ensureRecordCollection()
   const recordId = cleanText(event.recordId || event.record && event.record.id, 160)
@@ -532,15 +580,15 @@ function assertCanWrite(scope, key) {
   if (OWNER_ONLY_KEYS.has(key) && scope.role !== 'owner') throw new Error('只有主人可以管理家庭成员和权限')
 }
 
-async function replaceDataItem(openid, key, value, options = {}) {
-  const scope = await getActiveScope(openid)
+async function replaceDataItem(openid, key, value, options = {}, petScope) {
+  const scope = await getActiveScope(openid, petScope)
   assertCanWrite(scope, key)
   if (key === 'familyMembers' && scope.shared) await syncShareMembersFromValue(scope.groupId, value)
   await replaceScopedDataItem(scope, openid, key, value, options)
 }
 
-async function getAllData(openid) {
-  const scope = await getActiveScope(openid)
+async function getAllData(openid, petScope) {
+  const scope = await getActiveScope(openid, petScope)
   const docs = await listScopedDataDocs(scope)
   const data = {}
   docs.forEach(item => {
@@ -646,6 +694,7 @@ async function getShareInfoForScope(scope) {
     shared: true,
     groupId: scope.groupId,
     role: scope.role,
+    petName: cleanText(scope.petName, 32),
     currentMemberId: scope.memberId || '',
     members: await listShareMembers(scope.groupId)
   }
@@ -695,6 +744,7 @@ async function ensureOwnedGroup(openid, petName) {
   const existing = await findOwnedGroup(openid)
   if (existing) {
     await ensureOwnerMember(existing._id, openid)
+    if (existing.migrationPending) await migrateLegacyDataToGroup(openid, existing._id)
     return existing
   }
   const now = Date.now()
@@ -703,6 +753,7 @@ async function ensureOwnedGroup(openid, petName) {
       ownerOpenid: openid,
       petName: cleanText(petName, 32),
       status: 'active',
+      migrationPending: true,
       createdAt: now,
       updatedAt: now
     }
@@ -714,22 +765,33 @@ async function ensureOwnedGroup(openid, petName) {
 }
 
 async function migrateLegacyDataToGroup(openid, groupId) {
-  const legacyDocs = await listDataDocs(openid)
+  const personalScope = { scopeId: `user:${openid}`, ownerOpenid: openid, shared: false }
+  const legacyDocs = await listScopedDataDocs(personalScope)
   const scope = { scopeId: `group:${groupId}`, groupId, ownerOpenid: openid, shared: true }
   const scopedDocs = await listScopedDataDocs(scope)
   const existingKeys = new Set(scopedDocs.map(item => item.key))
   const byKey = {}
   legacyDocs.forEach(item => {
-    if (!item.scopeId && DATA_KEYS.has(item.key) && !byKey[item.key]) byKey[item.key] = item.value
+    if (DATA_KEYS.has(item.key) && !Object.prototype.hasOwnProperty.call(byKey, item.key)) byKey[item.key] = item.value
   })
+  await applyRecordMutations(personalScope, byKey)
   await Promise.all(Object.keys(byKey)
     .filter(key => !existingKeys.has(key))
     .map(key => replaceScopedDataItem(scope, openid, key, byKey[key], { demo: false })))
+  await ensureCollection()
+  // 相册与档案一起迁移，避免第一次邀请家人后相册消失。
+  for (let offset = 0; offset < 1000; offset += 100) {
+    const legacyPhotos = await db.collection(COLLECTION).where({ _openid: openid }).skip(offset).limit(100).get()
+    await Promise.all((legacyPhotos.data || []).filter(photo => samePhotoScope(photo, personalScope, openid))
+      .map(photo => db.collection(COLLECTION).doc(photo._id).update({ data: { scopeId: scope.scopeId, groupId, ownerOpenid: openid } })))
+    if ((legacyPhotos.data || []).length < 100) break
+  }
+  await db.collection(SHARE_GROUP_COLLECTION).doc(groupId).update({ data: { migrationPending: false } })
 }
 
 async function createShareInvitation(openid, payload = {}) {
   const petName = cleanText(payload.petName || payload.name || '宠物', 32)
-  const scope = await getActiveScope(openid)
+  const scope = await getActiveScope(openid, payload.petScope)
   if (scope.shared && scope.role !== 'owner') throw new Error('只有主人可以生成家庭共享邀请')
   const group = scope.shared ? { _id: scope.groupId, ownerOpenid: scope.ownerOpenid, petName } : await ensureOwnedGroup(openid, petName)
   const code = inviteCode(payload.code) || generateInviteCode()
@@ -746,7 +808,7 @@ async function createShareInvitation(openid, payload = {}) {
       expiresAt: now + 1000 * 60 * 60 * 24 * 30
     }
   })
-  return { ok: true, code: finalCode, groupId: group._id, currentMemberId: scope.memberId || (await getActiveScope(openid)).memberId || '', members: await listShareMembers(group._id) }
+  return { ok: true, code: finalCode, groupId: group._id, currentMemberId: scope.memberId || (await getActiveScope(openid, payload.petScope)).memberId || '', members: await listShareMembers(group._id) }
 }
 
 async function findShareInvitation(code) {
@@ -763,22 +825,26 @@ async function findShareInvitation(code) {
   return invite
 }
 
-async function previewShareInvitation(openid, code) {
+async function previewShareInvitation(openid, code, petScope) {
   const invite = await findShareInvitation(code)
-  const scope = await getActiveScope(openid)
+  const scope = await getActiveScope(openid, petScope)
+  const memberships = await listMemberDocs(openid)
   return {
     ok: true,
     groupId: invite.groupId,
-    alreadyJoined: !!scope.shared && scope.groupId === invite.groupId,
+    alreadyJoined: memberships.some(item => item.groupId === invite.groupId),
     share: await getShareInfoForScope(scope)
   }
 }
 
-async function acceptShareInvitation(openid, code, profile = {}) {
+async function acceptShareInvitation(openid, code, profile = {}, petScope) {
   const invite = await findShareInvitation(code)
-  const scope = await getActiveScope(openid)
-  // 重复打开当前家庭的邀请无需重新写入昵称、关系或成员角色。
-  if (scope.shared && scope.groupId === invite.groupId) return { ...await getAllData(openid), alreadyJoined: true }
+  const memberships = await listMemberDocs(openid)
+  const alreadyJoined = memberships.some(item => item.groupId === invite.groupId)
+  // 新版加入只增加成员关系，不改变正在查看的宠物，也不重置已有权限。
+  if (alreadyJoined) return petScope === undefined
+    ? { ...await getAllData(openid), alreadyJoined: true }
+    : { ...await getPetProfiles(openid), groupId: invite.groupId, alreadyJoined: true }
   const now = Date.now()
   const name = cleanText(profile.name || '家人', 16)
   const relation = cleanText(profile.relation || '家人', 12)
@@ -807,7 +873,7 @@ async function acceptShareInvitation(openid, code, profile = {}) {
       }
     })
   }
-  return await getAllData(openid)
+  return petScope === undefined ? await getAllData(openid) : { ...await getPetProfiles(openid), groupId: invite.groupId, alreadyJoined: false }
 }
 
 // 和客户端同样的判断：云端存的是播种当天的快照，日期会随时间变陈旧，
@@ -846,14 +912,14 @@ function isCompleteSixMonthData(data) {
     Array.isArray(snackHistory) && snackHistory.length >= 4
 }
 
-async function setDataItem(openid, key, value) {
-  await replaceDataItem(openid, cleanKey(key), value, { demo: false })
+async function setDataItem(openid, key, value, petScope) {
+  await replaceDataItem(openid, cleanKey(key), value, { demo: false }, petScope)
   return { ok: true }
 }
 
 const careReminders = require('./care-reminders').createService({ cloud, db, ensureCollection: ensureNamedCollection, getAllData })
 
-exports.main = async (event = {}) => {
+async function dispatch(event = {}) {
   try {
     if (event.Type === 'Timer' && (event.TriggerName === 'careReminderDispatch' || event.triggerName === 'careReminderDispatch')) return await careReminders.dispatch()
     if (
@@ -869,18 +935,22 @@ exports.main = async (event = {}) => {
     const openid = cleanText(wxContext.OPENID, 128)
     if (!openid) throw new Error('无法识别当前微信用户')
     if (['getCareReminderConfig', 'scheduleCareReminder', 'pauseCareReminder'].includes(event.action)) return await careReminders.handle(event.action, openid, event)
-    if (event.action === 'listGrowthPhotos') return await listGrowthPhotos(openid)
-    if (event.action === 'addGrowthPhotos') return await addGrowthPhotos(openid, event.photos)
+    if (event.action === 'getPetProfiles') return await getPetProfiles(openid)
+    if (event.action === 'listGrowthPhotos') return await listGrowthPhotos(openid, event.petScope)
+    if (event.action === 'addGrowthPhotos') return await addGrowthPhotos(openid, event.photos, event.petScope)
     if (event.action === 'deleteGrowthPhoto') return await deleteGrowthPhoto(openid, event)
-    if (event.action === 'seedSixMonthDemoData') return await getAllData(openid)
-    if (event.action === 'getAllData') return await getAllData(openid)
-    if (event.action === 'setDataItem') return await setDataItem(openid, event.key, event.value)
+    if (event.action === 'seedSixMonthDemoData') return await getAllData(openid, event.petScope)
+    if (event.action === 'getAllData') return await getAllData(openid, event.petScope)
+    if (event.action === 'setDataItem') return await setDataItem(openid, event.key, event.value, event.petScope)
     if (event.action === 'mutateDataRecord') return await mutateDataRecord(openid, event)
     if (event.action === 'createShareInvitation') return await createShareInvitation(openid, event)
-    if (event.action === 'previewShareInvitation') return await previewShareInvitation(openid, event.code)
-    if (event.action === 'acceptShareInvitation') return await acceptShareInvitation(openid, event.code, event.profile)
+    if (event.action === 'previewShareInvitation') return await previewShareInvitation(openid, event.code, event.petScope)
+    if (event.action === 'acceptShareInvitation') return await acceptShareInvitation(openid, event.code, event.profile, event.petScope)
     return { ok: false, error: '不支持的云函数操作' }
   } catch (error) {
     return { ok: false, error: cleanText(error && error.message, 240) || '云端数据服务暂时不可用' }
   }
 }
+
+// 能力标记供新版客户端在写入前检查，避免新客户端连接旧函数时串档。
+exports.main = async event => ({ ...await dispatch(event), petContextVersion: 1 })

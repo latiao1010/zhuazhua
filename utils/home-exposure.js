@@ -5,7 +5,7 @@ function create(page) {
   const specs = [
     ['discovery', '.discovery-swiper'], ['weather', '.weather-forecast'],
     ...['feed', 'water', 'stool', 'walk'].map(k => [k, '.metric-' + k]),
-    ['recent', '.home-recent'], ['recent', '.recent-compact-entry'],
+    ['recent', '.recent-heading'],
     ['knowledge', '.knowledge-entry'], ['care', '.care-float'], ['profile', '.pet-avatar']
   ]
   const entryFor = slot => slot === 'discovery' ? (page.data.discoverySlides[page.data.discoveryIndex] || {}).tool : slot

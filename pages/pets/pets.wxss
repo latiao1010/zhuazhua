@@ -1,0 +1,15 @@
+page { background: #fafcf9; color: #304139; }
+.pets-page { max-width:480px; margin:0 auto; box-sizing:border-box; padding:28px 20px calc(30px + env(safe-area-inset-bottom)); }
+.pets-title { display: block; font-size: 24px; font-weight: 600; }
+.pets-description { display: block; margin: 12px 0 24px; font-size: 15px; line-height: 1.7; color: #748178; }
+.pet-card { display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%!important; margin:14px 0!important; box-sizing:border-box; padding:20px 16px; border:1px solid #e0e8e1; border-radius:18px; background:#fff; color:#304139; font-weight:400; text-align:left; line-height:1.5; }
+.pet-card::after { border: 0; }
+.pet-card[disabled] { color: #304139; background: #fff; }
+.pet-card-current, .pet-card-current[disabled] { border-color: #a7c7ad; background: #edf4ee; }
+.pet-copy { flex: 1; min-width: 0; }
+.pet-name { display: block; font-size: 20px; font-weight: 600; overflow-wrap: break-word; }
+.pet-role { display: block; margin-top: 5px; font-size: 13px; color: #748178; }
+.pet-selected { flex-shrink:0; white-space:nowrap; font-size:14px; color:#52785e; }
+.pets-note, .pets-loading { display: block; margin-top: 24px; color: #748178; font-size: 13px; line-height: 1.8; }
+.pets-error { padding: 16px; background: #fff3e9; border-radius: 14px; font-size: 14px; line-height: 1.7; }
+.pets-error button { margin: 12px 0 0; background: #52785e; color: #fff; font-size: 14px; }

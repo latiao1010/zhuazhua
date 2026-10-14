@@ -123,22 +123,23 @@
 
 /* 首页：暖白底、清晰的记录数字、固定的功能入口。 */
 page { background:var(--cream); }
-.journal-home { display:flex; flex-direction:column; justify-content:space-between; gap:6px; height:100vh; min-height:0; max-width:480px; margin:0 auto; padding:12px 16px 10px; box-sizing:border-box; background:#fafcf9; }
+.journal-home { display:flex; flex-direction:column; gap:12px; min-height:100vh; max-width:480px; margin:0 auto; padding:12px 16px 72px; box-sizing:border-box; background:#fafcf9; }
 .home-button { display:block; width:auto!important; min-height:0; margin:0!important; padding:0; border:0; border-radius:0; background:transparent; color:inherit; font-size:28rpx; font-weight:400; text-align:left; line-height:1.5; box-sizing:border-box; }
 .home-button::after { border:0; }
 .home-pressed { opacity:.7; }
-.home-topline { display:flex; align-items:center; justify-content:space-between; gap:8px; height:20px; color:var(--muted); font-size:11px; }
+.home-header { display:flex; flex-direction:column; gap:8px; }
+.home-topline { display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:20px; color:var(--muted); font-size:11px; line-height:1.5; }
 .home-topline>text:first-child { flex:1; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
 .demo-badge { flex:none; padding:2px 6px; border-radius:99px; background:#fff0e9; color:#a35640; font-size:10px; }
 .shared-badge { background:#eaf2ee; color:#547563; }
-.home-pet-head { display:flex; align-items:center; gap:12px; height:56px; }
+.home-pet-head { display:flex; align-items:center; gap:12px; min-height:56px; }
 .pet-avatar { flex:none; width:48px!important; height:48px; border-radius:16px; overflow:hidden; border:2px solid #fff; background:#fff0e4; box-shadow:0 0 0 1px #f2e7db,0 3px 9px rgba(137,103,72,.08); }
 .pet-avatar image { display:block; width:100%; height:100%; }
-.home-pet-copy { flex:1; min-width:0; }
-.home-title { overflow:hidden; color:#2f3e38; font-size:22px; font-weight:600; line-height:1.35; text-overflow:ellipsis; white-space:nowrap; }
+.home-pet-copy { display:flex; flex-direction:column; align-items:flex-start; gap:4px; flex:1; min-width:0; }
+.home-title { max-width:100%; overflow:hidden; color:#2f3e38; font-size:22px; font-weight:600; line-height:1.35; text-overflow:ellipsis; white-space:nowrap; }
 .home-title>text { margin-left:7px; color:#748478; font-weight:400; font-size:15px; }
-.home-pet-meta { display:flex; align-items:center; gap:8px; min-width:0; color:#68796d; }
-.home-pet-meta button { min-width:0; padding:3px 7px; border-radius:7px; background:#f0f4ee; color:#627367; font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.home-pet-meta { display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; min-width:0; max-width:100%; color:#68796d; }
+.home-pet-meta button { min-width:0; max-width:100%; padding:3px 7px; border-radius:7px; background:#f0f4ee; color:#627367; font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .home-pet-meta button>text { margin-left:5rpx; color:#8e9b92; }
 .meta-dot { display:none; }
 .home-notice { flex:none; padding:2px 5px; border-radius:6px; background:#fff0e9; color:#98553e; font-size:10px; white-space:nowrap; }
@@ -266,11 +267,11 @@ page { background:var(--cream); }
 .weather-privacy { min-height:24px; color:#5e7162; font-size:11px; line-height:24px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
 
-/* 首屏按可用高度排版；短屏将近期详情收进抽屉，内容仍可完整查看。 */
-page { height:100%; overflow:hidden; }
+/* 首页随内容自然增高，由页面滚动展示全部区块，底部为悬浮提醒留空。 */
+page { min-height:100%; }
 .journal-home>view { flex-shrink:0; }
 .home-badges { display:flex; align-items:center; gap:4px; flex:none; }
-.journal-home>.home-discovery { display:flex; flex-direction:column; flex:1 1 auto; min-height:128px; max-height:154px; }
+.journal-home>.home-discovery { display:flex; flex-direction:column; flex:none; height:154px; }
 .weather-forecast>text:first-child { flex:1; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
 .weather-forecast[disabled] { background:transparent; color:#788777; }
 .finding-card { min-width:0; padding:8px 10px; border:1px solid #e5ece5; border-radius:12px; background:#fff; }
@@ -281,8 +282,7 @@ page { height:100%; overflow:hidden; }
 .finding-card .finding-heading>text:last-child { font-size:14px; }
 .finding-card .finding-title { color:#38533f; font-size:14px; line-height:1.4; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .finding-card .finding-summary { margin-top:2px; color:#5d7063; font-size:11px; line-height:1.4; }
-.recent-compact-entry { display:none; }
-.home-footer { margin-top:0; padding-right:56px; }
+.home-footer { margin-top:0; }
 .recent-sheet { max-width:480px; margin:0 auto; }
 .recent-sheet>.insight-range-switch { width:max-content; margin-bottom:12px; }
 .recent-sheet .close { width:44px!important; height:44px; }
@@ -290,16 +290,14 @@ page { height:100%; overflow:hidden; }
 .recent-sheet .finding-row { padding:16px 0; }
 .recent-sheet .finding-heading { flex-wrap:wrap; }
 .recent-sheet .finding-title { flex:1; }
-/* 较高屏幕把余量分配给卡片和区块间距，底部不再单独留出一大块空白。 */
+/* 较高屏幕保留舒展的卡片尺寸；提醒数量不再影响其他区块的高度。 */
 @media (min-height:700px) {
-  .journal-home { gap:clamp(6px,calc(6vh - 36px),12px); }
-  .home-pet-head { height:clamp(56px,9vh,70px); }
   .pet-avatar { width:clamp(48px,7.5vh,58px)!important; height:clamp(48px,7.5vh,58px); border-radius:19px; }
   .home-title { font-size:24px; }
   .home-title>text { font-size:17px; }
   .home-section-head>view:first-child { font-size:17px; }
   .home-weather { padding:6px 12px 10px; border-radius:15px; }
-  .journal-home>.home-discovery { max-height:clamp(154px,22vh,186px); }
+  .journal-home>.home-discovery { height:clamp(174px,22vh,186px); }
   .discovery-panel { padding:12px 16px; border-radius:17px; }
   .discovery-title { font-size:19px; margin-top:4px; }
   .discovery-description { font-size:12px; margin-top:5px; }
@@ -324,14 +322,12 @@ page { height:100%; overflow:hidden; }
   .care-float { right:calc((100vw - 480px) / 2 + 16px); }
 }
 @media (max-height:650px) {
-  .journal-home { gap:4px; padding-top:8px; padding-bottom:8px; }
-  .home-topline { height:18px; }
-  .home-pet-head { height:50px; }
+  .journal-home { padding-top:8px; }
   .pet-avatar { width:44px!important; height:44px; }
   .home-title { font-size:20px; }
   .home-section-head { height:26px; margin-bottom:2px; }
   .home-section-head>view:first-child { font-size:15px; }
-  .journal-home>.home-discovery { min-height:110px; max-height:124px; }
+  .journal-home>.home-discovery { height:144px; }
   .discovery-panel { padding:6px 12px; }
   .outing-art { width:56px; height:56px; }
   .discovery-description { margin-top:1px; }
@@ -339,45 +335,25 @@ page { height:100%; overflow:hidden; }
   .daily-metrics { padding:6px 0; }
   .finding-card { padding-top:6px; padding-bottom:6px; }
   .recent-heading { height:30px; }
-  .home-footer { padding-right:52px; }
   .care-float { bottom:8px; }
 }
-@media (max-height:560px) {
-  .home-recent { display:none; }
-  .recent-compact-entry { display:flex; flex:none; align-items:center; justify-content:space-between; height:36px; padding:0 10px; border:1px solid #e5ece5; border-radius:10px; background:#fff; }
-  .recent-compact-entry>text:first-child { color:#38533f; font-size:14px; font-weight:600; }
-  .recent-compact-entry>text:last-child { color:#6f7d75; font-size:11px; }
-}
 @media (max-height:480px) {
-  .journal-home { gap:3px; padding-top:6px; padding-bottom:6px; }
-  .home-pet-head { height:44px; }
+  .journal-home { padding-top:6px; }
   .pet-avatar { width:38px!important; height:38px; border-radius:13px; }
   .home-title { font-size:18px; }
   .home-title>text { font-size:14px; }
   .home-pet-meta button { font-size:11px; padding:1px 0; }
   .weather-top { height:28px; }
-  .weather-meta { display:none; }
-  .weather-needs-privacy .weather-forecast { display:none; }
-  .journal-home>.home-discovery { min-height:92px; max-height:102px; }
-  .discovery-description { display:none; }
+  .journal-home>.home-discovery { height:136px; }
   .outing-art,.discovery-art { width:44px; height:44px; }
   .home-section-head { height:24px; }
   .daily-metrics { padding:4px 0; }
   .metric-value { font-size:17px; }
   .care-float { bottom:6px; }
-  .recent-compact-entry { height:32px; }
-}
-@media (max-height:420px) and (min-width:600px) {
-  .journal-home { display:grid; max-width:760px; grid-template-columns:minmax(0,1fr) minmax(0,1fr); grid-template-rows:auto minmax(0,1fr) auto; gap:6px 12px; }
-  .journal-home>.home-discovery { min-height:92px; max-height:none; }
-  .home-daily { align-self:center; }
-  .home-footer { margin-top:0; }
-  .care-float { right:16px; }
 }
 
-/* 微信大字体档使用更易读的字号；短屏摘要继续通过入口展开。 */
+/* 微信大字体档保留全部内容，通过页面滚动承接新增高度。 */
 .home-large-text .home-topline { font-size:12px; }
-.home-large-text .home-pet-head { height:52px; }
 .home-large-text .home-title { font-size:24px; line-height:1.2; }
 .home-large-text .home-title>text { font-size:18px; }
 .home-large-text .home-pet-meta button { font-size:14px; padding:1px 5px; }
@@ -391,17 +367,15 @@ page { height:100%; overflow:hidden; }
 .home-large-text .home-section-head>view:first-child { font-size:17px; }
 .home-large-text .home-section-head>text { font-size:12px; }
 .home-large-text .section-link { font-size:14px; padding:3px 0 3px 8px; }
-.journal-home.home-large-text>.home-discovery { min-height:104px; max-height:124px; }
+.journal-home.home-large-text>.home-discovery { height:174px; }
 .home-large-text .discovery-title { font-size:18px; }
 .home-large-text .discovery-label { font-size:12px; padding:0 6px; }
-.home-large-text .discovery-description { display:none; }
+.home-large-text .discovery-description { font-size:13px; }
 .home-large-text .outing-art,.home-large-text .discovery-art { width:44px; height:44px; }
 .home-large-text .daily-metrics { padding:5px 0; }
 .home-large-text .metric-label { font-size:14px; }
 .home-large-text .metric-value { font-size:22px; }
 .home-large-text .metric-value>text,.home-large-text .metric-detail { font-size:12px; }
-.home-large-text .recent-compact-entry { height:36px; }
-.home-large-text .recent-compact-entry>text:last-child { font-size:13px; }
 .home-large-text .finding-summary,.home-large-text .record-note { font-size:12px; }
 .home-large-text .knowledge-entry { padding-top:4px; padding-bottom:4px; }
 .home-large-text .knowledge-entry-copy>text { font-size:12px; line-height:1.25; }
@@ -410,15 +384,9 @@ page { height:100%; overflow:hidden; }
 .home-large-text .recent-sheet .finding-label,.home-large-text .recent-sheet .finding-title { font-size:16px; }
 .home-large-text .recent-sheet .finding-summary,.home-large-text .recent-sheet .finding-note { font-size:14px; }
 .home-large-text .recent-sheet .insight-range-switch>button { font-size:14px; min-height:32px; }
-@media (max-height:700px) {
-  .home-large-text .home-recent { display:none; }
-  .home-large-text .recent-compact-entry { display:flex; flex:none; align-items:center; justify-content:space-between; padding:0 10px; border:1px solid #e5ece5; border-radius:10px; background:#fff; }
-  .home-large-text .recent-compact-entry>text:first-child { color:#38533f; font-size:16px; font-weight:600; }
-  .home-large-text .recent-compact-entry>text:last-child { color:#596f61; }
-}
 @media (max-height:480px) {
-  .journal-home.home-large-text { gap:2px; }
-  .home-large-text .home-pet-head { height:50px; }
   .home-large-text .home-section-head { height:26px; }
   .home-large-text .daily-metrics { padding:4px 0; }
 }
+
+.pet-switch-entry { display:block; max-width:100%; padding:2px 0; color:#52785e; font-size:13px; line-height:1.5; text-align:left; white-space:normal; }

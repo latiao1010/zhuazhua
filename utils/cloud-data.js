@@ -1,5 +1,6 @@
 const cloud = require('./cloud')
 const store = require('./store')
+const petContext = require('./pet-context')
 
 const DATA_KEYS = [
   'pet', 'feeds', 'diaries', 'chats', 'stools', 'waters', 'walks',
@@ -16,7 +17,7 @@ let breedSyncPromise = null
 
 function setStatus(status, detail = {}) {
   try {
-    wx.setStorageSync(STATUS_KEY, {
+    wx.setStorageSync(petContext.storageKey(STATUS_KEY), {
       status,
       ...detail,
       updatedAt: Date.now()
@@ -26,7 +27,7 @@ function setStatus(status, detail = {}) {
 
 function setShareStatus(share = {}) {
   try {
-    wx.setStorageSync(SHARE_STATUS_KEY, {
+    wx.setStorageSync(petContext.storageKey(SHARE_STATUS_KEY), {
       shared: !!share.shared,
       groupId: share.groupId || '',
       role: share.role || 'owner',
@@ -38,7 +39,7 @@ function setShareStatus(share = {}) {
 
 function getShareStatus() {
   try {
-    const status = wx.getStorageSync(SHARE_STATUS_KEY)
+    const status = wx.getStorageSync(petContext.storageKey(SHARE_STATUS_KEY))
     if (store.isDemoMode && store.isDemoMode()) return { shared: false, role: 'owner' }
     return status && typeof status === 'object' ? status : { shared: false, role: 'owner' }
   } catch (error) {
@@ -57,7 +58,7 @@ function snapshotLocalData() {
   return data
 }
 
-function applyRemoteData(data) {
+function applyRemoteData(data, share = {}, preservePet = false) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return
   syncing = true
   try {
@@ -66,6 +67,14 @@ function applyRemoteData(data) {
         store.set(key, data[key], { skipCloud: true })
       }
     })
+    // 旧共享可能只有邀请时的名称，没有完整档案。仅补空白占位昵称，
+    // 保留当前宠物已有资料和未同步编辑，也不把这份展示补全上传到云端。
+    if (!preservePet && !Object.prototype.hasOwnProperty.call(data, 'pet') && share.shared && share.petName) {
+      const pet = store.get('pet')
+      if (!pet.name || pet.name === '我的宠物' || pet.name === '共享宠物') {
+        store.set('pet', { ...pet, name: share.petName }, { skipCloud: true })
+      }
+    }
   } finally {
     syncing = false
   }
@@ -78,9 +87,10 @@ const QUEUE_KEY = 'paw_pending_sync_v1'
 const RECORD_KEYS = new Set(['feeds', 'diaries', 'stools', 'waters', 'walks', 'careRecords', 'weightRecords'])
 let flushPromise = null
 let shareAcceptPromise = null
-const localRevisions = {}
+let localRevisions = {}
+let switchPromise = null
 function pendingWrites() {
-  const saved = wx.getStorageSync(QUEUE_KEY)
+  const saved = wx.getStorageSync(petContext.storageKey(QUEUE_KEY))
   return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {}
 }
 function hasPendingForKey(queue, key) {
@@ -88,10 +98,10 @@ function hasPendingForKey(queue, key) {
 }
 function getSyncStatus() {
   if (store.isDemoMode && store.isDemoMode()) return { status: 'demo', pending: 0 }
-  return { ...(wx.getStorageSync(STATUS_KEY) || {}), pending: Object.keys(pendingWrites()).length }
+  return { ...(wx.getStorageSync(petContext.storageKey(STATUS_KEY)) || {}), pending: Object.keys(pendingWrites()).length }
 }
 function discardPendingAndSync() {
-  wx.setStorageSync(QUEUE_KEY, {})
+  wx.setStorageSync(petContext.storageKey(QUEUE_KEY), {})
   setStatus('pending')
   return syncAll()
 }
@@ -156,7 +166,7 @@ function retryPending() {
         const queue = pendingWrites()
         const key = Object.keys(queue)[0]
         const item = queue[key]
-        if (item.scope !== (getShareStatus().groupId || 'personal')) throw new Error('共享范围已变化，请先处理未同步记录')
+        if (item.scope !== petContext.current()) throw new Error('共享范围已变化，请先处理未同步记录')
         if (item.type === 'record') {
           await cloud.callFunction('pet-data', {
             action: 'mutateDataRecord', key: item.key, operation: item.operation,
@@ -168,7 +178,7 @@ function retryPending() {
         }
         const latest = pendingWrites()
         if (latest[key] && latest[key].version === item.version) delete latest[key]
-        wx.setStorageSync(QUEUE_KEY, latest)
+        wx.setStorageSync(petContext.storageKey(QUEUE_KEY), latest)
       }
       setStatus('success')
       return { ok: true }
@@ -181,6 +191,7 @@ function retryPending() {
   return flushPromise
 }
 function syncAll() {
+  if (switchPromise) return switchPromise
   if (shareAcceptPromise) return shareAcceptPromise
   if (store.isDemoMode && store.isDemoMode()) return Promise.resolve({ ok: true, skipped: true })
   if (seedPromise) return seedPromise
@@ -195,7 +206,7 @@ function syncAll() {
       const pending = pendingWrites()
       const safeData = { ...result.data }
       DATA_KEYS.forEach(key => { if (hasPendingForKey(pending, key) || before[key] !== localRevisions[key]) delete safeData[key] })
-      applyRemoteData(safeData)
+      applyRemoteData(safeData, result.share, hasPendingForKey(pending, 'pet') || before.pet !== localRevisions.pet)
       setShareStatus(result.share)
       setStatus(Object.keys(pending).length ? 'pending' : 'success')
       return result
@@ -207,6 +218,7 @@ function syncAll() {
   return seedPromise
 }
 function syncOnResume() {
+  if (switchPromise) return switchPromise
   if (shareAcceptPromise) return shareAcceptPromise
   const share = getShareStatus()
   if (share.shared && share.role === 'owner') return retryPending()
@@ -216,7 +228,7 @@ function saveKey(key, value, context = {}) {
   if (syncing || !DATA_KEYS.includes(key) || (store.isDemoMode && store.isDemoMode())) return Promise.resolve({ ok: true, skipped: true })
   localRevisions[key] = (localRevisions[key] || 0) + 1
   const queue = pendingWrites()
-  const scope = getShareStatus().groupId || 'personal'
+  const scope = petContext.current()
   if (RECORD_KEYS.has(key) && Array.isArray(value)) {
     const previous = Array.isArray(context.previousValue) ? context.previousValue : []
     const before = new Map(previous.filter(item => item && item.id).map(item => [String(item.id), item]))
@@ -235,7 +247,7 @@ function saveKey(key, value, context = {}) {
   } else {
     queue[key] = { value, version: `${Date.now()}-${Math.random()}`, scope }
   }
-  wx.setStorageSync(QUEUE_KEY, queue)
+  wx.setStorageSync(petContext.storageKey(QUEUE_KEY), queue)
   setStatus('pending')
   return retryPending()
 }
@@ -291,11 +303,17 @@ function syncBreedKnowledge(options = {}) {
 
 function createShareInvitation(payload = {}) {
   if (!cloud.isAvailable()) return Promise.resolve({ ok: false, skipped: true })
-  return cloud.callFunction('pet-data', {
-    action: 'createShareInvitation',
-    petName: payload.petName || '',
-    code: payload.code || ''
+  const context = petContext.capture()
+  return retryPending().then(result => {
+    petContext.assertCurrent(context)
+    if (!result.ok) throw new Error(result.error || '请先完成当前宠物的同步')
+    return cloud.callFunction('pet-data', {
+      action: 'createShareInvitation',
+      petName: payload.petName || '',
+      code: payload.code || ''
+    })
   }).then(result => {
+    petContext.assertCurrent(context)
     if (result && result.groupId) {
       const previous = getShareStatus()
       setShareStatus({ shared: true, groupId: result.groupId, role: 'owner',
@@ -307,51 +325,60 @@ function createShareInvitation(payload = {}) {
 
 function acceptShareInvitation(code, profile = {}) {
   if (shareAcceptPromise) return shareAcceptPromise
+  if (switchPromise) return Promise.resolve({ ok: false, error: '正在切换宠物，请稍后再加入' })
   if (!cloud.isAvailable()) return Promise.resolve({ ok: false, error: '无法连接云端，请检查网络后重试' })
   shareAcceptPromise = (async () => {
-    // 等启动同步完成，避免迟到的旧档案响应覆盖加入结果。
     if (seedPromise) await seedPromise
-    const invitation = await cloud.callFunction('pet-data', { action: 'previewShareInvitation', code })
-    const currentShare = invitation.share || { shared: false }
-    const scope = currentShare.groupId || 'personal'
-    const queue = pendingWrites()
-    const wrongScope = Object.keys(queue).some(key => queue[key].scope !== scope)
-    setShareStatus(currentShare)
-    let warning = ''
-    if (wrongScope) {
-      warning = '本机有另一份档案的未同步修改，已保留在此设备，不能直接写入当前家庭。'
-    } else {
-      const flushed = await retryPending()
-      if (!flushed.ok || Object.keys(pendingWrites()).length) {
-        warning = `本机修改尚未同步成功，数据已保留。${flushed.error || '请检查网络后重试。'}`
-      }
-    }
-    if (warning) {
-      setStatus('fail', { error: warning })
-      // 只有服务端确认已在同一家庭，才允许打开；绝不清空队列或绕过跨档案保护。
-      if (invitation.alreadyJoined) return { ok: true, alreadyJoined: true, share: currentShare, syncWarning: warning }
-      return { ok: false, error: warning }
-    }
-    setStatus('syncing')
-    const before = { ...localRevisions }
-    const result = invitation.alreadyJoined
-      ? await cloud.callFunction('pet-data', { action: 'getAllData' })
-      : await cloud.callFunction('pet-data', { action: 'acceptShareInvitation', code, profile })
-    const pending = pendingWrites()
-    const safeData = { ...result.data }
-    DATA_KEYS.forEach(key => {
-      if (hasPendingForKey(pending, key) || before[key] !== localRevisions[key]) delete safeData[key]
-    })
-    applyRemoteData(safeData)
-    setShareStatus(result.share)
-    setStatus(Object.keys(pending).length ? 'pending' : 'success', { share: result.share || {} })
-    return { ...result, alreadyJoined: !!invitation.alreadyJoined || !!result.alreadyJoined }
-  })().catch(error => {
-    const message = error.message || String(error)
-    setStatus('fail', { error: message })
-    return { ok: false, error: message }
-  }).finally(() => { shareAcceptPromise = null })
+    // 加入只增加可访问的宠物，不应用邀请方的档案、权限或记录到当前宠物。
+    const result = await cloud.callFunction('pet-data', { action: 'acceptShareInvitation', code, profile })
+    petContext.saveProfiles(result.profiles)
+    return result
+  })().catch(error => ({ ok: false, error: error.message || String(error) }))
+    .finally(() => { shareAcceptPromise = null })
   return shareAcceptPromise
 }
 
-module.exports = { getSyncStatus, retryPending, discardPendingAndSync, previewRemoteChanges, applyRemoteChanges, syncOnResume, DATA_KEYS, RECORD_KEYS, seedAndSyncSixMonthDemo, syncAll, saveKey, syncBreedKnowledge, getLocalBreedKnowledge, createShareInvitation, acceptShareInvitation, getShareStatus, isReadOnly }
+function listPetProfiles() {
+  return cloud.callFunction('pet-data', { action: 'getPetProfiles' }).then(result => {
+    petContext.saveProfiles(result.profiles)
+    return result
+  }).catch(error => ({ ok: false, error: error.message || String(error), profiles: petContext.getProfiles() }))
+}
+
+function switchPet(scope) {
+  if (switchPromise) return switchPromise
+  if (store.isDemoMode()) return Promise.resolve({ ok: false, error: '请先退出演示模式' })
+  switchPromise = Promise.resolve().then(async () => {
+    if (shareAcceptPromise) await shareAcceptPromise
+    if (seedPromise) await seedPromise
+    if (flushPromise) await flushPromise
+    if (petContext.isBusy()) throw new Error('当前操作还在处理中，请稍后切换')
+    if (scope === petContext.current()) return { ok: true }
+    // 未同步的修改保存在原宠物的独立队列内，切换不会丢弃或写入另一只宠物。
+    // 先确认目标权限并取回数据，失败时仍停留在原宠物。
+    const result = await cloud.callFunction('pet-data', { action: 'getAllData', petScope: scope })
+    if (petContext.isBusy()) throw new Error('当前操作还在处理中，请稍后切换')
+    const previousScope = petContext.current()
+    const previousRevisions = localRevisions
+    try {
+      petContext.select(scope)
+      localRevisions = {}
+      store.ensureSeedData()
+      const pending = pendingWrites()
+      const safeData = { ...result.data }
+      DATA_KEYS.forEach(key => { if (hasPendingForKey(pending, key)) delete safeData[key] })
+      applyRemoteData(safeData, result.share, hasPendingForKey(pending, 'pet'))
+      setShareStatus(result.share)
+      setStatus(Object.keys(pending).length ? 'pending' : 'success')
+    } catch (error) {
+      petContext.select(previousScope)
+      localRevisions = previousRevisions
+      throw error
+    }
+    return { ok: true }
+  }).catch(error => ({ ok: false, error: error.message || String(error) }))
+    .finally(() => { switchPromise = null })
+  return switchPromise
+}
+
+module.exports = { listPetProfiles, switchPet, getSyncStatus, retryPending, discardPendingAndSync, previewRemoteChanges, applyRemoteChanges, syncOnResume, DATA_KEYS, RECORD_KEYS, seedAndSyncSixMonthDemo, syncAll, saveKey, syncBreedKnowledge, getLocalBreedKnowledge, createShareInvitation, acceptShareInvitation, getShareStatus, isReadOnly }

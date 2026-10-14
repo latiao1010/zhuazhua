@@ -1,4 +1,5 @@
 const cloud = require('./cloud')
+const petContext = require('./pet-context')
 
 function normalizePhoto(item) {
   if (!item || !item.path) return null
@@ -65,6 +66,13 @@ function saveLocalPhotos(tempPaths, metadata) {
 }
 
 function saveGrowthPhotos(tempPaths, metadata) {
+  const context = petContext.capture()
+  const release = petContext.beginOperation()
+  return Promise.resolve().then(() => uploadGrowthPhotos(tempPaths, metadata))
+    .then(photos => { petContext.assertCurrent(context); return photos }).finally(release)
+}
+
+function uploadGrowthPhotos(tempPaths, metadata) {
   if (!cloud.isAvailable()) return saveLocalPhotos(tempPaths, metadata)
   const sourcePaths = (Array.isArray(tempPaths) ? tempPaths : []).filter(Boolean)
   const uploads = sourcePaths.map((filePath, index) => {

@@ -472,7 +472,9 @@ Page(instrument('home', {
     this.weatherRequest = (this.weatherRequest || 0) + 1
     clearInterval(this.weatherTimer)
   },
+  openPetSwitcher() { wx.navigateTo({ url: '/pages/pets/pets' }) },
   refresh() {
+    this.setData({ currentPetKind: require('../../utils/pet-context').current() === 'personal' ? '我的宠物' : '共享宠物' })
     const pet = store.get('pet')
     const start = new Date(pet.birthday)
     const togetherSince = pet.togetherSince || ''

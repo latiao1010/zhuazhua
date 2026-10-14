@@ -1,0 +1,11 @@
+<view class="pets-page">
+  <text class="pets-title">我的宠物与共享宠物</text>
+  <text class="pets-description">选择要查看和照护的宠物。每只宠物都有独立的档案和记录。</text>
+  <text class="pets-loading" wx:if="{{loading}}">正在加载宠物…</text>
+  <button wx:for="{{profiles}}" wx:key="id" class="pet-card {{current === item.id ? 'pet-card-current' : ''}}" data-id="{{item.id}}" bindtap="selectPet" disabled="{{loading || !!switching}}" loading="{{switching === item.id}}">
+    <view class="pet-copy"><text class="pet-name">{{item.name}}</text><text class="pet-role">{{item.roleLabel}}</text></view>
+    <text class="pet-selected">{{current === item.id ? '当前查看' : '查看 ›'}}</text>
+  </button>
+  <view class="pets-error" wx:if="{{error}}"><text>{{error}}</text><button bindtap="loadPets" disabled="{{!!switching}}">重新加载</button></view>
+  <text class="pets-note" wx:if="{{profiles.length}}">重新打开小程序时，默认显示自己的宠物。通过邀请加入的宠物会单独列在这里。</text>
+</view>

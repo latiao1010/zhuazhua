@@ -14,7 +14,8 @@ function load(file, deps = {}, extra = {}) {
 async function main() {
   const disk = {}
   const wx = { getStorageSync:key=>copy(disk[key]), setStorageSync:(key,value)=>{ disk[key]=copy(value) } }
-  const store = load('utils/store.js', {}, { wx })
+  const context = load('utils/pet-context.js', {}, { wx })
+  const store = load('utils/store.js', { './pet-context':context }, { wx })
   store.ensureSeedData()
   for (const key of ['feeds','waters','stools','walks','careRecords','weightRecords','growthPhotos','chats']) assert.strictEqual(store.get(key).length,0,key)
   assert.strictEqual(store.get('pet').birthday,'')
@@ -25,7 +26,7 @@ async function main() {
   assert.strictEqual(store.get('familyMembers').length,3)
   assert.ok(store.get('feeds').some(item=>item.recordedByRole==='owner'))
   assert.ok(store.get('feeds').some(item=>item.recordedByRole==='admin'))
-  assert.strictEqual(disk.paw_feeds.length,1)
+  assert.strictEqual(disk[context.storageKey('paw_feeds')].length,1)
   store.setDemoMode(false)
   assert.strictEqual(store.get('feeds').length,1)
   console.log('✓ 正式新用户为空记录，演示切换不污染正式档案')
@@ -39,7 +40,7 @@ async function main() {
   const calls = []
   const cloud = { isAvailable:()=>available, callFunction:async(name,data)=>{ calls.push(copy(data)); if(fail) throw new Error('offline'); return { ok:true, data:{} } } }
   const local = {}
-  const sync = load('utils/cloud-data.js', { './cloud':cloud,'./store':{ isDemoMode:()=>false, get:key=>local[key], set:(key,value)=>{ local[key]=value } } }, { wx })
+  const sync = load('utils/cloud-data.js', { './pet-context':context,'./cloud':cloud,'./store':{ isDemoMode:()=>false, get:key=>local[key], set:(key,value)=>{ local[key]=value } } }, { wx })
   await sync.saveKey('waters',[{ id:1,amount:'100ml' }])
   assert.strictEqual(sync.getSyncStatus().pending,1)
   available = true; fail = true
@@ -70,13 +71,13 @@ async function main() {
   assert.strictEqual(preview.changes[0].actor,'妈妈')
   assert.strictEqual(local.waters[0].id,2)
   console.log('✓ 同步前预览共享修改，不会提前覆盖主人本地记录')
-  disk.paw_pending_sync_v1={}
+  disk[context.storageKey('paw_pending_sync_v1')]={}
   const appliedPreview=await sync.applyRemoteChanges([preview.changes[0]])
   assert.strictEqual(appliedPreview.applied,1)
   assert.strictEqual(local.waters[0].id,3)
   console.log('✓ 主人可以逐条选择并应用共享修改')
 
-  disk.paw_share_status={shared:true,role:'owner',groupId:'group-1'}
+  disk[context.storageKey('paw_share_status')]={shared:true,role:'owner',groupId:'group-1'}
   let ownerPulled=false
   cloud.callFunction=async(name,data)=>{ if(data.action==='getAllData') ownerPulled=true; return {ok:true,data:{}} }
   await sync.syncOnResume()
@@ -87,7 +88,7 @@ async function main() {
   await sync.saveKey('feeds',[{id:2}])
   const invitation=await sync.acceptShareInvitation('code')
   assert.strictEqual(invitation.ok,false)
-  console.log('✓ 存在待同步记录时阻止切换共享档案')
+  console.log('✓ 离线时不能加入共享，原档案待同步记录保留')
 
   const report = load('utils/visit-summary.js', {'./store':store})
   const today=store.todayKey()

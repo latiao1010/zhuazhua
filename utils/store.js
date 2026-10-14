@@ -1,3 +1,4 @@
+const petContext = require('./pet-context')
 const { normalizePersonalityTags } = require('./pet-profile')
 
 const KEYS = {
@@ -31,7 +32,7 @@ const KEYS = {
 function isDemoMode() { return wx.getStorageSync('paw_data_mode') === 'demo' }
 Object.keys(KEYS).forEach(key => {
   const original = KEYS[key]
-  Object.defineProperty(KEYS, key, { enumerable: true, get: () => isDemoMode() ? 'demo_' + original : original })
+  Object.defineProperty(KEYS, key, { enumerable: true, get: () => isDemoMode() ? 'demo_' + original : key.startsWith('externalBreed') ? original : petContext.storageKey(original) })
 })
 function setDemoMode(enabled) {
   wx.setStorageSync('paw_data_mode', enabled ? 'demo' : 'real')
@@ -179,7 +180,9 @@ function normalizeFamilyMembers(value) {
       }
     })
   // Preserve the actual roles regardless of server ordering; never promote the first member.
-  return normalized.length ? normalized : seedFamilyMembers
+  return normalized.length ? normalized : isDemoMode() ? seedFamilyMembers : [
+    { ...seedFamilyMembers[0], joinedAt: todayKey(), lastActive: todayKey() }
+  ]
 }
 
 function getDefaultCareSchedule() {
@@ -779,7 +782,7 @@ const get = key => {
 const set = (key, value, options = {}) => {
   if (!isDemoMode() && !options.skipCloud && READ_ONLY_PROTECTED_KEYS.has(key)) {
     try {
-      const status = wx.getStorageSync('paw_share_status')
+      const status = wx.getStorageSync(petContext.storageKey('paw_share_status'))
       if (status && status.shared && status.role === 'viewer') {
         if (wx.showToast) wx.showToast({ title: '只读成员不能修改共享档案', icon: 'none' })
         return Promise.resolve({ ok: false, error: 'readonly' })

@@ -77,6 +77,7 @@ function makeState(overrides = {}) {
 
 function makeStore(state) {
   return {
+    isDemoMode() { return false },
     get(key) {
       const value = state[key]
       return value === undefined ? [] : value
@@ -451,7 +452,7 @@ async function main() {
     assert.strictEqual(state.waters[0].recordedBy, 'owner')
     assert.strictEqual(state.waters[0]._syncUpdatedAt, 12345)
     assert.strictEqual(state.waters[0].amount, 180)
-    wx.setStorageSync('paw_share_status', { shared:true, role:'viewer' })
+    wx.setStorageSync('paw_pet_space:personal:paw_share_status', { shared:true, role:'viewer' })
     context.data.selectedRecordIds = ['77']
     context.removeSelectedRecords()
     assert.strictEqual(state.waters.length, 1)
@@ -490,7 +491,7 @@ async function main() {
     }
     context.openRecordTools()
     assert.strictEqual(context.data.selectingRecords, true)
-    wx.setStorageSync('paw_share_status', { shared: true, role: 'viewer' })
+    wx.setStorageSync('paw_pet_space:personal:paw_share_status', { shared: true, role: 'viewer' })
     wx.showActionSheet = options => assert.deepStrictEqual(options.itemList, ['搜索与筛选'])
     context.openRecordTools()
   })
@@ -822,7 +823,7 @@ async function main() {
     assert.ok(share.path.includes('shareCode='))
 
     page.removeFamilyMember.call(context, { currentTarget: { dataset: { index: 1 } } })
-    await Promise.resolve()
+    await new Promise(resolve => setImmediate(resolve))
     assert.strictEqual(state.familyMembers.length, 1)
     assert.ok(calls.toasts.some(item => item.title.includes('移除')))
 
@@ -1014,7 +1015,7 @@ async function main() {
       newAvatarTemp: 'temp-avatar.jpg'
     })
     page.savePet.call(context)
-    return Promise.resolve().then(() => Promise.resolve()).then(() => {
+    return new Promise(resolve => setImmediate(resolve)).then(() => {
     assert.strictEqual(state.pet.weight, 11.2)
     assert.strictEqual(state.weightRecords.length, 1)
     assert.strictEqual(context.data.saving, false)
@@ -2305,11 +2306,22 @@ async function main() {
     const chatWxml = fs.readFileSync(path.join(ROOT, 'pages/chat/chat.wxml'), 'utf8')
     assert.ok(/<scroll-view class="chat-scroll"[^>]*scroll-y[^>]*show-scrollbar="false"/.test(chatWxml))
     assert.ok(/@media[^\{]*max-height\s*:\s*620px/.test(chatStyles))
-    // 首页按当前需求保持一屏；大字体和短屏的适配由专用规则承接。
+    // 首页展示完整内容，短屏和大字体通过页面滚动承接额外高度。
     const profileWxml = fs.readFileSync(path.join(ROOT, 'pages/profile/profile.wxml'), 'utf8')
     assert.ok(/class="page journal-home(?:\s|")/.test(profileWxml))
-    assert.strictEqual(JSON.parse(fs.readFileSync(path.join(ROOT, 'pages/profile/profile.json'), 'utf8')).disableScroll, true)
+    assert.strictEqual(JSON.parse(fs.readFileSync(path.join(ROOT, 'pages/profile/profile.json'), 'utf8')).disableScroll, false)
     assert.ok(profileStyles.includes('home-large-text'))
+    // 切换入口新增一行后，所有字体和屏幕断点都必须由内容撑开头像区。
+    const headerRules = [...profileStyles.matchAll(/[^{}]*\.home-pet-head\s*\{([^}]*)\}/g)]
+    assert.ok(headerRules.length)
+    headerRules.forEach(([, declarations]) => {
+      assert.ok(!/(?:^|;)\s*(?:height|max-height)\s*:/.test(declarations), 'Pet header must not constrain its content height')
+    })
+    assert.ok(/\.home-header\s*\{[^}]*flex-direction:column[^}]*gap:8px/.test(profileStyles))
+    assert.ok(/\.home-pet-meta\s*\{[^}]*flex-wrap:wrap/.test(profileStyles))
+    const petPickerStyles = fs.readFileSync(path.join(ROOT, 'pages/pets/pets.wxss'), 'utf8')
+    assert.ok(/\.pet-card\s*\{[^}]*width:100%!important/.test(petPickerStyles), 'Pet cards must override the native button width')
+    assert.ok(/\.pet-card\s*\{[^}]*margin:14px 0!important[^}]*box-sizing:border-box/.test(petPickerStyles))
     const feedStyles = fs.readFileSync(path.join(ROOT, 'pages/feed/feed.wxss'), 'utf8')
     assert.ok(/\.sheet\s*\{[^}]*max-height\s*:\s*88vh[^}]*overflow-y\s*:\s*auto/s.test(feedStyles))
     assert.ok(/@media[^\{]*max-width\s*:\s*360px/.test(chatStyles))

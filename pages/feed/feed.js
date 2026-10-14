@@ -14,12 +14,12 @@ const FEED_GOAL = 260
 
 function isReadOnlyMember() {
   if (store.isDemoMode && store.isDemoMode()) return false
-  const share = wx.getStorageSync && wx.getStorageSync('paw_share_status')
+  const share = cloudData.getShareStatus()
   return !!(share && share.shared && share.role === 'viewer')
 }
 
 function recordDefaultsKey(type) {
-  return (store.isDemoMode && store.isDemoMode() ? 'demo_' : '') + 'paw_record_defaults_' + type
+  return store.isDemoMode() ? 'demo_paw_record_defaults_' + type : require('../../utils/pet-context').storageKey('paw_record_defaults_' + type)
 }
 
 function parseNumber(value) {

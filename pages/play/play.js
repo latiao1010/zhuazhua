@@ -36,7 +36,7 @@ Page(instrument('play', {
  },
  clearBingo(){this.setBingo([])},
  finishBingo(){this.goResult({v:this.data.bingoVersion,t:'bingo',n:(this.data.name||'我家毛孩子').trim().slice(0,12)||'我家毛孩子',s:this.data.species,q:this.data.bingoSelected.slice().sort((a,b)=>a-b),e:store.todayKey(),...(this.peer?{peer:this.peer}:{})})},
- draftKey(){return 'paw_fun_quiz_v1_'+(store.isDemoMode()?'demo':'real')+'_'+this.data.species},
+ draftKey(){return store.isDemoMode()?'paw_fun_quiz_v1_demo_'+this.data.species:require('../../utils/pet-context').storageKey('paw_fun_quiz_v1_real_'+this.data.species)},
  chooseSpecies(e){
   const species=e.currentTarget.dataset.value
   if(!['cat','dog'].includes(species)||species===this.data.species)return

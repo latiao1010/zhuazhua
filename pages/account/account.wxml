@@ -2,9 +2,9 @@
 <view class="share-join-overlay" wx:if="{{sharePromptOpen}}" catchtouchmove="noop" catchtap="noop">
   <view class="share-join-dialog" role="dialog" aria-label="加入家庭共享">
     <text class="share-join-title">加入家庭共享</text>
-    <text class="share-join-description">加入后，和家人一起照护同一只宠物。</text>
+    <text class="share-join-description">共享宠物会加入你的宠物列表，自己的宠物会保留。</text>
     <view class="share-join-code"><text>收到的共享码</text><text>{{sharePromptCode}}</text></view>
-    <text class="share-join-status {{shareJoinError ? 'share-join-error' : ''}}" aria-live="polite">{{shareAccepting ? '正在同步并加入，请稍候…' : (shareJoinError || '是否加入这只宠物的家庭档案？')}}</text>
+    <text class="share-join-status {{shareJoinError ? 'share-join-error' : ''}}" aria-live="polite">{{shareAccepting ? '正在加入，请稍候…' : (shareJoinError || '是否加入这只宠物的家庭档案？')}}</text>
     <view class="share-join-actions">
       <button class="share-join-cancel" bindtap="cancelAcceptShare" disabled="{{shareAccepting}}">稍后</button>
       <button class="share-join-confirm" bindtap="confirmAcceptShare" loading="{{shareAccepting}}" disabled="{{shareAccepting}}">{{shareAccepting ? '正在加入' : (shareJoinError ? '重试加入' : '加入')}}</button>
@@ -21,7 +21,8 @@
     <view class="account-identity">
       <view class="account-identity-top"><text>宠物档案</text><text class="account-role" wx:if="{{shareShared}}">{{shareReadOnly ? '共享 · 只读' : shareRoleLabel}}</text><button class="account-button account-feedback" bindtap="openFeedback">反馈与帮助 ›</button></view>
       <button class="account-button account-pet-name" hover-class="account-pressed" data-field="name" bindtap="openProfileFieldEdit" aria-label="{{shareReadOnly ? '查看昵称' : '修改昵称'}}"><text>{{pet.name || '你的宠物'}}</text><text>›</text></button>
-      <text class="account-hero-note">把它的每一面，好好珍藏</text>
+      <button class="account-button account-switch-pet" wx:if="{{!demoMode}}" bindtap="openPetSwitcher">{{currentPetKind}} · 切换宠物 ›</button>
+      <text class="account-hero-note" wx:else>把它的每一面，好好珍藏</text>
     </view>
   </view>
 
@@ -133,7 +134,7 @@
     <view>
       <text>云端共享码</text>
       <view>{{shareShared && shareRole !== 'owner' ? '仅主人可生成' : (familyInviteLoading ? '生成中…' : familyInviteCode)}}</view>
-      <text>{{shareShared && shareRole !== 'owner' ? '你可以查看共享成员；只有主人能生成邀请和管理权限' : '家人打开分享或输入共享码后，会绑定到同一只宠物云档案'}}</text>
+      <text>{{shareShared && shareRole !== 'owner' ? '你可以查看共享成员；只有主人能生成邀请和管理权限' : '家人打开分享或输入共享码后，可在自己的宠物列表中查看这只共享宠物'}}</text>
     </view>
     <view class="family-share-actions" wx:if="{{!shareShared || shareRole === 'owner'}}">
       <button loading="{{familyInviteLoading}}" disabled="{{familyInviteLoading}}" bindtap="copyInviteCode">复制</button>
