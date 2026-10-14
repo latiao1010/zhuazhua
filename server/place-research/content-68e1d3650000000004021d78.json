@@ -1,0 +1,49 @@
+{
+  "province": "安徽省",
+  "city": "滁州市",
+  "search_query": "滁州 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": "2025-10-05",
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "金源汤包、蚌全面馆及奶茶购买未明确犬进入店内。"
+  ],
+  "id": "68e1d3650000000004021d78",
+  "title": "嘻嘻，带🐶滁州一日游～没有人从众～",
+  "author": "哈米猪猪",
+  "date_text": "编辑于 2025-10-05",
+  "summary": "作者携犬从南京游滁州，逛遵阳街、城西水库和银时咖啡，因禁犬未去琅琊山。",
+  "places": [
+    {
+      "name": "遵阳街",
+      "category": "步行街",
+      "conditions": "作者携犬逛街拍照；街内商户各自规定未确认。",
+      "location_text": "遵阳街",
+      "address": null
+    },
+    {
+      "name": "城西水库",
+      "category": "户外湖区",
+      "conditions": "作者实际携犬到访，现场见其他犬；未提供具体入口，不将放绳行为视为管理许可。",
+      "location_text": "城西水库",
+      "address": null
+    },
+    {
+      "name": "银时咖啡",
+      "category": "咖啡馆",
+      "conditions": "作者到访并明确宠物友好，称有两层；具体地址、座位及犬型待核实。",
+      "location_text": "滁州市区",
+      "address": null
+    },
+    {
+      "name": "琅琊山景区",
+      "category": "不允许携犬的场所",
+      "conditions": "作者因不许带狗放弃该景区，后续回复仍称不能携犬；需查现行规定。",
+      "location_text": "琅琊山景区",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/68e1d3650000000004021d78"
+}

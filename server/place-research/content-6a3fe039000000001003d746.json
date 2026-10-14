@@ -1,0 +1,36 @@
+{
+  "province": "安徽省",
+  "city": "马鞍山市",
+  "search_query": "马鞍山 宠物友好",
+  "collected_at": "2026-10-03",
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携犬出游经历",
+  "published_at": null,
+  "verification_status": "作者经历，场地现行携宠规则未独立核验。",
+  "id": "6a3fe039000000001003d746",
+  "title": "马鞍山携宠一日游-20260619端午假日",
+  "author": "🥕百变炖骨🐶",
+  "date_text": "编辑于 06-28",
+  "visited_at": "2026-06-19",
+  "summary": "作者端午携宠去马鞍山，正文提到花鸟市场、第三铁道咖啡和濮塘；咖啡仅在户外休息，评论存在不友好反馈。",
+  "places": [
+    {
+      "name": "濮塘国家度假公园",
+      "category": "户外公园",
+      "conditions": "作者携犬游园，提到草坪、步道及动物区域；水上项目和动物互动未确认可携犬。",
+      "location_text": "马鞍山濮塘",
+      "address": null
+    },
+    {
+      "name": "第三铁道咖啡",
+      "category": "咖啡馆",
+      "conditions": "作者只确认买饮品后在户外休息；其他读者称宠物不友好，室内是否接待存在冲突，需先问店家。",
+      "location_text": "马鞍山花鸟市场附近",
+      "address": null
+    }
+  ],
+  "comment_notes": [
+    "花鸟市场仅是行程地点，未明确各摊位携犬入内；一滴咖啡为读者推荐，作者未去。"
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6a3fe039000000001003d746"
+}

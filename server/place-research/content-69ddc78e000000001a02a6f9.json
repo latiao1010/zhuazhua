@@ -1,0 +1,43 @@
+{
+  "id": "69ddc78e000000001a02a6f9",
+  "title": "蚌埠这地方🉑带宠！",
+  "author": "笨蛋我在想你",
+  "date_text": "04-14",
+  "published_at": null,
+  "summary": "攻略列十处遛犬地，但多条可见评论反驳龙子湖和张公山准入。仅保存这些有明确限制争议的地点，不把推广式总表变成全部已验证的宠物场所。",
+  "places": [
+    {
+      "name": "龙子湖东公园",
+      "category": "公园",
+      "conditions": "正文称友好，多条评论称龙子湖公园不让犬进；东区具体边界未核实，不能直接推荐。",
+      "location_text": "龙子湖东公园",
+      "address": null
+    },
+    {
+      "name": "龙子湖西公园",
+      "category": "公园",
+      "conditions": "正文称友好，04-14有读者明确说西公园保安不让犬进，另有局部可进猜测，限制冲突待确认。",
+      "location_text": "龙子湖西公园",
+      "address": null
+    },
+    {
+      "name": "张公山公园",
+      "category": "公园",
+      "conditions": "多条评论称园区或小岛不让犬进，与正文推荐冲突；不采用避开保安时段进入的说法。",
+      "location_text": "张公山公园",
+      "address": null
+    }
+  ],
+  "comment_notes": [
+    "其他水库、绿地和付费景区缺乏逐点体验证明，未全部列为确认地点。",
+    "打车广告及票价估计未作为运营信息。"
+  ],
+  "source_type": "携宠攻略及反驳准入的读者反馈",
+  "verification_status": "多点出现禁入反馈，攻略可靠性存疑，不应作为已核实推荐；记录限制线索供复核。",
+  "province": "安徽省",
+  "city": "蚌埠市",
+  "search_query": "蚌埠 宠物友好",
+  "collected_at": "2026-10-03",
+  "url": "https://www.xiaohongshu.com/explore/69ddc78e000000001a02a6f9",
+  "read_status": "已读可见正文及评论；图片和折叠回复未读"
+}

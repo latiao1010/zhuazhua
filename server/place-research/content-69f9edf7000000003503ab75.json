@@ -1,0 +1,42 @@
+{
+  "province": "安徽省",
+  "city": "安庆市",
+  "search_query": "安庆 宠物友好",
+  "collected_at": "2026-10-03",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "用餐店铺和人文景点未明确犬准入，不一并收为宠物友好地点。"
+  ],
+  "id": "69f9edf7000000003503ab75",
+  "title": "在安庆 宠物友好跟风成功",
+  "author": "来个汉堡不加肉",
+  "date_text": "编辑于 05-05",
+  "summary": "作者携犬逛安庆市区，推荐迎江寺和菱湖公园，入住黄梅muse酒店并记录宠物押金。",
+  "places": [
+    {
+      "name": "迎江寺",
+      "category": "寺庙",
+      "conditions": "作者称可以带犬进入；未划分殿堂等室内区域，需确认允许范围。",
+      "location_text": "迎江寺",
+      "address": null
+    },
+    {
+      "name": "菱湖公园",
+      "category": "公园",
+      "conditions": "作者称适合犬散步，看到当地居民遛犬；场内其他设施规则未写明。",
+      "location_text": "菱湖公园",
+      "address": null
+    },
+    {
+      "name": "黄梅muse酒店",
+      "category": "酒店",
+      "conditions": "作者称携犬入住押金300元，无损坏退房返还；当前金额、房型与犬型要求待确认。",
+      "location_text": "黄梅muse酒店",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/69f9edf7000000003503ab75"
+}

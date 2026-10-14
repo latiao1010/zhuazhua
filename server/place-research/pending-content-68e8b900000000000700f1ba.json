@@ -1,0 +1,26 @@
+{
+  "province": "吉林省",
+  "city": "通化市",
+  "search_query": "通化 宠物友好",
+  "collected_at": "2026-10-03",
+  "read_status": "已读完整可见文字正文；已展开评论依下述记录，图片未读",
+  "id": "68e8b900000000000700f1ba",
+  "title": "吉林｜山里吸氧日🍁",
+  "author": "momo",
+  "date_text": "2025-10-10",
+  "published_at": "2025-10-10",
+  "source_type": "个人户外到访",
+  "summary": "作者在通化县大安镇四方山徒步，称此前看到改造关闭信息，当天见大门打开便进入。没有确认正式恢复开放或宠物准入，不能当成可公开进入的携犬景区推荐。",
+  "places": [],
+  "candidate_places": [
+    {
+      "name": "四方山",
+      "location_text": "通化县大安镇，按正文",
+      "category": "山地",
+      "conditions": "开放及携犬许可不明，大门打开不构成允许进入的确认；不提供非正式进入路线。"
+    }
+  ],
+  "comment_notes": [],
+  "verification_status": "开放状态与携犬许可待核实，不计入有效城市目标。",
+  "url": "https://www.xiaohongshu.com/explore/68e8b900000000000700f1ba"
+}

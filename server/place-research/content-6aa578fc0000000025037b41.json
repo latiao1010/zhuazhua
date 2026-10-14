@@ -1,0 +1,26 @@
+{
+  "province": "安徽省",
+  "city": "淮北市",
+  "search_query": "淮北 宠物友好",
+  "collected_at": "2026-10-03",
+  "published_at": null,
+  "read_status": "已读标题、可见文字和首张图片；其余轮播图未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [],
+  "id": "6aa578fc0000000025037b41",
+  "title": "淮北｜带着小狗🐶一起走进娜娜的农场",
+  "author": "一只鱼",
+  "date_text": "编辑于 09-13 安徽",
+  "summary": "作者称带犬到淮北娜娜的农场，首图可见牵引中的犬在农场主题布景前合影。未提供详细地址、票价或入园条件。",
+  "places": [
+    {
+      "name": "娜娜的农场",
+      "category": "农场",
+      "conditions": "首图及标题支持作者当次携犬拍照；是否限犬型、预约与其他区域准入未写明。",
+      "location_text": "淮北，具体地址待核实",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6aa578fc0000000025037b41"
+}

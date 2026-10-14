@@ -1,0 +1,50 @@
+{
+  "province": "辽宁省",
+  "city": "锦州市",
+  "search_query": "锦州 宠物友好",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "read_status": "已读完整文字正文；评论尚在加载，未逐张解读照片",
+  "source_type": "个人携犬自驾记录",
+  "id": "69f33f1100000000350211be",
+  "title": "带狗狗旅行之锦州3天2晚",
+  "author": "小呆牛牛子",
+  "date_text": "04-30",
+  "summary": "作者记录入住星海民宿、携犬在凌河公园和龙头礁游玩；笔架山不接待其较大犬只。寺庙等行程明确未带犬，不纳入肯定的携宠地点。",
+  "places": [
+    {
+      "name": "星海民宿",
+      "location_text": "锦州市，具体地址可能在图片，文字未给",
+      "address": null,
+      "category": "民宿",
+      "conditions": "作者在携犬行程中记录入住并将犬只留在民宿休息；体型、费用和房型未说明。"
+    },
+    {
+      "name": "凌河公园",
+      "location_text": "锦州市，作者称在住宿附近",
+      "address": null,
+      "category": "公园",
+      "conditions": "作者明确携犬游玩，未给正式体型及区域规则。"
+    },
+    {
+      "name": "笔架山景区",
+      "location_text": "锦州市笔架山",
+      "address": null,
+      "category": "景区",
+      "conditions": "作者称不让体型稍大的犬只进入，未给正式尺寸界限；不能概括为所有犬只可进或全部禁宠，需向景区确认。"
+    },
+    {
+      "name": "龙头礁",
+      "location_text": "锦州市笔架山附近海边",
+      "address": null,
+      "category": "沙滩",
+      "conditions": "作者随后携犬到龙头礁看海，开放区域和现行准入未说明。"
+    }
+  ],
+  "comment_notes": [
+    "评论未读；奉国寺、广济寺等明确未带犬游览，不认定为宠物友好。",
+    "正文留犬车内的做法不作为旅行建议。"
+  ],
+  "verification_status": "个人到访含体型被拒信息，正式限制需景区确认；页面仅月日。",
+  "url": "https://www.xiaohongshu.com/explore/69f33f1100000000350211be"
+}

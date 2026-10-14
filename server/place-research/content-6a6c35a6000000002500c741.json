@@ -1,0 +1,36 @@
+{
+  "province": "安徽省",
+  "city": "黄山市",
+  "search_query": "黄山 宠物友好",
+  "collected_at": "2026-10-03",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "正文泛称太平湖酒店，具体住宿名以其明确写出的拾光里为准。其他读者提醒蜱虫，为未核实现场线索。"
+  ],
+  "id": "6a6c35a6000000002500c741",
+  "title": "带狗狗合肥自驾黄山太平湖",
+  "author": "毛豆今天乖了吗",
+  "date_text": "07-31",
+  "visited_at": "2026-07-31",
+  "summary": "作者记录2026年7月31日从合肥携金毛到太平湖，入住拾光里湖边房，遛草坪并用自带桨板；回复无宠物清洁费。",
+  "places": [
+    {
+      "name": "拾光里（太平湖）",
+      "category": "酒店",
+      "conditions": "作者明确当次携犬入住、不收清洁费，楼下有草坪与湖岸。准确楼栋和分店地址未列，当前收费与犬型需确认。",
+      "location_text": "太平湖湖边",
+      "address": null
+    },
+    {
+      "name": "太平湖（拾光里周边湖岸）",
+      "category": "户外湖区",
+      "conditions": "作者携犬散步并使用自带桨板；不推定出租水上设施允许犬，也不将水清描述当作安全鉴定。",
+      "location_text": "太平湖拾光里楼下湖岸",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6a6c35a6000000002500c741"
+}

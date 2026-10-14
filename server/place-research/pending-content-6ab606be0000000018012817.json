@@ -1,0 +1,26 @@
+{
+  "province": "吉林省",
+  "city": "四平市",
+  "search_query": "四平 宠物友好",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "id": "6ab606be0000000018012817",
+  "title": "四平科技公园有宠物乐园啦，露娜开心喽！",
+  "author": "爱做饭的辰爸（留德博士）",
+  "date_text": "编辑于 09-25 上海",
+  "url": "https://www.xiaohongshu.com/explore/6ab606be0000000018012817",
+  "read_status": "页面仅标题与日期，无可读正文或评论；图片未读取",
+  "source_type": "图文内容待识别",
+  "summary": "标题提到四平科技公园宠物乐园，但无正文地址，页面显示上海。不能确认是吉林省四平市，暂不归入有效地点。",
+  "places": [],
+  "candidate_places": [
+    {
+      "name": "四平科技公园",
+      "location_text": "城市待核实，可能为同名外地地点",
+      "category": "公园",
+      "conditions": "仅标题称有宠物乐园，具体体验和准入未读取。"
+    }
+  ],
+  "comment_notes": [],
+  "verification_status": "正文缺失且城市待核实，不计入有效正文目标。"
+}

@@ -1,0 +1,56 @@
+{
+  "province": "辽宁省",
+  "city": "锦州市",
+  "search_query": "锦州 宠物友好",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "read_status": "已读完整文字正文；评论尚在加载，未逐张解读照片",
+  "source_type": "个人携犬自驾记录",
+  "id": "69f601b700000000350211d8",
+  "title": "北京-锦州 带小狗旅行🧳",
+  "author": "汪汪",
+  "date_text": "编辑于 05-02",
+  "summary": "作者从北京自驾锦州，记录酒店准备犬窝玩具、携犬在大永烧烤用餐，以及到海边、公园散步的经历。未给各处现行收费和体型规则。",
+  "places": [
+    {
+      "name": "暇日酒店（锦州中央大街火车站）",
+      "location_text": "锦州中央大街火车站附近，名称按作者文字保留",
+      "address": null,
+      "category": "酒店",
+      "conditions": "作者明确称可携宠，入住时提供狗窝及玩具；正式分店名、房型、清洁费和体型要求待核实。"
+    },
+    {
+      "name": "大永烧烤",
+      "location_text": "锦州市，具体分店未提供",
+      "address": null,
+      "category": "餐厅",
+      "conditions": "作者明确称宠物友好并去用餐两次；室内外座位、体型及落地规则未说明。"
+    },
+    {
+      "name": "龙头礁",
+      "location_text": "锦州市龙头礁及附近海边",
+      "address": null,
+      "category": "沙滩",
+      "conditions": "作者记录携犬海边活动，未给潮汐、开放区域和准入细则。"
+    },
+    {
+      "name": "古塔公园",
+      "location_text": "锦州市古塔公园",
+      "address": null,
+      "category": "公园",
+      "conditions": "作者推荐遛犬，未给园方正式准入和区域规则。"
+    },
+    {
+      "name": "文化广场",
+      "location_text": "锦州市，具体广场门牌未明确",
+      "address": null,
+      "category": "户外广场",
+      "conditions": "作者推荐遛犬，但准确位置和管理细则需要核实。"
+    }
+  ],
+  "comment_notes": [
+    "评论未读；外卖奶饮与未具名采摘点不作为携宠商户。"
+  ],
+  "verification_status": "个人体验，名称、门牌及现行政策未核验；页面仅月日。",
+  "url": "https://www.xiaohongshu.com/explore/69f601b700000000350211d8"
+}

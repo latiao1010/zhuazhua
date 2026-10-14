@@ -1,0 +1,86 @@
+{
+  "province": "内蒙古自治区",
+  "city": "呼伦贝尔市",
+  "search_query": "呼伦贝尔 宠物友好",
+  "author": "小狗luna",
+  "collected_at": "2026-10-03",
+  "id": "68ff71c60000000005002d07",
+  "title": "呼伦贝尔+阿尔山吃饭不愁，宠物友好餐厅指南",
+  "date_text": "2025-10-27",
+  "published_at": "2025-10-27",
+  "read_status": "已读完整文字正文及可见评论至THE END；6条评论中1条折叠回复未展开；未逐张解读照片",
+  "source_type": "个人到店及电话询问餐饮清单",
+  "summary": "作者整理携犬用餐经历，特别提到根河一家店电话同意后仍因犬只较大拒绝入内，室韦一家店限定门口座位。只登记呼伦贝尔辖区餐厅，并保留拒绝接待的负面记录。",
+  "places": [
+    {
+      "name": "索伦噶·烤味道·呼伦贝尔羊肉串",
+      "location_text": "呼伦贝尔海拉尔区；分店门牌未提供",
+      "address": null,
+      "category": "餐厅",
+      "conditions": "作者列为可携犬，未说明体型及座位要求。"
+    },
+    {
+      "name": "娘家人柴火铁锅炖",
+      "location_text": "呼伦贝尔根河市；门牌未提供",
+      "address": null,
+      "category": "餐厅",
+      "conditions": "作者电话询问获准，但到店因犬只体型较大被拒；限制大型犬，小型犬也需重新向店家确认。"
+    },
+    {
+      "name": "咱屯子铁锅炖",
+      "location_text": "呼伦贝尔根河市；具体分店未提供",
+      "address": null,
+      "category": "不允许携犬的场所",
+      "conditions": "作者清单列为不可带犬，仅代表所询门店当时答复，不推及所有分店。"
+    },
+    {
+      "name": "驴友小酒馆",
+      "location_text": "呼伦贝尔额尔古纳市室韦",
+      "address": null,
+      "category": "餐厅",
+      "conditions": "作者列为可携犬，体型、区域和费用未说明。"
+    },
+    {
+      "name": "隔壁老王家",
+      "location_text": "呼伦贝尔额尔古纳市室韦",
+      "address": null,
+      "category": "餐厅",
+      "conditions": "作者携犬吃早餐，被安排在门口不妨碍通行的位置；不等同于室内任意座位开放。"
+    },
+    {
+      "name": "喜宿",
+      "location_text": "呼伦贝尔黑山头，店名来自餐饮清单",
+      "address": null,
+      "category": "餐厅",
+      "conditions": "作者列为可携犬吃饭，未提供体型、座位及住宿规则。"
+    },
+    {
+      "name": "卢布里西餐厅",
+      "location_text": "呼伦贝尔满洲里市；具体分店未提供",
+      "address": null,
+      "category": "不允许携犬的场所",
+      "conditions": "作者列为不可携犬，并在评论确认该标记表示不让带狗；当前政策须联系具体分店。"
+    },
+    {
+      "name": "鑫丽都西餐厅",
+      "location_text": "呼伦贝尔满洲里市",
+      "address": null,
+      "category": "餐厅",
+      "conditions": "作者列为可携犬，未提供体型或室内外座位规则。"
+    },
+    {
+      "name": "欧亚西餐厅",
+      "location_text": "呼伦贝尔满洲里市",
+      "address": null,
+      "category": "餐厅",
+      "conditions": "作者列为可携犬，未提供体型或室内外座位规则。"
+    }
+  ],
+  "comment_notes": [
+    "可见评论至THE END，1条回复折叠未展开；作者确认卢布里条目的叉号表示禁止带犬。",
+    "评论反馈锡林浩特蒙格乐后来不让带宠物；该店不属于呼伦贝尔，未挂到本市目录，后续若采集该市需核对此变更。",
+    "乌兰浩特、阿尔山和锡林浩特餐厅未混入本市，原帖链接保留以便按属地复核。"
+  ],
+  "verification_status": "作者称亲访及电话核实，采集方未联系商户；门店体型限制、拒入和后续政策变化需保留。2025年内容不能视为当前许可。",
+  "url": "https://www.xiaohongshu.com/explore/68ff71c60000000005002d07"
+}

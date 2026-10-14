@@ -1,0 +1,28 @@
+{
+  "province": "安徽省",
+  "city": "淮北市",
+  "search_query": "淮北 宠物友好",
+  "collected_at": "2026-10-03",
+  "published_at": "2025-11-21",
+  "read_status": "已读可见标题、评论及首张图片；其他轮播图未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "餐厅未具名，不纳入地点；不将动物接触作为推荐活动。"
+  ],
+  "id": "690ad54a000000000301c3c0",
+  "title": "淮北龙脊山看猪、🍽️吃宠物餐厅",
+  "author": "🎀 M(养狗版)",
+  "date_text": "编辑于 2025-11-21",
+  "summary": "标题指出淮北龙脊山，首图可见一只犬在林地与猪同处；作者评论称偶遇。标题还提宠物餐厅但未写店名。",
+  "places": [
+    {
+      "name": "龙脊山",
+      "category": "户外景区",
+      "conditions": "首图与标题支持作者携犬在林地活动，具体山路位置与现行管理规则未提供。",
+      "location_text": "龙脊山",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/690ad54a000000000301c3c0"
+}

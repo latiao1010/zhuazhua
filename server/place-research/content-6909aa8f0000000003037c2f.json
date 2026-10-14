@@ -1,0 +1,40 @@
+{
+  "province": "安徽省",
+  "city": "铜陵市",
+  "search_query": "铜陵 宠物友好",
+  "collected_at": "2026-10-03",
+  "published_at": "2025-11-04",
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人到访体验及携宠规则分享",
+  "verification_status": "保留作者未携犬入园的限定；餐厅及民宿规则未独立核验。",
+  "comment_notes": [],
+  "id": "6909aa8f0000000003037c2f",
+  "title": "小狗旅行日记｜不建议带小狗📍犁桥水镇",
+  "author": "快乐小狗",
+  "date_text": "编辑于 2025-11-04",
+  "summary": "作者本人游犁桥水镇，当次因台阶、夜间表演与噪声选择不带犬；回程推荐小菜园拓基广场店可带小狗。",
+  "places": [
+    {
+      "name": "犁桥水镇",
+      "category": "景区",
+      "conditions": "作者称友好但当次未带犬，不能算携犬入园验证；台阶多不便推车，表演声光可能影响犬。其他读者称内部酒店不接待犬，住宿规则不能等同景区。",
+      "location_text": "犁桥水镇",
+      "address": null
+    },
+    {
+      "name": "小菜园新徽菜（拓基广场店）",
+      "category": "餐厅",
+      "conditions": "作者回程就餐并明确说小狗可进入；大小犬范围、座位及现行要求待核实。",
+      "location_text": "小菜园新徽菜（拓基广场店）",
+      "address": null
+    },
+    {
+      "name": "星月小院",
+      "category": "民宿",
+      "conditions": "作者延续入住前一天携犬订的民宿，无更详细地址。",
+      "location_text": "铜陵永泉周边，地址待核实",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6909aa8f0000000003037c2f"
+}

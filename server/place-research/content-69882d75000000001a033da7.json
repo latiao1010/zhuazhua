@@ -1,0 +1,33 @@
+{
+  "province": "安徽省",
+  "city": "宿州市",
+  "search_query": "宿州 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [],
+  "id": "69882d75000000001a033da7",
+  "title": "徐州周边带狗玩｜稻田图书馆",
+  "author": "铁锤弟弟🔨",
+  "date_text": "02-08",
+  "summary": "作者分享宿州埇桥区稻田图书馆周边携犬活动，评论确认咖啡店后来已不让带狗。",
+  "places": [
+    {
+      "name": "稻田图书馆（室外稻田区域）",
+      "category": "户外田园",
+      "conditions": "作者称稻田周边可带犬，未说明田地开放边界；不等同图书馆室内开放。",
+      "location_text": "宿州市埇桥区稻田图书馆周边",
+      "address": null
+    },
+    {
+      "name": "稻田图书馆咖啡店",
+      "category": "不允许携犬的场所",
+      "conditions": "读者问现在是否禁犬，作者明确答是；与旧游记使用范围不同，需遵从现行店规。",
+      "location_text": "稻田图书馆内咖啡区域",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/69882d75000000001a033da7"
+}

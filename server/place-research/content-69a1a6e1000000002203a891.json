@@ -1,0 +1,33 @@
+{
+  "province": "安徽省",
+  "city": "亳州市",
+  "search_query": "亳州 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [],
+  "id": "69a1a6e1000000002203a891",
+  "title": "自驾中国（宠物友好版）｜亳州",
+  "author": "活在热爱里的安安",
+  "date_text": "编辑于 02-28",
+  "summary": "作者携犬中转亳州，住怡来酒店并在万达三层高宅用餐。",
+  "places": [
+    {
+      "name": "怡来酒店（亳州）",
+      "category": "酒店",
+      "conditions": "作者称宠物清洁费50元/晚，四层有露台，门前是公共免费停车场；具体分店和现行费用待确认。",
+      "location_text": "亳州万达广场步行范围",
+      "address": null
+    },
+    {
+      "name": "高宅（万达广场店）",
+      "category": "餐厅",
+      "conditions": "作者当次就餐明确称可带犬；犬型与座位限制未写明。",
+      "location_text": "亳州万达广场3层",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/69a1a6e1000000002203a891"
+}

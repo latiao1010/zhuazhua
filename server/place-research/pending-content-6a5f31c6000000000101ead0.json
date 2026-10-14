@@ -1,0 +1,34 @@
+{
+  "id": "6a5f31c6000000000101ead0",
+  "province": "黑龙江省",
+  "city": "佳木斯市",
+  "search_query": "佳木斯 宠物友好",
+  "title": "带小狗深度游东北的第二天vlog",
+  "author": "小狗没烦恼(接家庭寄养)",
+  "date_text": "07-21",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "url": "https://www.xiaohongshu.com/explore/6a5f31c6000000000101ead0",
+  "read_status": "已读简短文字和展开评论，并查看视频两个当前画面及其行程字幕；未观看完整视频",
+  "source_type": "个人携犬旅行视频待整理",
+  "summary": "作者视频列佳木斯影视基地、春花朝鲜饭店、博物馆、水源公园和油坊胡同等行程。已见画面和字幕没有确认狗进入哪些地点，不能将博物馆或餐厅列成允许携犬。",
+  "places": [],
+  "candidate_places": [
+    {
+      "name": "水源公园",
+      "location_text": "佳木斯水源公园，具体入口未写",
+      "category": "公园",
+      "conditions": "仅行程列名，是否实际携犬入园及管理条件待视频核实。"
+    },
+    {
+      "name": "星期基地（名称待核实）",
+      "location_text": "佳木斯，正文称星期基地，视频字幕称影视基地",
+      "category": "景区",
+      "conditions": "名称与携犬准入待确认。"
+    }
+  ],
+  "comment_notes": [
+    "已展开评论仅询问宠物包尺寸，没有准入补充。"
+  ],
+  "verification_status": "视频与地点准入待核实，不计入有效正文目标。"
+}

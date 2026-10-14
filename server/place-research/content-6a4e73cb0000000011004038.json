@@ -1,0 +1,47 @@
+{
+  "province": "福建省",
+  "city": "厦门市",
+  "search_query": "厦门 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文；评论仍加载中，图片未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "作者当次入住经历；各门店分店地址、现行携宠费用与犬型限制需确认。",
+  "comment_notes": [],
+  "id": "6a4e73cb0000000011004038",
+  "title": "带狗自驾厦门酒店篇",
+  "author": "肠肠是个小美狗",
+  "date_text": "07-08",
+  "summary": "作者携犬在厦门连续入住四家住宿，记录停车、楼梯、草坪和宠物清洁费的区别。",
+  "places": [
+    {
+      "name": "3W House 2号院",
+      "category": "民宿",
+      "conditions": "作者携犬入住，部分房间窗外有草地，停车收费并有接驳；房间与卫生评价为个人体验。",
+      "location_text": "3W House 2号院",
+      "address": null
+    },
+    {
+      "name": "可芙海景",
+      "category": "民宿",
+      "conditions": "作者携犬入住，通常清洁费50元，当次因等待保洁被免；只有楼梯、通道窄，停车步行不便。",
+      "location_text": "可芙海景",
+      "address": null
+    },
+    {
+      "name": "3W Farm House",
+      "category": "民宿",
+      "conditions": "作者实际携犬入住，有院子草地、免费停车，称房源需提前订。",
+      "location_text": "3W Farm House",
+      "address": null
+    },
+    {
+      "name": "厦门中心雅高诺富特酒店",
+      "category": "酒店",
+      "conditions": "作者当次携犬入住另收200元清洁费，有免费停车及充电，需到酒店外遛犬；当前房型和收费待确认。",
+      "location_text": "厦门中心雅高诺富特酒店",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6a4e73cb0000000011004038"
+}

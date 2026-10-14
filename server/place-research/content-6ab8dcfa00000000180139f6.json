@@ -1,0 +1,35 @@
+{
+  "id": "6ab8dcfa00000000180139f6",
+  "province": "江苏省",
+  "city": "盐城市",
+  "search_query": "盐城 宠物友好",
+  "title": "跟狗狗来场说走就走的旅行-盐城站",
+  "author": "禾秣",
+  "date_text": "6天前 江苏",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "url": "https://www.xiaohongshu.com/explore/6ab8dcfa00000000180139f6",
+  "read_status": "已读可见正文及评论；图片未读",
+  "source_type": "个人携犬旅行经历",
+  "summary": "作者中秋带犬逛盐城水街和竹林大饭店，明确竹林大饭店需抱犬或放推车进入。住宿及部分餐馆仅写简称，未作为明确门店保存。",
+  "places": [
+    {
+      "name": "竹林大饭店（盐城）",
+      "category": "商业街区",
+      "location_text": "盐城竹林大饭店",
+      "address": null,
+      "conditions": "作者携犬参观复古商业空间，明确须抱着或放推车进入；不推定犬可落地或所有店铺接待。"
+    },
+    {
+      "name": "盐城水街",
+      "category": "街区",
+      "location_text": "盐城水街",
+      "address": null,
+      "conditions": "作者带犬逛街看中秋活动，具体室内商家准入未明确。"
+    }
+  ],
+  "comment_notes": [
+    "水街花筑酒店未给完整分店名；韩餐店仅提牛家无法携犬及另一家用餐，均缺确切店名，不补造。"
+  ],
+  "verification_status": "个人到访；抱犬或推车条件已保留，当前准入待确认。"
+}

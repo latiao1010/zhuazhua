@@ -1,0 +1,42 @@
+{
+  "province": "安徽省",
+  "city": "池州市",
+  "search_query": "池州 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "傩仙镇为不推荐的行程体验，正文未具体确认犬准入，不扩为友好地点。"
+  ],
+  "id": "6aa8c12f000000002900c354",
+  "title": "🐶带狗游池州两天一晚｜狗狗庙＋小九寨",
+  "author": "胖胖娇",
+  "date_text": "09-15 江苏",
+  "summary": "作者携犬游九子岩和牯牛降，住伴山腰民宿；记录索道车厢安排、文明携宠保证书和推车不便等细节。",
+  "places": [
+    {
+      "name": "九子岩",
+      "category": "山岳景区",
+      "conditions": "作者携犬乘索道，与不带宠游客分车厢；台阶多，山顶谛听相关场所允许范围按现场确认。",
+      "location_text": "九子岩",
+      "address": null
+    },
+    {
+      "name": "伴山腰民宿",
+      "category": "民宿",
+      "conditions": "作者明确携犬入住，有院子，靠近牯牛降入口；具体房型与收费未写。",
+      "location_text": "牯牛降景区门口附近徽派村落",
+      "address": null
+    },
+    {
+      "name": "牯牛降风景区（石台）",
+      "category": "山岳景区",
+      "conditions": "作者入园签文明携宠保证书并全程牵绳，称有指定宠物戏水区；台阶与窄路较多，不方便推车。",
+      "location_text": "牯牛降风景区（石台）",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6aa8c12f000000002900c354"
+}

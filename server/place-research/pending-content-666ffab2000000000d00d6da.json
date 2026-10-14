@@ -1,0 +1,28 @@
+{
+  "id": "666ffab2000000000d00d6da",
+  "province": "黑龙江省",
+  "city": "七台河市",
+  "search_query": "七台河 遛狗 公园",
+  "title": "七台河也有这么漂亮的公园啦",
+  "author": "铃木奈穗",
+  "date_text": "2024-06-17",
+  "published_at": "2024-06-17",
+  "collected_at": "2026-10-03",
+  "url": "https://www.xiaohongshu.com/explore/666ffab2000000000d00d6da",
+  "read_status": "已读简短正文及当前展开评论；折叠回复和图片未读取",
+  "source_type": "个人公园到访与遛犬推荐",
+  "summary": "作者认为该公园适合饭后散步遛犬，评论给出北山二中下方道路附近的相对位置，但未明确公园名称、入口或管理规则。",
+  "places": [],
+  "candidate_places": [
+    {
+      "name": "北山二中附近公园（名称待核实）",
+      "location_text": "七台河北山二中下方路口附近，按作者评论；具体入口未知",
+      "category": "公园",
+      "conditions": "作者推荐遛犬，未给正式准入规定或管理方信息。"
+    }
+  ],
+  "comment_notes": [
+    "作者与读者对是否和北岸后方公园相连也未明确，不能擅定为同一公园。"
+  ],
+  "verification_status": "地点名称和入口待核实，不计入有效目标。"
+}

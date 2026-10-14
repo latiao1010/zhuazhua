@@ -1,0 +1,27 @@
+{
+  "province": "安徽省",
+  "city": "滁州市",
+  "search_query": "滁州 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": "2025-04-23",
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "住宿求助与读者评论线索",
+  "verification_status": "求助帖，作者无具名入住记录；读者建议待进一步核验。",
+  "comment_notes": [],
+  "id": "6808e556000000001d02c49e",
+  "title": "滁州真的对宠物一点也不友好！",
+  "author": "辣条爱捣乱",
+  "date_text": "2025-04-23",
+  "summary": "作者计划携犬去音乐节，称电话询问多家酒店被拒但没有酒店名称；读者说住过全椒禧欢虞且友好。",
+  "places": [],
+  "candidate_places": [
+    {
+      "name": "禧欢虞",
+      "category": "住宿",
+      "conditions": "读者咩咩今天不在家（美食版）于2025-05-02称在全椒住过且宠物友好；作者未住，分店地址不详。",
+      "location_text": "全椒县",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6808e556000000001d02c49e"
+}

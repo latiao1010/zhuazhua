@@ -1,0 +1,42 @@
+{
+  "province": "安徽省",
+  "city": "淮北市",
+  "search_query": "淮北 宠物友好",
+  "collected_at": "2026-10-03",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "籧庐民宿仅是未来计划；咖啡、餐厅未明确犬入店，未收为友好场所。"
+  ],
+  "id": "69c603870000000023005204",
+  "title": "淮北带狗一日游",
+  "author": "一鸣姐姐",
+  "date_text": "03-27",
+  "summary": "作者携犬走龙脊山公路及观景台、石板街；明确提到濉溪古城正门已禁犬。",
+  "places": [
+    {
+      "name": "龙脊山（龙脊天路及青年公园）",
+      "category": "户外景区",
+      "conditions": "作者带犬走青年公园、北观景台和公路沿线；露营区及博物馆未进入，不能据此推定可携犬。",
+      "location_text": "龙脊山（龙脊天路及青年公园）",
+      "address": null
+    },
+    {
+      "name": "石板街",
+      "category": "步行街",
+      "conditions": "作者携犬逛小吃街，称现场有散养犬；具体商户室内规则未确认。",
+      "location_text": "濉溪古城旁石板街",
+      "address": null
+    },
+    {
+      "name": "濉溪古城",
+      "category": "不允许携犬的场所",
+      "conditions": "作者明确正门已禁止带狗进入；不将其绕其他入口进入的经历作为开放许可。",
+      "location_text": "濉溪古城",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/69c603870000000023005204"
+}

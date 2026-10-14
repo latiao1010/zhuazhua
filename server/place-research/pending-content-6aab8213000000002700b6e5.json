@@ -1,0 +1,26 @@
+{
+  "id": "6aab8213000000002700b6e5",
+  "province": "吉林省",
+  "city": "长春市",
+  "search_query": "长春 宠物友好",
+  "title": "终于在长春感受到了宠物友好",
+  "author": "ok我在听",
+  "date_text": "09-17 吉林",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "url": "https://www.xiaohongshu.com/explore/6aab8213000000002700b6e5",
+  "read_status": "已读完整可见文字正文；页面无评论，图片未读取",
+  "source_type": "个人携犬餐厅到访",
+  "summary": "作者称征得老板同意后携犬进餐厅，现场另有犬只；正文未给店名或地址，暂不能定位。",
+  "places": [],
+  "candidate_places": [
+    {
+      "name": "未具名餐厅",
+      "location_text": "长春，具体位置未说明",
+      "category": "餐厅",
+      "conditions": "作者当次询问后获准携犬进入，未写犬只体型规则。"
+    }
+  ],
+  "comment_notes": [],
+  "verification_status": "地点待核实，正文无店名地址，不计入有效城市目标。"
+}

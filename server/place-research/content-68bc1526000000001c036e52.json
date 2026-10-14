@@ -1,0 +1,45 @@
+{
+  "province": "安徽省",
+  "city": "宿州市",
+  "search_query": "宿州 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": "2025-09-06",
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [],
+  "id": "68bc1526000000001c036e52",
+  "title": "宿州五柳仙境、淮北龙脊山",
+  "author": "肉丸子基",
+  "date_text": "2025-09-06",
+  "summary": "作者携宠到五柳仙境，称景区内不许宠物，只能在入口外水库附近活动；另记淮北行程。",
+  "places": [
+    {
+      "name": "五柳仙境",
+      "category": "不允许携犬的场所",
+      "conditions": "作者正文及回复明确景区不让犬进入。",
+      "location_text": "五柳仙境",
+      "address": null
+    },
+    {
+      "name": "五柳仙境入口外水库",
+      "category": "户外湖区",
+      "conditions": "作者携犬在景区大门旁的外部水库活动，不能推定景区或水上活动许可。",
+      "location_text": "五柳仙境入口外水库",
+      "address": null
+    }
+  ],
+  "out_of_city_places": [
+    {
+      "name": "龙脊山",
+      "city": "淮北市",
+      "conditions": "作者称到访，景点较少。"
+    },
+    {
+      "name": "绿金中央公园",
+      "city": "淮北市",
+      "conditions": "作者称草坪宠物友好；不归入宿州地点。"
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/68bc1526000000001c036e52"
+}

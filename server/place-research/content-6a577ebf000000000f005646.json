@@ -1,0 +1,35 @@
+{
+  "province": "辽宁省",
+  "city": "铁岭市",
+  "search_query": "铁岭 宠物友好",
+  "collected_at": "2026-10-03",
+  "published_at": null,
+  "address": null,
+  "verification_status": "个人到访线索，未经商家或景区官方核验；出行前确认当前携宠规则。",
+  "id": "6a577ebf000000000f005646",
+  "title": "北京到东北拖家带狗自驾游第一站～铁岭",
+  "author": "噢耶",
+  "date_text": "编辑于 07-26",
+  "read_status": "已读完整可见文字正文和已展开评论；3条折叠回复未展开，图片未读取",
+  "source_type": "个人携犬旅行分享（作者声明含AI生成内容）",
+  "summary": "作者叙述全家携犬自驾到铁岭，将金枕S酒店列为可携宠住宿，并提到在小锅小灶烀饼用餐。酒店有明确携宠推荐；餐厅仅有用餐评价，未明确犬是否进入，不列为已确认携宠餐厅。",
+  "places": [
+    {
+      "name": "金枕S酒店",
+      "location_text": "铁岭；未给分店及街道门牌",
+      "address": null,
+      "category": "酒店",
+      "conditions": "作者携犬自驾行程中明确推荐为宠物友好住宿，当次价格仅为历史参考；犬只体型、押金、公共区域准入未说明。帖子标注含AI生成内容，需独立确认。"
+    }
+  ],
+  "comment_notes": [
+    "作者在已展开回复中称当地接纳宠物程度高，但未补充酒店条款；折叠回复未读取。"
+  ],
+  "unverified_mentions": [
+    {
+      "name": "小锅小灶烀饼",
+      "reason": "只说明口味和用餐，未明确宠物入店条件。"
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6a577ebf000000000f005646"
+}

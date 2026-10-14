@@ -1,0 +1,35 @@
+{
+  "province": "安徽省",
+  "city": "六安市",
+  "search_query": "六安 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "对面公园未具名，红鸾小院未明确犬入店，不扩为已确认友好场所。"
+  ],
+  "id": "6a699e15000000001d00f1cc",
+  "title": "携宠入住｜六安-好住、好玩、舒适",
+  "author": "Aix饱饱日记本📒",
+  "date_text": "编辑于 07-29",
+  "summary": "作者携犬住六安明珠广场解放中路亚朵，记录50元清洁费、500元押金，并到南湖湿地公园活动。",
+  "places": [
+    {
+      "name": "亚朵酒店（六安明珠广场解放中路店）",
+      "category": "酒店",
+      "conditions": "作者称当次不限宠物大小，无专用电梯，清洁费50元另加500元押金，无损退押金；地面停车方便。现行标准需确认。",
+      "location_text": "亚朵酒店（六安明珠广场解放中路店）",
+      "address": null
+    },
+    {
+      "name": "南湖湿地公园",
+      "category": "公园",
+      "conditions": "作者从酒店驱车约20分钟，携犬在草地和浅水附近活动；不将下水行为作为管理许可。",
+      "location_text": "南湖湿地公园",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6a699e15000000001d00f1cc"
+}

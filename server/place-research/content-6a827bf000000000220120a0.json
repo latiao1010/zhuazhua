@@ -1,0 +1,42 @@
+{
+  "id": "6a827bf000000000220120a0",
+  "title": "蚌埠银泰宠物友好 很多饭店不友好",
+  "author": "喵呜🐱",
+  "date_text": "08-17",
+  "published_at": null,
+  "summary": "作者带犬到蚌埠银泰，反馈餐厅拒绝接待；评论有读者称PODO曾安排外摆，也有人说坐下后被拒。商场公共区与门店准入应分别确认。",
+  "places": [
+    {
+      "name": "蚌埠银泰城",
+      "category": "商场",
+      "conditions": "作者带犬进入商场，但多个餐厅不接待；后续评论称门店更严，不能把商场可进等同餐厅可进。",
+      "location_text": "蚌埠银泰城",
+      "address": null
+    },
+    {
+      "name": "PODO（蚌埠银泰店）",
+      "category": "餐厅",
+      "conditions": "帖子标签和评论指向此店；一位读者有推车外摆经历，另有人被拒，准入冲突，具体座位和体型待确认。",
+      "location_text": "PODO（蚌埠银泰店）",
+      "address": null
+    },
+    {
+      "name": "巴奴（蚌埠银泰店）",
+      "category": "不允许携犬的场所",
+      "conditions": "作者及读者称宠物不能跟随用餐，有读者只能将犬留店外；不推荐未经核实的寄放方式。",
+      "location_text": "巴奴（蚌埠银泰店）",
+      "address": null
+    }
+  ],
+  "comment_notes": [
+    "对其他城市商场的泛称不归入蚌埠；其他火锅店分店不明确，未新增。"
+  ],
+  "verification_status": "商场与餐厅分开核实；门店准入反馈冲突，不直接推荐。",
+  "province": "安徽省",
+  "city": "蚌埠市",
+  "search_query": "蚌埠 宠物友好",
+  "collected_at": "2026-10-03",
+  "url": "https://www.xiaohongshu.com/explore/6a827bf000000000220120a0",
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携犬旅行经历"
+}

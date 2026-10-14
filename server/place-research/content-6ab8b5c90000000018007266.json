@@ -1,0 +1,28 @@
+{
+  "province": "福建省",
+  "city": "三明市",
+  "search_query": "三明 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "读者提150元清洁费但作者不知，不录为已确认住宿收费。"
+  ],
+  "id": "6ab8b5c90000000018007266",
+  "title": "福建带狗出游｜安纳班纳太适合小狗了 🌿",
+  "author": "nininininini（养狗版",
+  "date_text": "6天前 福建",
+  "summary": "作者携犬游ANAPANA安纳班纳山野公共区域，称不入住也可免费散步；明确没住酒店，不清楚清洁费。",
+  "places": [
+    {
+      "name": "ANAPANA安纳班纳（室外公共区域）",
+      "category": "户外田园",
+      "conditions": "作者携犬走草地和田间小路，称当次免门票、遮阴少；酒店客房与餐饮规则未验证。",
+      "location_text": "三明泰宁",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6ab8b5c90000000018007266"
+}

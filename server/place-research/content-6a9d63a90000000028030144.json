@@ -1,0 +1,65 @@
+{
+  "province": "安徽省",
+  "city": "黄山市",
+  "search_query": "黄山 宠物友好",
+  "collected_at": "2026-10-03",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "行程开头列芙蓉谷，但日记未描述该站具体到访，不重复扩为本帖已验证地点。"
+  ],
+  "id": "6a9d63a90000000028030144",
+  "title": "带小狗🐕游呈坎一生无坎",
+  "author": "YM",
+  "date_text": "09-06 江苏",
+  "summary": "作者携犬游宏村、呈坎、太平湖，入住澍德堂与沐心度假酒店；提醒山路曲折、景点间距较远。",
+  "places": [
+    {
+      "name": "宏村",
+      "category": "古村景区",
+      "conditions": "作者工作日携犬沿入口湖边游览，称仍人多；各建筑室内准入未写明。",
+      "location_text": "宏村",
+      "address": null
+    },
+    {
+      "name": "呈坎",
+      "category": "古村景区",
+      "conditions": "作者住景区内并清晨携犬拍照，未提供室内建筑和设施规定。",
+      "location_text": "呈坎",
+      "address": null
+    },
+    {
+      "name": "澍德堂",
+      "category": "酒店",
+      "conditions": "作者携犬入住，回复不收清洁费，但明确不能上床或沙发；餐厅预约需再次确认。",
+      "location_text": "呈坎景区内",
+      "address": null
+    },
+    {
+      "name": "太平湖",
+      "category": "户外湖区",
+      "conditions": "作者携犬在湖边浅滩活动，准确岸段未写明；水清描述不代表水质或游泳许可。",
+      "location_text": "太平湖",
+      "address": null
+    },
+    {
+      "name": "沐心度假酒店",
+      "category": "酒店",
+      "conditions": "作者称可携犬进入公共区，楼下有草坪；提醒现场有未牵引犬，现行收费与房型待确认。",
+      "location_text": "太平湖秀湖秘境附近",
+      "address": null
+    }
+  ],
+  "candidate_places": [
+    {
+      "name": "平垣秘境",
+      "category": "景区",
+      "conditions": "作者实际携犬到访，但行政归属未核实，暂不归入黄山市地点。",
+      "location_text": "平垣秘境",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6a9d63a90000000028030144"
+}

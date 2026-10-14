@@ -1,0 +1,29 @@
+{
+  "province": "安徽省",
+  "city": "宣城市",
+  "search_query": "宣城 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "山泊隐世酒店只是停车导航参考，作者当天往返未住宿，不作宠物酒店证据。",
+    "不采用作者关于犬不需救生衣、不会中暑等未经验证的安全判断。"
+  ],
+  "id": "6a41f33d000000001603faf9",
+  "title": "带狗游平垣秘境（游览顺序建议版）",
+  "author": "鲨鱼小鲨鱼",
+  "date_text": "编辑于 08-19",
+  "summary": "作者第二次携犬游泾县平垣秘境，记录游船线路、森林乐园、白马坑和营地，并提醒临近停航返程方向受限。",
+  "places": [
+    {
+      "name": "平垣秘境",
+      "category": "户外景区",
+      "conditions": "作者建议A口为游船起终点，傍晚仅有特定回程方向，需现场确认停航时间；森林散养动物处牵紧犬，小环线仍约3至4小时、有石子路。",
+      "location_text": "安徽宣城泾县",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6a41f33d000000001603faf9"
+}

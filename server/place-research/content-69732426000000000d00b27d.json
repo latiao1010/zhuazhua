@@ -1,0 +1,44 @@
+{
+  "id": "69732426000000000d00b27d",
+  "title": "台州市区终于有真·宠物友好酒店了！🐾",
+  "author": "Doggy DONDA",
+  "date_text": "01-23",
+  "summary": "作者分享台州市区携犬住宿及周边到店体验。酒店名仅在未读定位中，暂不列正式门店；小麻雀私房菜明确为犬提供饮水，岭上会被列可携犬足浴。",
+  "places": [
+    {
+      "name": "小麻雀私房菜（台州）",
+      "category": "餐厅",
+      "conditions": "作者实际携犬用餐并获一次性饮水杯；具体分店地址、体型和座位规则未提供。",
+      "location_text": "小麻雀私房菜（台州）",
+      "address": null
+    },
+    {
+      "name": "岭上会（台州）",
+      "category": "足浴休闲",
+      "conditions": "作者称可携犬陪同足浴并用夜宵，未提供分店及房间范围，需事先确认。",
+      "location_text": "岭上会（台州）",
+      "address": null
+    }
+  ],
+  "candidate_places": [
+    {
+      "name": "台州市区未具名宠物友好酒店",
+      "category": "酒店",
+      "conditions": "作者原称无清洁费、押金1000元，07-20评论称开始收300元清洁费；未读到店名，不能扩为某酒店现价。",
+      "location_text": "台州市区未具名宠物友好酒店",
+      "address": null
+    }
+  ],
+  "comment_notes": [
+    "和合公园、南官新天地只有周边推荐，未明确逐处到访，不额外计入。"
+  ],
+  "verification_status": "餐厅和休闲门店为个人携犬线索，分店待核实；未具名酒店不进入目录。",
+  "province": "浙江省",
+  "city": "台州市",
+  "search_query": "台州 宠物友好",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "url": "https://www.xiaohongshu.com/explore/69732426000000000d00b27d",
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携犬旅行经历"
+}

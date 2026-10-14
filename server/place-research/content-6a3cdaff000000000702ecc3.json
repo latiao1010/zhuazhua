@@ -1,0 +1,26 @@
+{
+  "province": "福建省",
+  "city": "厦门市",
+  "search_query": "厦门 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "实地查看宠物设施，尚未确认开放使用",
+  "verification_status": "仅证明作者查看建设后设施；当前开放状态待核实。",
+  "comment_notes": [],
+  "id": "6a3cdaff000000000702ecc3",
+  "title": "厦门带狗玩新去处/五缘湾宠物岛",
+  "author": "平安麻麻",
+  "date_text": "06-25",
+  "summary": "作者介绍坂美公园内有围栏、草地和犬活动设施，但评论明确端午查看时尚未开放。",
+  "places": [
+    {
+      "name": "坂美公园宠物岛",
+      "category": "宠物公园",
+      "conditions": "作者现场查看设施，称有围栏和犬活动设施、无大小犬分区；评论明确当次尚未开放，不应作为已确认开放推荐。",
+      "location_text": "厦门市湖里区坂美公园",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6a3cdaff000000000702ecc3"
+}

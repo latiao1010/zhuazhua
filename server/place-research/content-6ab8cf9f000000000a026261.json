@@ -1,0 +1,42 @@
+{
+  "id": "6ab8cf9f000000000a026261",
+  "province": "辽宁省",
+  "city": "葫芦岛市",
+  "search_query": "葫芦岛 宠物友好",
+  "title": "别人挤景区，反向带狗在葫芦岛包场了🐕",
+  "author": "皮皮去哪～",
+  "date_text": "6天前 河北",
+  "published_at": null,
+  "collected_at": "2026-10-03",
+  "url": "https://www.xiaohongshu.com/explore/6ab8cf9f000000000a026261",
+  "read_status": "已读完整可见文字正文和当前展开评论；图片未读取",
+  "source_type": "个人携犬旅行分享",
+  "summary": "作者回顾携犬自驾葫芦岛与锦州，实际游玩东戴河沙滩、龙回头及觉华岛，并描述犬只当次乘船情况。仅归入葫芦岛境内具名地点；锦州餐饮、未具名民宿及无人管理的经验不扩展成普遍携宠许可。",
+  "places": [
+    {
+      "name": "蓝月沙滩",
+      "location_text": "葫芦岛东戴河；正文未给门牌",
+      "address": null,
+      "category": "海滩",
+      "conditions": "作者当次携犬在海滩活动，称人较少；未提供运营方准入规则，犬只应牵引，是否可下水另行确认。"
+    },
+    {
+      "name": "龙回头",
+      "location_text": "葫芦岛龙回头景区",
+      "address": null,
+      "category": "海滨景区",
+      "conditions": "实际携犬行程中到访，含步道台阶；未说明室内设施或其他收费项目是否接纳犬只。"
+    },
+    {
+      "name": "觉华岛",
+      "location_text": "葫芦岛兴城觉华岛",
+      "address": null,
+      "category": "海岛",
+      "conditions": "作者当次犬可乘客船、进入甲板及客舱，未另收犬只船票；返程班次、犬只体型、容器和船票政策须向当前承运方确认。"
+    }
+  ],
+  "comment_notes": [
+    "已展开回复仅讨论预订渠道，未提供可核实民宿名称；不补造住宿地点。"
+  ],
+  "verification_status": "个人到访线索，非官方核验，岛船及景区现行携宠条件需另行确认。"
+}

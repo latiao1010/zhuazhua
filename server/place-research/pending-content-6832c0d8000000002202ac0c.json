@@ -1,0 +1,28 @@
+{
+  "province": "辽宁省",
+  "city": "抚顺市",
+  "search_query": "抚顺 宠物友好",
+  "collected_at": "2026-10-03",
+  "id": "6832c0d8000000002202ac0c",
+  "title": "抚顺宠物友好咖啡馆～",
+  "author": "软软",
+  "date_text": "2025-05-25",
+  "published_at": "2025-05-25",
+  "read_status": "已读完整文字正文及可见评论至THE END；10条评论中1条折叠回复未展开；未逐张解读照片",
+  "source_type": "个人咖啡馆到访记录",
+  "summary": "作者称抚顺某咖啡馆可以带犬，评论中回复到访当天有大型金毛。正文和可见评论没有提供店名、地址，暂不能定位。",
+  "places": [],
+  "candidate_places": [
+    {
+      "name": null,
+      "location_text": "抚顺市，店名门牌未知",
+      "category": "咖啡馆",
+      "conditions": "作者称可带犬，并在评论记录曾见大型犬，当前规则待核实。"
+    }
+  ],
+  "comment_notes": [
+    "1条折叠回复未读；可见评论未补充店名。"
+  ],
+  "verification_status": "未定位，不计入有效目标，不进入地点目录。",
+  "url": "https://www.xiaohongshu.com/explore/6832c0d8000000002202ac0c"
+}

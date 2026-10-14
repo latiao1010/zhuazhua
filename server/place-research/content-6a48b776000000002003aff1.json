@@ -1,0 +1,26 @@
+{
+  "province": "安徽省",
+  "city": "宿州市",
+  "search_query": "宿州 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；视频未观看",
+  "source_type": "个人携宠经历",
+  "verification_status": "已保留作者定位与排除信息；正式名称、地址及现行规则待核实，视频未读。",
+  "comment_notes": [],
+  "id": "6a48b776000000002003aff1",
+  "title": "安徽宿州宠物友好型商场",
+  "author": "是南昌拌粉吗",
+  "date_text": "07-04",
+  "summary": "作者称宿州华夏商场南门提供宠物推车、暂存笼和饮水区域，回复说明不是华夏世贸，而是原天桥位置的华夏。",
+  "places": [
+    {
+      "name": "华夏（原天桥处商场，正式名称待核实）",
+      "category": "商场",
+      "conditions": "作者介绍南门宠物设施，并称会再次逛；具体楼层、犬型及进店规定未说明。",
+      "location_text": "宿州原天桥处华夏，作者明确非华夏世贸",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/6a48b776000000002003aff1"
+}

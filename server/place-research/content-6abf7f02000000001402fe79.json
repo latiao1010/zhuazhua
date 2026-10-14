@@ -1,0 +1,40 @@
+{
+  "id": "6abf7f02000000001402fe79",
+  "title": "小狗的长白山漂流：露水河➕小沙河～",
+  "author": "小蝴蝶🦋",
+  "date_text": "昨天 17:53 吉林",
+  "published_at": null,
+  "summary": "作者带边牧体验露水河与小沙河漂流，称当次未额外收宠物票。露水河河段有急流、筏体较低会进水，实际活动是否适合犬只需向承运方确认。小沙河具体行政归属未确认，暂不列入白山市地点。",
+  "places": [
+    {
+      "name": "露水河漂流",
+      "location_text": "白山市抚松县露水河国家森林公园相关漂流，具体售票点待确认",
+      "address": null,
+      "category": "景区漂流",
+      "conditions": "作者实际携犬参与，称当次犬只免额外票；急流水段、救生装备、犬只体型、天气及开放条件必须向运营方确认，不因准入描述认定适合所有犬只。"
+    }
+  ],
+  "comment_notes": [
+    "作者未带自己的边牧进入鹿苑，只看到他人抱小犬；不将鹿苑当作大型犬可入地点。"
+  ],
+  "unresolved_places": [
+    {
+      "name": "小沙河漂流",
+      "reason": "作者有实际携犬体验，但具体运营点及行政归属未确认，不直接放入白山市。"
+    }
+  ],
+  "geography_sources": [
+    {
+      "url": "https://whhlyt.jl.gov.cn/ztzl/jlslyxlhxj/gdxl/bss/bss_424362/202507/t20250709_9276732.html",
+      "claim": "吉林省文旅厅白山线路将露水河长白山狩猎度假区列入白山区域；仅用于归类，不证明宠物政策。"
+    }
+  ],
+  "verification_status": "个人携犬体验，经营方现行条款与活动安全条件未核实。",
+  "province": "吉林省",
+  "city": "白山市",
+  "search_query": "白山 宠物友好",
+  "collected_at": "2026-10-03",
+  "url": "https://www.xiaohongshu.com/explore/6abf7f02000000001402fe79",
+  "read_status": "已读完整可见文字正文；评论范围见comment_notes，折叠内容与图片未读取",
+  "source_type": "个人携犬旅行体验"
+}

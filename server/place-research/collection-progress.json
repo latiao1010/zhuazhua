@@ -178,17 +178,25 @@
       "province": "河北省",
       "city": "秦皇岛市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
+      "remaining_to_first_pass_target": 0,
       "queue_status_counts": {
-        "load_timeout": 1,
-        "pending": 2
+        "content_saved": 3,
+        "pending": 18
       },
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "query_content_counts": {
+        "秦皇岛 宠物友好": 3
+      },
+      "queries_with_content": [
+        "秦皇岛 宠物友好"
+      ],
+      "saved_ids": [
+        "69fd82e30000000023007e54",
+        "6a03ebab00000000060229d2",
+        "6a4e465c0000000011014958"
+      ]
     },
     {
       "code": "1304",
@@ -690,23 +698,25 @@
       "province": "内蒙古自治区",
       "city": "包头市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 2,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 1,
+      "remaining_to_first_pass_target": 0,
       "queue_status_counts": {
-        "content_saved": 2,
+        "content_saved": 3,
+        "pending": 15,
         "venue_identification_pending": 1
       },
       "query_content_counts": {
-        "包头 宠物友好": 2
+        "包头 宠物友好": 3
       },
       "queries_with_content": [
         "包头 宠物友好"
       ],
       "saved_ids": [
         "699c53d9000000000b008aea",
-        "6a8a5b4000000000280260eb"
+        "6a8a5b4000000000280260eb",
+        "6aad68940000000029017985"
       ]
     },
     {
@@ -714,98 +724,179 @@
       "province": "内蒙古自治区",
       "city": "乌海市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "location_pending": 1,
+        "pending": 15
+      },
+      "query_content_counts": {
+        "乌海 宠物友好": 3
+      },
+      "queries_with_content": [
+        "乌海 宠物友好"
+      ],
+      "saved_ids": [
+        "69f80dec000000002202acdc",
+        "69f9db7f000000002301e3a2",
+        "6ab9d91200000000140310aa"
+      ]
     },
     {
       "code": "1504",
       "province": "内蒙古自治区",
       "city": "赤峰市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "image_review_pending": 1,
+        "pending": 14
+      },
+      "query_content_counts": {
+        "赤峰 宠物友好": 3
+      },
+      "queries_with_content": [
+        "赤峰 宠物友好"
+      ],
+      "saved_ids": [
+        "6a47b24c000000000f028356",
+        "6a8e9d32000000002a03c6a7",
+        "6ab120950000000031003bf4"
+      ]
     },
     {
       "code": "1505",
       "province": "内蒙古自治区",
       "city": "通辽市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "location_pending": 1,
+        "pending": 16
+      },
+      "query_content_counts": {
+        "通辽 宠物友好": 3
+      },
+      "queries_with_content": [
+        "通辽 宠物友好"
+      ],
+      "saved_ids": [
+        "6857efd3000000000d018e00",
+        "6a28e3930000000022019fdf",
+        "6aaad1e4000000002b01dff6"
+      ]
     },
     {
       "code": "1506",
       "province": "内蒙古自治区",
       "city": "鄂尔多斯市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "location_pending": 1,
+        "pending": 16
+      },
+      "query_content_counts": {
+        "鄂尔多斯 宠物友好": 3
+      },
+      "queries_with_content": [
+        "鄂尔多斯 宠物友好"
+      ],
+      "saved_ids": [
+        "6a281fc70000000015025398",
+        "6a2f7d370000000008027dd1",
+        "6a6c94fa00000000250153ae"
+      ]
     },
     {
       "code": "1507",
       "province": "内蒙古自治区",
       "city": "呼伦贝尔市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 17
+      },
+      "query_content_counts": {
+        "呼伦贝尔 宠物友好": 3
+      },
+      "queries_with_content": [
+        "呼伦贝尔 宠物友好"
+      ],
+      "saved_ids": [
+        "68fa22e500000000040201de",
+        "68ff71c60000000005002d07",
+        "6a27b4d1000000003502f7f5"
+      ]
     },
     {
       "code": "1508",
       "province": "内蒙古自治区",
       "city": "巴彦淖尔市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 16
+      },
+      "query_content_counts": {
+        "巴彦淖尔 宠物友好": 3
+      },
+      "queries_with_content": [
+        "巴彦淖尔 宠物友好"
+      ],
+      "saved_ids": [
+        "688dea1b0000000023022cfc",
+        "6a0553f000000000350214d2",
+        "6a6f2475000000002800aa75"
+      ]
     },
     {
       "code": "1509",
       "province": "内蒙古自治区",
       "city": "乌兰察布市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 16
+      },
+      "query_content_counts": {
+        "乌兰察布 宠物友好": 3
+      },
+      "queries_with_content": [
+        "乌兰察布 宠物友好"
+      ],
+      "saved_ids": [
+        "69f9cb98000000002202a0f5",
+        "6a3a7a8700000000170285ab",
+        "6aa0dfd400000000270149a6"
+      ]
     },
     {
       "code": "2101",
@@ -837,280 +928,522 @@
       "province": "辽宁省",
       "city": "大连市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "location_pending": 1,
+        "pending": 15,
+        "source_review_pending": 1
+      },
+      "query_content_counts": {
+        "大连 宠物友好": 3
+      },
+      "queries_with_content": [
+        "大连 宠物友好"
+      ],
+      "saved_ids": [
+        "69ca333d0000000022003250",
+        "6a49f533000000000f01fb54",
+        "6a7c6ce7000000000600777f"
+      ]
     },
     {
       "code": "2103",
       "province": "辽宁省",
       "city": "鞍山市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 14
+      },
+      "query_content_counts": {
+        "鞍山 宠物友好": 3
+      },
+      "queries_with_content": [
+        "鞍山 宠物友好"
+      ],
+      "saved_ids": [
+        "67f3a24a000000001e007344",
+        "68b485a9000000001d01e288",
+        "69e9ee2d0000000011023001"
+      ]
     },
     {
       "code": "2104",
       "province": "辽宁省",
       "city": "抚顺市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "location_pending": 1,
+        "pending": 13,
+        "source_review_pending": 1
+      },
+      "query_content_counts": {
+        "抚顺 宠物友好": 3
+      },
+      "queries_with_content": [
+        "抚顺 宠物友好"
+      ],
+      "saved_ids": [
+        "68ba12ea000000001d00d771",
+        "69dcdb67000000001f004f49",
+        "6aa3a911000000002a004cda"
+      ]
     },
     {
       "code": "2105",
       "province": "辽宁省",
       "city": "本溪市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 17
+      },
+      "query_content_counts": {
+        "本溪 宠物友好": 3
+      },
+      "queries_with_content": [
+        "本溪 宠物友好"
+      ],
+      "saved_ids": [
+        "6a4483fd0000000021021f6f",
+        "6a8acd200000000029019c9c",
+        "6ab5e79d000000001a027604"
+      ]
     },
     {
       "code": "2106",
       "province": "辽宁省",
       "city": "丹东市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 4,
+        "not_visit_record": 1,
+        "pending": 13
+      },
+      "query_content_counts": {
+        "丹东 宠物友好": 3
+      },
+      "queries_with_content": [
+        "丹东 宠物友好"
+      ],
+      "saved_ids": [
+        "68ecbdeb0000000007034284",
+        "6aba9071000000001203a02d",
+        "6abb654d0000000018011cf4"
+      ]
     },
     {
       "code": "2107",
       "province": "辽宁省",
       "city": "锦州市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 4,
+        "pending": 14
+      },
+      "query_content_counts": {
+        "锦州 宠物友好": 3
+      },
+      "queries_with_content": [
+        "锦州 宠物友好"
+      ],
+      "saved_ids": [
+        "68b2e4ac000000001d00e9ad",
+        "69f33f1100000000350211be",
+        "69f601b700000000350211d8"
+      ]
     },
     {
       "code": "2108",
       "province": "辽宁省",
       "city": "营口市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "location_pending": 1,
+        "pending": 14
+      },
+      "query_content_counts": {
+        "营口 宠物友好": 3
+      },
+      "queries_with_content": [
+        "营口 宠物友好"
+      ],
+      "saved_ids": [
+        "6a855a2c00000000260345ab",
+        "6aad59cf00000000270150ae",
+        "69ecab5b000000003503a71e"
+      ]
     },
     {
       "code": "2109",
       "province": "辽宁省",
       "city": "阜新市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 4,
+        "image_review_pending": 1,
+        "pending": 9,
+        "source_review_pending": 2
+      },
+      "query_content_counts": {
+        "阜新 宠物友好": 3
+      },
+      "queries_with_content": [
+        "阜新 宠物友好"
+      ],
+      "saved_ids": [
+        "68aad0d7000000001b01e491",
+        "69d61453000000001a02a85d",
+        "6a031e8a000000000702a436"
+      ]
     },
     {
       "code": "2110",
       "province": "辽宁省",
       "city": "辽阳市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 16
+      },
+      "query_content_counts": {
+        "辽阳 宠物友好": 3
+      },
+      "queries_with_content": [
+        "辽阳 宠物友好"
+      ],
+      "saved_ids": [
+        "68340e5b0000000022029470",
+        "6a2618d000000000080327ff",
+        "6ab4dbb900000000150006da"
+      ]
     },
     {
       "code": "2111",
       "province": "辽宁省",
       "city": "盘锦市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "location_pending": 3,
+        "pending": 16,
+        "source_review_pending": 3
+      },
+      "query_content_counts": {
+        "盘锦 宠物友好": 1,
+        "盘锦 带狗 自驾": 2
+      },
+      "queries_with_content": [
+        "盘锦 宠物友好",
+        "盘锦 带狗 自驾"
+      ],
+      "saved_ids": [
+        "6abd296f000000001c00f7d9",
+        "684626f200000000210029f7",
+        "6aa2a066000000001103ae02"
+      ]
     },
     {
       "code": "2112",
       "province": "辽宁省",
       "city": "铁岭市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 17
+      },
+      "query_content_counts": {
+        "铁岭 宠物友好": 3
+      },
+      "queries_with_content": [
+        "铁岭 宠物友好"
+      ],
+      "saved_ids": [
+        "69917566000000001d0115a3",
+        "6993f4ef000000001600ae4d",
+        "6a577ebf000000000f005646"
+      ]
     },
     {
       "code": "2113",
       "province": "辽宁省",
       "city": "朝阳市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 2,
+        "pending": 12
+      },
+      "query_content_counts": {
+        "辽宁朝阳 宠物友好": 3
+      },
+      "queries_with_content": [
+        "辽宁朝阳 宠物友好"
+      ],
+      "saved_ids": [
+        "69b16c9f00000000150221a6",
+        "6895f76f000000002302d43f",
+        "68e7a9f9000000000302f585"
+      ]
     },
     {
       "code": "2114",
       "province": "辽宁省",
       "city": "葫芦岛市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 2,
+        "pending": 13,
+        "retry_pending": 1
+      },
+      "query_content_counts": {
+        "葫芦岛 宠物友好": 3
+      },
+      "queries_with_content": [
+        "葫芦岛 宠物友好"
+      ],
+      "saved_ids": [
+        "6ab8cf9f000000000a026261",
+        "69f9600f000000003503b89a",
+        "69eb16940000000020000807"
+      ]
     },
     {
       "code": "2201",
       "province": "吉林省",
       "city": "长春市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "location_pending": 2,
+        "pending": 14
+      },
+      "query_content_counts": {
+        "长春 宠物友好": 3
+      },
+      "queries_with_content": [
+        "长春 宠物友好"
+      ],
+      "saved_ids": [
+        "6a37e220000000001101dd8d",
+        "6a34be8f000000000f01776c",
+        "68e77d730000000007033e4f"
+      ]
     },
     {
       "code": "2202",
       "province": "吉林省",
       "city": "吉林市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 17
+      },
+      "query_content_counts": {
+        "吉林市 宠物友好": 3
+      },
+      "queries_with_content": [
+        "吉林市 宠物友好"
+      ],
+      "saved_ids": [
+        "6a6f449300000000080125cf",
+        "6a86cea9000000002402489a",
+        "6abf9962000000001b01d8e5"
+      ]
     },
     {
       "code": "2203",
       "province": "吉林省",
       "city": "四平市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 4,
+        "image_review_pending": 1,
+        "pending": 19
+      },
+      "query_content_counts": {
+        "四平 宠物友好": 1,
+        "四平市 带狗 出游": 2
+      },
+      "queries_with_content": [
+        "四平 宠物友好",
+        "四平市 带狗 出游"
+      ],
+      "saved_ids": [
+        "6a0a769a000000000803ea33",
+        "67aaa08d000000002901e9e5",
+        "682a89e2000000000303b687"
+      ]
     },
     {
       "code": "2204",
       "province": "吉林省",
       "city": "辽源市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 7,
+        "source_review_pending": 1
+      },
+      "query_content_counts": {
+        "辽源 宠物友好": 3
+      },
+      "queries_with_content": [
+        "辽源 宠物友好"
+      ],
+      "saved_ids": [
+        "68a9b894000000001d038dbf",
+        "68aaed09000000001d026d56",
+        "684d8cc9000000002102cf59"
+      ]
     },
     {
       "code": "2205",
       "province": "吉林省",
       "city": "通化市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 1,
+        "pending": 23,
+        "source_review_pending": 2
+      },
+      "query_content_counts": {
+        "通化 宠物友好": 2,
+        "集安 带狗 酒店": 1
+      },
+      "queries_with_content": [
+        "通化 宠物友好",
+        "集安 带狗 酒店"
+      ],
+      "saved_ids": [
+        "68e658b80000000005012502",
+        "6ab8a82600000000180133de",
+        "68d16098000000001300c279"
+      ]
     },
     {
       "code": "2206",
       "province": "吉林省",
       "city": "白山市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 12
+      },
+      "query_content_counts": {
+        "白山 宠物友好": 3
+      },
+      "queries_with_content": [
+        "白山 宠物友好"
+      ],
+      "saved_ids": [
+        "68ea3ede0000000003010c98",
+        "697ee62e000000002200bba0",
+        "6abf7f02000000001402fe79"
+      ]
     },
     {
       "code": "2207",
       "province": "吉林省",
       "city": "松原市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "irrelevant": 2,
+        "pending": 4
+      },
+      "query_content_counts": {
+        "松原 宠物友好": 3
+      },
+      "queries_with_content": [
+        "松原 宠物友好"
+      ],
+      "saved_ids": [
+        "68973695000000002502b7c8",
+        "6ac09225000000000b00474a",
+        "688fa82b00000000050076aa"
+      ]
     },
     {
       "code": "2208",
@@ -1121,7 +1454,11 @@
       "content_saved": 0,
       "first_pass_target": 3,
       "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
+      "queue_status_counts": {
+        "location_pending": 2,
+        "pending": 14,
+        "source_review_pending": 2
+      },
       "query_content_counts": {},
       "queries_with_content": [],
       "saved_ids": []
@@ -1159,42 +1496,79 @@
       "province": "黑龙江省",
       "city": "齐齐哈尔市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 13
+      },
+      "query_content_counts": {
+        "齐齐哈尔 宠物友好": 3
+      },
+      "queries_with_content": [
+        "齐齐哈尔 宠物友好"
+      ],
+      "saved_ids": [
+        "688d9d4c0000000025014e0c",
+        "68e6546f0000000007039e9a",
+        "6a2b7d3c0000000035024866"
+      ]
     },
     {
       "code": "2303",
       "province": "黑龙江省",
       "city": "鸡西市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "location_pending": 1,
+        "pending": 17,
+        "video_review_pending": 1
+      },
+      "query_content_counts": {
+        "鸡西 宠物友好": 1,
+        "兴凯湖 带狗": 2
+      },
+      "queries_with_content": [
+        "兴凯湖 带狗",
+        "鸡西 宠物友好"
+      ],
+      "saved_ids": [
+        "68e7a7c80000000007035c03",
+        "681843fd0000000022024458",
+        "6ab217c100000000310076ad"
+      ]
     },
     {
       "code": "2304",
       "province": "黑龙江省",
       "city": "鹤岗市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 12
+      },
+      "query_content_counts": {
+        "鹤岗 宠物友好": 3
+      },
+      "queries_with_content": [
+        "鹤岗 宠物友好"
+      ],
+      "saved_ids": [
+        "68e1b2f70000000007034514",
+        "69c2114200000000220033d0",
+        "6a4ecfa7000000001c0273b8"
+      ]
     },
     {
       "code": "2305",
@@ -1202,55 +1576,104 @@
       "city": "双鸭山市",
       "complete": false,
       "first_pass_complete": false,
-      "content_saved": 0,
+      "content_saved": 1,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 2,
+      "queue_status_counts": {
+        "content_saved": 1,
+        "irrelevant": 3,
+        "pending": 20,
+        "source_review_pending": 1,
+        "video_review_pending": 1
+      },
+      "query_content_counts": {
+        "饶河 带狗": 1
+      },
+      "queries_with_content": [
+        "饶河 带狗"
+      ],
+      "saved_ids": [
+        "69049cdc00000000030234cd"
+      ]
     },
     {
       "code": "2306",
       "province": "黑龙江省",
       "city": "大庆市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 16,
+        "source_review_pending": 1
+      },
+      "query_content_counts": {
+        "大庆 宠物友好": 3
+      },
+      "queries_with_content": [
+        "大庆 宠物友好"
+      ],
+      "saved_ids": [
+        "6a64b495000000000503ac04",
+        "6a8b8fa20000000033008376",
+        "689824af0000000023038784"
+      ]
     },
     {
       "code": "2307",
       "province": "黑龙江省",
       "city": "伊春市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 16
+      },
+      "query_content_counts": {
+        "伊春 宠物友好": 3
+      },
+      "queries_with_content": [
+        "伊春 宠物友好"
+      ],
+      "saved_ids": [
+        "68c81cc0000000001c004afc",
+        "68df8867000000000503a770",
+        "6ac04351000000001301a825"
+      ]
     },
     {
       "code": "2308",
       "province": "黑龙江省",
       "city": "佳木斯市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 17,
+        "video_review_pending": 1
+      },
+      "query_content_counts": {
+        "佳木斯 宠物友好": 2,
+        "抚远 带狗 宠物友好": 1
+      },
+      "queries_with_content": [
+        "佳木斯 宠物友好",
+        "抚远 带狗 宠物友好"
+      ],
+      "saved_ids": [
+        "6a056ae0000000003701fd02",
+        "6aaccddf000000002700a32b",
+        "68e27ad600000000070202e8"
+      ]
     },
     {
       "code": "2309",
@@ -1261,7 +1684,12 @@
       "content_saved": 0,
       "first_pass_target": 3,
       "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
+      "queue_status_counts": {
+        "irrelevant": 3,
+        "location_pending": 2,
+        "not_visit_record": 1,
+        "pending": 16
+      },
       "query_content_counts": {},
       "queries_with_content": [],
       "saved_ids": []
@@ -1271,28 +1699,52 @@
       "province": "黑龙江省",
       "city": "牡丹江市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "location_pending": 1,
+        "pending": 9,
+        "source_review_pending": 1
+      },
+      "query_content_counts": {
+        "牡丹江 宠物友好": 3
+      },
+      "queries_with_content": [
+        "牡丹江 宠物友好"
+      ],
+      "saved_ids": [
+        "6a47847c000000001603d800",
+        "68de2a42000000000700d086",
+        "68a88656000000001d008002"
+      ]
     },
     {
       "code": "2311",
       "province": "黑龙江省",
       "city": "黑河市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 10
+      },
+      "query_content_counts": {
+        "黑河 宠物友好": 3
+      },
+      "queries_with_content": [
+        "黑河 宠物友好"
+      ],
+      "saved_ids": [
+        "6801050f000000001c037a04",
+        "68cfd8420000000012014a09",
+        "6aace011000000002601d177"
+      ]
     },
     {
       "code": "2312",
@@ -1300,13 +1752,27 @@
       "city": "绥化市",
       "complete": false,
       "first_pass_complete": false,
-      "content_saved": 0,
+      "content_saved": 2,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 1,
+      "queue_status_counts": {
+        "content_saved": 2,
+        "irrelevant": 3,
+        "not_visit_record": 1,
+        "pending": 38
+      },
+      "query_content_counts": {
+        "绥化 宠物友好": 1,
+        "绥化 宠物友好 餐厅 酒店": 1
+      },
+      "queries_with_content": [
+        "绥化 宠物友好",
+        "绥化 宠物友好 餐厅 酒店"
+      ],
+      "saved_ids": [
+        "67602296000000000800f66f",
+        "67668f340000000013009aa6"
+      ]
     },
     {
       "code": "31",
@@ -1319,10 +1785,10 @@
       "remaining_to_first_pass_target": 0,
       "queue_status_counts": {
         "city_identification_pending": 1,
-        "content_saved": 48,
+        "content_saved": 49,
         "event_promotion_pending": 1,
         "not_relevant_to_access": 1,
-        "pending": 751,
+        "pending": 750,
         "retry_pending": 6,
         "venue_identification_pending": 9,
         "video_review_pending": 1
@@ -1450,168 +1916,303 @@
       "province": "江苏省",
       "city": "无锡市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 15
+      },
+      "query_content_counts": {
+        "无锡 宠物友好": 3
+      },
+      "queries_with_content": [
+        "无锡 宠物友好"
+      ],
+      "saved_ids": [
+        "6a1d899a0000000037035dae",
+        "6a2e5064000000002101a3ca",
+        "6ab4de8c000000000a026fdf"
+      ]
     },
     {
       "code": "3203",
       "province": "江苏省",
       "city": "徐州市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 15
+      },
+      "query_content_counts": {
+        "徐州 宠物友好": 3
+      },
+      "queries_with_content": [
+        "徐州 宠物友好"
+      ],
+      "saved_ids": [
+        "69faa7cd000000001a034166",
+        "6ab7584b000000000b0064aa",
+        "6abfce5c000000001c02c105"
+      ]
     },
     {
       "code": "3204",
       "province": "江苏省",
       "city": "常州市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 16
+      },
+      "query_content_counts": {
+        "常州 宠物友好": 3
+      },
+      "queries_with_content": [
+        "常州 宠物友好"
+      ],
+      "saved_ids": [
+        "69ca195100000000230063dd",
+        "6a6dc9cb000000002403d328",
+        "6ac087a00000000001008f2b"
+      ]
     },
     {
       "code": "3205",
       "province": "江苏省",
       "city": "苏州市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 14
+      },
+      "query_content_counts": {
+        "苏州 宠物友好": 3
+      },
+      "queries_with_content": [
+        "苏州 宠物友好"
+      ],
+      "saved_ids": [
+        "6a1857f5000000000803e95f",
+        "6a29536300000000070290ca",
+        "6a6f555b0000000027022196"
+      ]
     },
     {
       "code": "3206",
       "province": "江苏省",
       "city": "南通市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 15
+      },
+      "query_content_counts": {
+        "南通 宠物友好": 3
+      },
+      "queries_with_content": [
+        "南通 宠物友好"
+      ],
+      "saved_ids": [
+        "69d342500000000021004ae2",
+        "6a4b4bf40000000022009517",
+        "6aae7ff900000000250347e3"
+      ]
     },
     {
       "code": "3207",
       "province": "江苏省",
       "city": "连云港市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 15
+      },
+      "query_content_counts": {
+        "连云港 宠物友好": 3
+      },
+      "queries_with_content": [
+        "连云港 宠物友好"
+      ],
+      "saved_ids": [
+        "68ea29df00000000030199ee",
+        "6a0b0241000000003502cbee",
+        "6a9e6da4000000002803bc15"
+      ]
     },
     {
       "code": "3208",
       "province": "江苏省",
       "city": "淮安市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 17
+      },
+      "query_content_counts": {
+        "淮安 宠物友好": 3
+      },
+      "queries_with_content": [
+        "淮安 宠物友好"
+      ],
+      "saved_ids": [
+        "6873c6bc000000001d00db92",
+        "6997c6f4000000001503babc",
+        "69f89373000000002301ca4c"
+      ]
     },
     {
       "code": "3209",
       "province": "江苏省",
       "city": "盐城市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "location_pending": 1,
+        "pending": 15
+      },
+      "query_content_counts": {
+        "盐城 宠物友好": 3
+      },
+      "queries_with_content": [
+        "盐城 宠物友好"
+      ],
+      "saved_ids": [
+        "69f69a1a000000001e00c5b9",
+        "6ab46b8d000000001802d321",
+        "6ab8dcfa00000000180139f6"
+      ]
     },
     {
       "code": "3210",
       "province": "江苏省",
       "city": "扬州市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 17
+      },
+      "query_content_counts": {
+        "扬州 宠物友好": 3
+      },
+      "queries_with_content": [
+        "扬州 宠物友好"
+      ],
+      "saved_ids": [
+        "68e0811b0000000007016c82",
+        "695e4e42000000001a01e88e",
+        "69ad9ded0000000022039a8b"
+      ]
     },
     {
       "code": "3211",
       "province": "江苏省",
       "city": "镇江市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 16
+      },
+      "query_content_counts": {
+        "镇江 宠物友好": 3
+      },
+      "queries_with_content": [
+        "镇江 宠物友好"
+      ],
+      "saved_ids": [
+        "6922ef99000000001e0236ec",
+        "69db4891000000001a025f13",
+        "6a3116d0000000001003c69e"
+      ]
     },
     {
       "code": "3212",
       "province": "江苏省",
       "city": "泰州市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 15
+      },
+      "query_content_counts": {
+        "泰州 宠物友好": 3
+      },
+      "queries_with_content": [
+        "泰州 宠物友好"
+      ],
+      "saved_ids": [
+        "69d5f26b000000001f005253",
+        "6a2e88d700000000170293a1",
+        "6ac06e98000000001303ed06"
+      ]
     },
     {
       "code": "3213",
       "province": "江苏省",
       "city": "宿迁市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "location_pending": 1,
+        "pending": 15,
+        "source_review_pending": 1
+      },
+      "query_content_counts": {
+        "宿迁 宠物友好": 3
+      },
+      "queries_with_content": [
+        "宿迁 宠物友好"
+      ],
+      "saved_ids": [
+        "688cb2d6000000002502246e",
+        "68aa9ace000000001d038df5",
+        "6abde040000000001802ff82"
+      ]
     },
     {
       "code": "3301",
@@ -1675,420 +2276,758 @@
       "province": "浙江省",
       "city": "宁波市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 2,
+        "pending": 15
+      },
+      "query_content_counts": {
+        "宁波 宠物友好": 3
+      },
+      "queries_with_content": [
+        "宁波 宠物友好"
+      ],
+      "saved_ids": [
+        "6a6ac809000000001303cdc5",
+        "6aa55f060000000029010c20",
+        "6aad0dba000000002803369e"
+      ]
     },
     {
       "code": "3303",
       "province": "浙江省",
       "city": "温州市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 16
+      },
+      "query_content_counts": {
+        "温州 宠物友好": 3
+      },
+      "queries_with_content": [
+        "温州 宠物友好"
+      ],
+      "saved_ids": [
+        "68eb8ec9000000000402ba92",
+        "693cd9a8000000001b0251da",
+        "69fbd4dd000000001a0352ff"
+      ]
     },
     {
       "code": "3304",
       "province": "浙江省",
       "city": "嘉兴市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 2,
+        "pending": 15
+      },
+      "query_content_counts": {
+        "嘉兴 宠物友好": 3
+      },
+      "queries_with_content": [
+        "嘉兴 宠物友好"
+      ],
+      "saved_ids": [
+        "6998875c000000001600b7bb",
+        "6a9bd7900000000029018e0a",
+        "6aa5554d000000000b000890"
+      ]
     },
     {
       "code": "3305",
       "province": "浙江省",
       "city": "湖州市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 15
+      },
+      "query_content_counts": {
+        "湖州 宠物友好": 3
+      },
+      "queries_with_content": [
+        "湖州 宠物友好"
+      ],
+      "saved_ids": [
+        "69e632770000000023020a56",
+        "6a2a443b000000001702a3ba",
+        "6a377a510000000011018120"
+      ]
     },
     {
       "code": "3306",
       "province": "浙江省",
       "city": "绍兴市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 17
+      },
+      "query_content_counts": {
+        "绍兴 宠物友好": 3
+      },
+      "queries_with_content": [
+        "绍兴 宠物友好"
+      ],
+      "saved_ids": [
+        "68f986e00000000004007b29",
+        "6957b1190000000022021d85",
+        "69d8f0fa00000000210116f1"
+      ]
     },
     {
       "code": "3307",
       "province": "浙江省",
       "city": "金华市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 16
+      },
+      "query_content_counts": {
+        "金华 宠物友好": 3
+      },
+      "queries_with_content": [
+        "金华 宠物友好"
+      ],
+      "saved_ids": [
+        "69c90598000000002200d07a",
+        "69ccc13b000000001d01ca4e",
+        "69f1ec26000000003501cb0d"
+      ]
     },
     {
       "code": "3308",
       "province": "浙江省",
       "city": "衢州市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 17
+      },
+      "query_content_counts": {
+        "衢州 宠物友好": 3
+      },
+      "queries_with_content": [
+        "衢州 宠物友好"
+      ],
+      "saved_ids": [
+        "6a199a68000000003703623b",
+        "6a2fd02a000000000f02a929",
+        "6aa8dea50000000012024aeb"
+      ]
     },
     {
       "code": "3309",
       "province": "浙江省",
       "city": "舟山市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 14,
+        "source_review_pending": 1
+      },
+      "query_content_counts": {
+        "舟山 宠物友好": 3
+      },
+      "queries_with_content": [
+        "舟山 宠物友好"
+      ],
+      "saved_ids": [
+        "69f73d410000000035022f73",
+        "6a9a9230000000002a02c007",
+        "6ab14c750000000031014830"
+      ]
     },
     {
       "code": "3310",
       "province": "浙江省",
       "city": "台州市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 15
+      },
+      "query_content_counts": {
+        "台州 宠物友好": 3
+      },
+      "queries_with_content": [
+        "台州 宠物友好"
+      ],
+      "saved_ids": [
+        "69732426000000000d00b27d",
+        "69e3627c000000001a0358d0",
+        "6a47afc70000000015025ef0"
+      ]
     },
     {
       "code": "3311",
       "province": "浙江省",
       "city": "丽水市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 17
+      },
+      "query_content_counts": {
+        "丽水 宠物友好": 3
+      },
+      "queries_with_content": [
+        "丽水 宠物友好"
+      ],
+      "saved_ids": [
+        "69d46dca000000002103b511",
+        "69fdbd10000000001e00cd71",
+        "6a4125cd0000000008033a36"
+      ]
     },
     {
       "code": "3401",
       "province": "安徽省",
       "city": "合肥市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 17
+      },
+      "query_content_counts": {
+        "合肥 宠物友好": 3
+      },
+      "queries_with_content": [
+        "合肥 宠物友好"
+      ],
+      "saved_ids": [
+        "695a34e4000000002202cf0e",
+        "69932b580000000028021e31",
+        "6a3d3f310000000016027c68"
+      ]
     },
     {
       "code": "3402",
       "province": "安徽省",
       "city": "芜湖市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 14
+      },
+      "query_content_counts": {
+        "芜湖 宠物友好": 3
+      },
+      "queries_with_content": [
+        "芜湖 宠物友好"
+      ],
+      "saved_ids": [
+        "69bb89d9000000001a02d47d",
+        "69c1e22f000000001d01a529",
+        "69d869ac000000001a0200cd"
+      ]
     },
     {
       "code": "3403",
       "province": "安徽省",
       "city": "蚌埠市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "location_pending": 1,
+        "pending": 13
+      },
+      "query_content_counts": {
+        "蚌埠 宠物友好": 3
+      },
+      "queries_with_content": [
+        "蚌埠 宠物友好"
+      ],
+      "saved_ids": [
+        "699814980000000015032108",
+        "69ddc78e000000001a02a6f9",
+        "6a827bf000000000220120a0"
+      ]
     },
     {
       "code": "3404",
       "province": "安徽省",
       "city": "淮南市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 15
+      },
+      "query_content_counts": {
+        "淮南 宠物友好": 3
+      },
+      "queries_with_content": [
+        "淮南 宠物友好"
+      ],
+      "saved_ids": [
+        "68bb0473000000001b037fcc",
+        "69897477000000000a02882a",
+        "6a37eab7000000001700880f"
+      ]
     },
     {
       "code": "3405",
       "province": "安徽省",
       "city": "马鞍山市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "location_pending": 1,
+        "pending": 14
+      },
+      "query_content_counts": {
+        "马鞍山 宠物友好": 3
+      },
+      "queries_with_content": [
+        "马鞍山 宠物友好"
+      ],
+      "saved_ids": [
+        "68ec68bd00000000050106da",
+        "6a3fe039000000001003d746",
+        "6a116866000000000702f0ef"
+      ]
     },
     {
       "code": "3406",
       "province": "安徽省",
       "city": "淮北市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 4,
+        "location_pending": 1,
+        "pending": 10
+      },
+      "query_content_counts": {
+        "淮北 宠物友好": 3
+      },
+      "queries_with_content": [
+        "淮北 宠物友好"
+      ],
+      "saved_ids": [
+        "690ad54a000000000301c3c0",
+        "69c603870000000023005204",
+        "6aa578fc0000000025037b41"
+      ]
     },
     {
       "code": "3407",
       "province": "安徽省",
       "city": "铜陵市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 17
+      },
+      "query_content_counts": {
+        "铜陵 宠物友好": 3
+      },
+      "queries_with_content": [
+        "铜陵 宠物友好"
+      ],
+      "saved_ids": [
+        "69078090000000000301d19b",
+        "6909aa8f0000000003037c2f",
+        "68144828000000002300c2fe"
+      ]
     },
     {
       "code": "3408",
       "province": "安徽省",
       "city": "安庆市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 15
+      },
+      "query_content_counts": {
+        "安庆 宠物友好": 3
+      },
+      "queries_with_content": [
+        "安庆 宠物友好"
+      ],
+      "saved_ids": [
+        "690f1757000000000302e06c",
+        "69f9edf7000000003503ab75",
+        "6ab3fb080000000015000502"
+      ]
     },
     {
       "code": "3410",
       "province": "安徽省",
       "city": "黄山市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "location_pending": 1,
+        "pending": 14
+      },
+      "query_content_counts": {
+        "黄山 宠物友好": 3
+      },
+      "queries_with_content": [
+        "黄山 宠物友好"
+      ],
+      "saved_ids": [
+        "6a6b358f000000003300b118",
+        "6a9d63a90000000028030144",
+        "6a6c35a6000000002500c741"
+      ]
     },
     {
       "code": "3411",
       "province": "安徽省",
       "city": "滁州市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "not_visit_record": 1,
+        "pending": 16
+      },
+      "query_content_counts": {
+        "滁州 宠物友好": 3
+      },
+      "queries_with_content": [
+        "滁州 宠物友好"
+      ],
+      "saved_ids": [
+        "68e1d3650000000004021d78",
+        "6a819acd0000000033030053",
+        "6867165e00000000120164e0"
+      ]
     },
     {
       "code": "3412",
       "province": "安徽省",
       "city": "阜阳市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 15
+      },
+      "query_content_counts": {
+        "阜阳 宠物友好": 3
+      },
+      "queries_with_content": [
+        "阜阳 宠物友好"
+      ],
+      "saved_ids": [
+        "6995baf6000000000a03ebab",
+        "699d14e30000000015022aed",
+        "69f9930e000000003601f736"
+      ]
     },
     {
       "code": "3413",
       "province": "安徽省",
       "city": "宿州市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 2,
+        "pending": 12
+      },
+      "query_content_counts": {
+        "宿州 宠物友好": 3
+      },
+      "queries_with_content": [
+        "宿州 宠物友好"
+      ],
+      "saved_ids": [
+        "68bc1526000000001c036e52",
+        "69882d75000000001a033da7",
+        "6a48b776000000002003aff1"
+      ]
     },
     {
       "code": "3415",
       "province": "安徽省",
       "city": "六安市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 15
+      },
+      "query_content_counts": {
+        "六安 宠物友好": 3
+      },
+      "queries_with_content": [
+        "六安 宠物友好"
+      ],
+      "saved_ids": [
+        "69fa9d7900000000370377fa",
+        "6a699e15000000001d00f1cc",
+        "6a8fb1b400000000040362d0"
+      ]
     },
     {
       "code": "3416",
       "province": "安徽省",
       "city": "亳州市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 15
+      },
+      "query_content_counts": {
+        "亳州 宠物友好": 3
+      },
+      "queries_with_content": [
+        "亳州 宠物友好"
+      ],
+      "saved_ids": [
+        "69327eba000000001e00eeeb",
+        "69a1a6e1000000002203a891",
+        "69be5dd60000000022002d2b"
+      ]
     },
     {
       "code": "3417",
       "province": "安徽省",
       "city": "池州市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 12
+      },
+      "query_content_counts": {
+        "池州 宠物友好": 3
+      },
+      "queries_with_content": [
+        "池州 宠物友好"
+      ],
+      "saved_ids": [
+        "6a7a75c6000000002c0054e6",
+        "6a85549b000000002403d7db",
+        "6aa8c12f000000002900c354"
+      ]
     },
     {
       "code": "3418",
       "province": "安徽省",
       "city": "宣城市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "location_pending": 1,
+        "pending": 16
+      },
+      "query_content_counts": {
+        "宣城 宠物友好": 3
+      },
+      "queries_with_content": [
+        "宣城 宠物友好"
+      ],
+      "saved_ids": [
+        "6a7f477700000000290316c5",
+        "6abb59640000000012037bfe",
+        "6a41f33d000000001603faf9"
+      ]
     },
     {
       "code": "3501",
       "province": "福建省",
       "city": "福州市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 17
+      },
+      "query_content_counts": {
+        "福州 宠物友好": 3
+      },
+      "queries_with_content": [
+        "福州 宠物友好"
+      ],
+      "saved_ids": [
+        "69904436000000000b00bb85",
+        "6a37cdc00000000011014718",
+        "6ac0f05500000000180062ec"
+      ]
     },
     {
       "code": "3502",
       "province": "福建省",
       "city": "厦门市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 17
+      },
+      "query_content_counts": {
+        "厦门 宠物友好": 3
+      },
+      "queries_with_content": [
+        "厦门 宠物友好"
+      ],
+      "saved_ids": [
+        "698dc46c000000001a023736",
+        "6a3cdaff000000000702ecc3",
+        "6a4e73cb0000000011004038"
+      ]
     },
     {
       "code": "3503",
       "province": "福建省",
       "city": "莆田市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "location_pending": 1,
+        "pending": 15
+      },
+      "query_content_counts": {
+        "莆田 宠物友好": 3
+      },
+      "queries_with_content": [
+        "莆田 宠物友好"
+      ],
+      "saved_ids": [
+        "68e7269b000000000703a80f",
+        "69f9f3de00000000380217bc",
+        "68d4f6990000000013036683"
+      ]
     },
     {
       "code": "3504",
       "province": "福建省",
       "city": "三明市",
       "complete": false,
-      "first_pass_complete": false,
-      "content_saved": 0,
+      "first_pass_complete": true,
+      "content_saved": 3,
       "first_pass_target": 3,
-      "remaining_to_first_pass_target": 3,
-      "queue_status_counts": {},
-      "query_content_counts": {},
-      "queries_with_content": [],
-      "saved_ids": []
+      "remaining_to_first_pass_target": 0,
+      "queue_status_counts": {
+        "content_saved": 3,
+        "pending": 16
+      },
+      "query_content_counts": {
+        "三明 宠物友好": 3
+      },
+      "queries_with_content": [
+        "三明 宠物友好"
+      ],
+      "saved_ids": [
+        "69639d8f00000000220392ab",
+        "698e9807000000000c03588e",
+        "6ab8b5c90000000018007266"
+      ]
     },
     {
       "code": "3505",
@@ -2809,10 +3748,10 @@
       "remaining_to_first_pass_target": 0,
       "queue_status_counts": {
         "comment_review_pending": 3,
-        "content_saved": 56,
+        "content_saved": 57,
         "image_review_pending": 3,
         "not_relevant_to_access": 1,
-        "pending": 1343,
+        "pending": 1342,
         "retry_pending": 1,
         "venue_identification_pending": 6
       },
@@ -4889,6 +5828,6 @@
     }
   ],
   "target_city_count": 297,
-  "first_pass_complete_city_count": 36,
-  "remaining_content_to_first_pass_target": 781
+  "first_pass_complete_city_count": 115,
+  "remaining_content_to_first_pass_target": 543
 }

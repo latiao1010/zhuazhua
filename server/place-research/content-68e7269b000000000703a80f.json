@@ -1,0 +1,63 @@
+{
+  "province": "福建省",
+  "city": "莆田市",
+  "search_query": "莆田 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": "2025-10-09",
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "餐馆未明确犬入店；东岱天主堂仅列行程，不推定室内准入。"
+  ],
+  "id": "68e7269b000000000703a80f",
+  "title": "南日岛｜两天两夜带狗狗自驾旅行攻略",
+  "author": "我不喜欢在人群里",
+  "date_text": "编辑于 2025-10-09",
+  "summary": "作者携犬自驾南日岛两天两夜，住南日华山大酒店，走海滩和山海步道；提醒车渡预约及出岛排队。",
+  "places": [
+    {
+      "name": "南日岛",
+      "category": "海岛景区",
+      "conditions": "作者实际携犬上岛，回复犬可一起乘船、当次未查检疫证；不推定当前免证。车辆需提前预约，出岛曾排约两小时。",
+      "location_text": "石城石南轮渡至南日岛",
+      "address": null
+    },
+    {
+      "name": "南日华山大酒店",
+      "category": "酒店",
+      "conditions": "作者携犬行程推荐该店为宠物友好，停车及用餐方便；收费、房型和犬型未说明。",
+      "location_text": "南日岛镇上",
+      "address": null
+    },
+    {
+      "name": "福鲍沙滩",
+      "category": "海滩",
+      "conditions": "作者携犬行程到访，节假日可能有音乐及烟花活动，现行开放边界待确认。",
+      "location_text": "南日岛",
+      "address": null
+    },
+    {
+      "name": "月亮湾沙滩",
+      "category": "海滩",
+      "conditions": "作者携犬行程看日落，未给独立管理规定。",
+      "location_text": "南日岛",
+      "address": null
+    },
+    {
+      "name": "猪母山日月岩及栈道",
+      "category": "户外步道",
+      "conditions": "作者带犬行程看日出并走栈道，未到最高点；存在山路台阶。",
+      "location_text": "南日岛",
+      "address": null
+    },
+    {
+      "name": "牛角屿山灯塔",
+      "category": "户外景点",
+      "conditions": "作者同次行程到访，停车后步行路崎岖，设施内部携宠未确认。",
+      "location_text": "南日岛",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/68e7269b000000000703a80f"
+}

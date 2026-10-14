@@ -1,0 +1,26 @@
+{
+  "province": "安徽省",
+  "city": "亳州市",
+  "search_query": "亳州 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "疑似商家自述，身份与门店未独立核验",
+  "verification_status": "商家账号自述；未独立核实身份、地址或营业状态。",
+  "comment_notes": [],
+  "id": "69be5dd60000000022002d2b",
+  "title": "亳州终于有宠物餐厅了",
+  "author": "萌宠食光阁",
+  "date_text": "编辑于 03-21",
+  "summary": "萌宠食光阁账号邀请携宠到餐厅，回复大型犬也可以来，正文含宠物鲜食和零食标签。",
+  "places": [
+    {
+      "name": "萌宠食光阁（门店名称与地址待核实）",
+      "category": "宠物餐厅",
+      "conditions": "发布账号称欢迎宠物，并明确回复大型犬可以来；正式门店信息、人与宠物用餐形式及现行规则待确认。",
+      "location_text": "亳州，具体地址未给",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/69be5dd60000000022002d2b"
+}

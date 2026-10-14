@@ -1,0 +1,56 @@
+{
+  "province": "福建省",
+  "city": "福州市",
+  "search_query": "福州 宠物友好",
+  "collected_at": "2026-10-04",
+  "published_at": null,
+  "read_status": "已读可见正文及评论；图片和折叠回复未读",
+  "source_type": "个人携宠经历",
+  "verification_status": "来源陈述，未独立核验现行携宠规则。",
+  "comment_notes": [
+    "朱富贵火锅作者仅据平台和未见宠物推测不允许，不作本人携犬就餐证据；其余餐饮未确认犬准入。"
+  ],
+  "id": "69904436000000000b00bb85",
+  "title": "携宠年前自驾｜福建福州三天两晚寻味之旅",
+  "author": "🐶初一出门小满归",
+  "date_text": "02-14",
+  "summary": "作者携两犬在福州住公寓、走仓山街巷，指出三坊七巷、上下杭及烟台山公园禁宠；住宿平台信息有出入。",
+  "places": [
+    {
+      "name": "爱之阁精品公寓",
+      "category": "公寓住宿",
+      "conditions": "作者携犬入住，称需提前告知；另一读者看到禁犬标记，平台信息存在冲突，预订前须确认具体房源。无免费停车。",
+      "location_text": "可远望西禅古寺，具体楼栋未写",
+      "address": null
+    },
+    {
+      "name": "仓山街巷步行路线",
+      "category": "步行街",
+      "conditions": "作者携犬走万春巷、立新路、乐群路和烟台山商业漫步街区，整体少台阶；不包含室内建筑准入。",
+      "location_text": "上藤站B口附近至烟台山商业街",
+      "address": null
+    },
+    {
+      "name": "三坊七巷",
+      "category": "不允许携犬的场所",
+      "conditions": "作者明确标注宠物禁入，具体边界以管理方为准。",
+      "location_text": "三坊七巷",
+      "address": null
+    },
+    {
+      "name": "上下杭",
+      "category": "不允许携犬的场所",
+      "conditions": "作者明确标注宠物禁入。",
+      "location_text": "上下杭",
+      "address": null
+    },
+    {
+      "name": "烟台山公园",
+      "category": "不允许携犬的场所",
+      "conditions": "作者称门口保安确认宠物不能入园，区别于山下商业街。",
+      "location_text": "烟台山公园",
+      "address": null
+    }
+  ],
+  "url": "https://www.xiaohongshu.com/explore/69904436000000000b00bb85"
+}
