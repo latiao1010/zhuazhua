@@ -8,18 +8,18 @@ const root = path.resolve(__dirname, '..')
 const clone = value => value == null ? value : JSON.parse(JSON.stringify(value))
 const event = (key, value) => ({ currentTarget: { dataset: { key, field: key, label: key, section: key } }, detail: { value } })
 
-function load(file, deps, wx) {
+function load(file, deps, wx, globals = {}) {
   const filename = path.join(root, file)
   const localRequire = createRequire(filename)
   const module = { exports: {} }
   vm.runInNewContext(fs.readFileSync(filename, 'utf8'), {
-    module, exports: module.exports, console, wx,
+    ...globals, module, exports: module.exports, console, wx,
     require: key => Object.hasOwn(deps, key) ? deps[key] : localRequire(key)
   }, { filename })
   return module.exports
 }
 
-function setup({ demo = false, role = 'owner' } = {}) {
+function setup({ demo = false, role = 'owner', now } = {}) {
   const disk = { paw_data_mode: demo ? 'demo' : 'real', paw_share_status: { shared: true, role } }
   const toasts = [], writes = []
   let failWrite = false, saveResult = { ok: true }, tabVisible = true
@@ -43,7 +43,11 @@ function setup({ demo = false, role = 'owner' } = {}) {
     '../../utils/cloud-data': cloudData,
     '../../utils/cloud-album': { loadGrowthPhotos: photos => Promise.resolve(photos) },
     '../../utils/tab-navigation': { takeTarget: () => '' }
-  }, wx)
+  }, wx, now === undefined ? {} : { Date: class extends Date {
+    constructor(...args) { super(...(args.length ? args : [now])) }
+    static now() { return now }
+    toLocaleString() { throw new Error('Activity dates must not depend on the device locale') }
+  } })
   const page = factory()
   page.data = clone(page.data)
   page.setData = update => Object.entries(update).forEach(([key, value]) => {
@@ -199,6 +203,85 @@ test('家庭共享添加按钮宽度限制在头部网格内', () => {
   const css = fs.readFileSync(path.join(root, 'pages/account/account.wxss'), 'utf8')
   assert.match(css, /\.family-add\s*\{[^}]*width:\s*100%!important/)
   assert.match(css, /\.family-top\s*\{[^}]*minmax\(0,\s*1fr\)/)
+})
+test('家庭活动时间使用固定短格式，保留排序和原始记录日期', () => {
+  const c = setup({ role: 'admin', now: new Date(2026, 9, 12, 23, 30).getTime() })
+  const records = [
+    { id: 'old-year', _syncUpdatedAt: new Date(2025, 9, 10, 8, 5).getTime() },
+    { id: 'today', _syncUpdatedAt: new Date(2026, 9, 12, 22, 14).getTime() },
+    { id: 'yesterday', _syncUpdatedAt: new Date(2026, 9, 11, 21, 55).getTime() },
+    { id: 'earlier', _syncUpdatedAt: new Date(2026, 9, 10, 7, 3).getTime() }
+  ].map(item => ({ ...item, recordedByName: '家人', dayKey: '2026-10-01', amount: '100ml' }))
+  c.disk[c.store.KEYS.waters] = clone(records)
+  c.page.openFamilyManager()
+  assert.deepEqual(c.page.data.familyActivities.map(item => item.timeText), ['今天 22:14', '昨天 21:55', '10月10日 07:03', '2025-10-10 08:05'])
+  assert.deepEqual(c.disk[c.store.KEYS.waters], records)
+  assert.equal(c.writes.length, 0)
+})
+for (const [now, previous] of [
+  [new Date(2026, 10, 1, 0, 5), new Date(2026, 9, 31, 23, 59)],
+  [new Date(2027, 0, 1, 0, 5), new Date(2026, 11, 31, 23, 59)]
+]) test(`家庭活动昨天标签支持跨月/年：${now.getFullYear()}-${now.getMonth() + 1}`, () => {
+  const c = setup({ role: 'viewer', now: now.getTime() })
+  c.disk[c.store.KEYS.waters] = [{ id: 'boundary', recordedByName: '家人', _syncUpdatedAt: previous.getTime() }]
+  c.page.openFamilyManager()
+  assert.equal(c.page.data.familyActivities[0].timeText, '昨天 23:59')
+})
+test('家庭活动无效时间不显示英文或NaN', () => {
+  const c = setup({ role: 'admin' })
+  c.disk[c.store.KEYS.waters] = [{ id: 'invalid', recordedByName: '家人', _syncUpdatedAt: 'invalid' }]
+  c.page.openFamilyManager()
+  assert.equal(c.page.data.familyActivities[0].timeText, '时间待同步')
+})
+test('家庭角色标签单行显示，标题两侧留出等宽位置', () => {
+  const css = fs.readFileSync(path.join(root, 'pages/account/account.wxss'), 'utf8')
+  assert.match(css, /\.family-role-badge\s*\{[^}]*white-space:\s*nowrap/)
+  assert.match(css, /\.family-top\s*\{[^}]*grid-template-columns:\s*124rpx\s+minmax\(0,\s*1fr\)\s+124rpx/)
+})
+const sharedMembers = [
+  { id: 'owner-id', name: '我', relation: '主人', role: 'owner' },
+  { id: 'member-id', name: '我', relation: '家人', role: 'admin' },
+  { id: 'other-id', name: '爸爸', relation: '爸爸', role: 'admin' }
+]
+for (const [role, currentMemberId, expected] of [
+  ['owner', 'owner-id', ['我', '家人', '爸爸']],
+  ['admin', 'member-id', ['主人', '我', '爸爸']],
+  ['admin', 'other-id', ['主人', '家人', '爸爸（我）']]
+]) test(`按当前成员ID显示我：${currentMemberId}`, () => {
+  const c = setup({ role })
+  c.disk.paw_share_status.currentMemberId = currentMemberId
+  c.disk[c.store.KEYS.familyMembers] = clone(sharedMembers)
+  c.page.onShow()
+  assert.deepEqual(c.page.data.familyMembers.map(item => item.displayName), expected)
+  assert.deepEqual(c.page.data.familyMembers.filter(item => item.isSelf).map(item => item.id), [currentMemberId])
+  assert.equal(c.page.data.familyMembers[0].detailText, '主人')
+  assert.equal(c.page.data.familyMembers[1].detailText, '家人 · 共同照护')
+  assert.deepEqual(c.disk[c.store.KEYS.familyMembers].map(item => item.name), ['我', '我', '爸爸'])
+})
+test('旧接口未返回当前成员ID时不根据昵称或共同照护角色猜测我', () => {
+  const c = setup({ role: 'admin' })
+  c.disk[c.store.KEYS.familyMembers] = clone(sharedMembers)
+  c.page.openFamilyManager()
+  assert.deepEqual(c.page.data.familyMembers.map(item => item.displayName), ['主人', '家人', '爸爸'])
+  assert.equal(c.page.data.familyMembers.some(item => item.isSelf), false)
+})
+test('成员顺序变化不把第一位家人变成主人', () => {
+  const c = setup({ role: 'admin' })
+  c.disk.paw_share_status.currentMemberId = 'member-id'
+  c.disk[c.store.KEYS.familyMembers] = [sharedMembers[1], sharedMembers[0]]
+  c.page.openFamilyManager()
+  assert.deepEqual(c.page.data.familyMembers.map(item => item.role), ['admin', 'owner'])
+  assert.deepEqual(c.page.data.familyMembers.map(item => item.displayName), ['我', '主人'])
+  assert.equal(c.store.normalizeFamilyMembers([sharedMembers[1]])[0].role, 'admin')
+})
+test('保存成员时不把相对显示名或我标记写进共享昵称', async () => {
+  const c = setup({ role: 'owner' })
+  c.disk.paw_share_status.currentMemberId = 'owner-id'
+  c.disk[c.store.KEYS.familyMembers] = clone(sharedMembers)
+  c.page.onShow()
+  await c.page.saveFamilyMembers(c.page.data.familyMembers, '已保存')
+  assert.deepEqual(c.disk[c.store.KEYS.familyMembers].map(item => item.name), ['我', '我', '爸爸'])
+  assert.equal(c.disk[c.store.KEYS.familyMembers].some(item => 'displayName' in item || 'isSelf' in item || 'detailText' in item), false)
 })
 
 ;(async () => {

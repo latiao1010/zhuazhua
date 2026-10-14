@@ -30,6 +30,7 @@ function setShareStatus(share = {}) {
       shared: !!share.shared,
       groupId: share.groupId || '',
       role: share.role || 'owner',
+      currentMemberId: share.shared ? share.currentMemberId || '' : '',
       updatedAt: Date.now()
     })
   } catch (error) {}
@@ -295,7 +296,11 @@ function createShareInvitation(payload = {}) {
     petName: payload.petName || '',
     code: payload.code || ''
   }).then(result => {
-    if (result && result.groupId) setShareStatus({ shared: true, groupId: result.groupId, role: 'owner' })
+    if (result && result.groupId) {
+      const previous = getShareStatus()
+      setShareStatus({ shared: true, groupId: result.groupId, role: 'owner',
+        currentMemberId: result.currentMemberId || (previous.groupId === result.groupId ? previous.currentMemberId : '') || '' })
+    }
     return result
   }).catch(error => ({ ok: false, error: error.message || String(error) }))
 }

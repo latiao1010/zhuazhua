@@ -5,7 +5,7 @@ const test = (name, run) => cases.push([name, run])
 const tick = () => new Promise(resolve => setImmediate(resolve))
 const deferred = () => { let resolve; const promise = new Promise(done => { resolve = done }); return { promise, resolve } }
 const code = 'ZZ-TEST-1011'
-const group = { shared: true, groupId: 'family-1', role: 'admin', members: [{ id: 'member', role: 'admin', name: '家人' }] }
+const group = { shared: true, groupId: 'family-1', role: 'admin', currentMemberId: 'member', members: [{ id: 'member', role: 'admin', name: '家人' }] }
 
 function setup(options = {}) {
   const r = runtime(), requests = [], modals = [], loading = [], toasts = []
@@ -55,6 +55,25 @@ test('有待上传记录时自动同步，完成后一次加入', async () => {
   assert.deepEqual(c.requests.map(x => x.action), ['previewShareInvitation', 'mutateDataRecord', 'acceptShareInvitation'])
   assert.equal(c.sync.getSyncStatus().pending, 0)
   assert.equal(c.store.get('pet').name, '共享档案')
+  assert.equal(c.sync.getShareStatus().currentMemberId, 'member')
+})
+test('切回个人档案时清除共享身份标记', async () => {
+  const c = setup({ shared: true }); c.state.already = false
+  await c.sync.syncAll()
+  assert.equal(c.sync.getShareStatus().shared, false)
+  assert.equal(c.sync.getShareStatus().currentMemberId, '')
+})
+test('同一家庭生成邀请保留当前成员ID，切换家庭不会沿用旧ID', async () => {
+  const c = setup({ shared: true })
+  c.state.onCall = () => ({ ok: true, groupId: group.groupId, code })
+  await c.sync.createShareInvitation()
+  assert.equal(c.sync.getShareStatus().currentMemberId, 'member')
+  c.state.onCall = () => ({ ok: true, groupId: 'new-family', code, currentMemberId: 'new-owner' })
+  await c.sync.createShareInvitation()
+  assert.equal(c.sync.getShareStatus().currentMemberId, 'new-owner')
+  c.state.onCall = () => ({ ok: true, groupId: 'older-api-family', code })
+  await c.sync.createShareInvitation()
+  assert.equal(c.sync.getShareStatus().currentMemberId, '')
 })
 test('正在上传时复用同一次上传，不要求再点加入', async () => {
   const c = setup(); c.queue(); const wait = deferred()
@@ -199,9 +218,28 @@ test('服务端预检按真实账号判断家庭，重复加入不改变只读�
   const c = server(), before = clone(c.tables.pet_share_members)
   const preview = await c.main({ action: 'previewShareInvitation', code })
   assert.equal(preview.ok, true); assert.equal(preview.alreadyJoined, true); assert.equal(preview.share.role, 'viewer')
+  assert.equal(preview.share.currentMemberId, 'member')
   const result = await c.main({ action: 'acceptShareInvitation', code, profile: { name: '覆盖昵称', role: 'owner' } })
   assert.equal(result.ok, true); assert.equal(result.alreadyJoined, true)
   assert.deepEqual(c.tables.pet_share_members, before); assert.equal(c.writes(), 0)
+})
+test('同名成员的当前身份按微信会话返回，不按角色或客户端指定值判断', async () => {
+  const c = server()
+  c.tables.pet_share_members = [
+    { _id: 'owner-id', groupId: group.groupId, ownerOpenid: 'owner', memberOpenid: 'owner', role: 'owner', name: '我', status: 'active', updatedAt: NOW },
+    { _id: 'member-id', groupId: group.groupId, ownerOpenid: 'owner', memberOpenid: 'member', role: 'admin', name: '我', status: 'active', updatedAt: NOW },
+    { _id: 'other-id', groupId: group.groupId, ownerOpenid: 'owner', memberOpenid: 'other', role: 'admin', name: '我', status: 'active', updatedAt: NOW }
+  ]
+  for (const [openid, memberId, role] of [['owner', 'owner-id', 'owner'], ['member', 'member-id', 'admin'], ['other', 'other-id', 'admin']]) {
+    c.r.context.OPENID = openid
+    const result = await c.main({ action: 'getAllData', currentMemberId: 'forged', role: 'owner' })
+    assert.equal(result.share.currentMemberId, memberId)
+    assert.equal(result.share.role, role)
+    assert.equal(result.share.members.length, 3)
+    assert.equal(result.share.members.filter(item => item.role === 'owner').length, 1)
+    assert.equal(result.share.members.some(item => item.memberOpenid || item.isSelf), false)
+  }
+  assert.equal(c.writes(), 0)
 })
 test('其他账号的预检不泄露家庭成员，不接受伪造当前成员身份', async () => {
   const c = server(); c.r.context.OPENID = 'stranger'

@@ -8,8 +8,6 @@
 .record-tab.active { background: #fff; }
 .feed-card .food-copy { min-width: 0; overflow-wrap: anywhere; }
 .food-head { gap: 10rpx; flex-wrap: wrap; }
-.record-filters picker { max-width: 40%; overflow: hidden; }
-.record-filters picker view { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 22rpx 12rpx; font-size: 24rpx; }
 .summary { padding: 30rpx; background: #edf8f2; color: #456557; border: 1rpx solid #dceee3; }
 .summary-top,.summary-foot,.section-row,.food-head { display: flex; align-items: center; justify-content: space-between; }
 .summary-label { margin-bottom: 8rpx; color: #678979; font-size: 23rpx; }
@@ -129,10 +127,13 @@
 .page { scrollbar-width: none; }
 .page::-webkit-scrollbar { display: none; width: 0; height: 0; }
 .record-author { margin-top: 7rpx; color: #a38f82; font-size: 22rpx; line-height: 1.35; }
-.record-filters { display: flex; gap: 14rpx; margin: 4rpx 0 18rpx; margin-bottom: 18rpx; }
-.record-filters input,.record-filters picker { box-sizing: border-box; height: 66rpx; border: 1rpx solid #eee1d8; border-radius: 16rpx; background: #fff; color: #786c64; font-size: 22rpx; line-height: 66rpx; }
-.record-filters input { min-width: 0; flex: 1; padding: 0 16rpx; height: 80rpx; font-size: 25rpx; }
-.record-filters picker { flex: none; padding: 0 14rpx; }
+.record-filters { display: flex; align-items: center; gap: 14rpx; margin: 4rpx 0 18rpx; }
+.record-filters input,.record-filters .author-filter-trigger { box-sizing: border-box; height: 80rpx; border: 1rpx solid var(--line); border-radius: 16rpx; background: #fff; color: var(--muted); font-size: 25rpx; }
+.record-filters input { min-width: 0; width: 0; flex: 1; padding: 0 16rpx; }
+.record-filters .author-filter { flex: none; width: 200rpx; max-width: 40%; overflow: hidden; }
+.author-filter-trigger { display: flex; align-items: center; min-width: 0; padding: 0 16rpx; line-height: 1.4; }
+.author-filter-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.author-filter-arrow { flex: none; margin-left: 12rpx; font-size: 28rpx; line-height: 1; }
 .trend-range { display: flex; justify-content: flex-end; gap: 8rpx; margin-bottom: 14rpx; }
 .trend-range-item { padding: 7rpx 12rpx; border-radius: 99rpx; color: #978b83; background: #f6f0eb; font-size: 22rpx; }
 .trend-range-item.active { color: #fff; background: #ef835c; font-weight: 600; }

@@ -150,8 +150,8 @@
   <view class="family-member-card" wx:for="{{familyMembers}}" wx:key="id">
     <view class="family-member-avatar">{{item.initial}}</view>
     <view class="family-member-info">
-      <view><text>{{item.name}}</text><text>{{item.status}}</text></view>
-      <text>{{item.relation}} · {{item.roleLabel}}</text>
+      <view><text>{{item.displayName}}</text><text>{{item.status}}</text></view>
+      <text>{{item.detailText}}</text>
       <text wx:if="{{item.lastActive}}">最近活跃 {{item.lastActive}}</text>
     </view>
     <view class="family-member-actions">

@@ -178,9 +178,8 @@ function normalizeFamilyMembers(value) {
         lastActive: isValidDateKey(item.lastActive) ? item.lastActive : ''
       }
     })
-  const members = normalized.length ? normalized : seedFamilyMembers
-  if (!members.some(item => item.role === 'owner')) return [...seedFamilyMembers, ...members]
-  return members.map((item, index) => index === 0 && item.role !== 'owner' ? { ...item, role: 'owner', roleLabel: ROLE_LABELS.owner, relation: item.relation || '主人' } : item)
+  // Preserve the actual roles regardless of server ordering; never promote the first member.
+  return normalized.length ? normalized : seedFamilyMembers
 }
 
 function getDefaultCareSchedule() {

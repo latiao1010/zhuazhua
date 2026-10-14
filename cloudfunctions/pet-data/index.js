@@ -407,6 +407,7 @@ async function getActiveScope(openid) {
     return {
       scopeId: `group:${member.groupId}`,
       groupId: member.groupId,
+      memberId: member._id,
       role: member.role || 'admin',
       ownerOpenid: member.ownerOpenid || '',
       shared: true
@@ -645,6 +646,7 @@ async function getShareInfoForScope(scope) {
     shared: true,
     groupId: scope.groupId,
     role: scope.role,
+    currentMemberId: scope.memberId || '',
     members: await listShareMembers(scope.groupId)
   }
 }
@@ -744,7 +746,7 @@ async function createShareInvitation(openid, payload = {}) {
       expiresAt: now + 1000 * 60 * 60 * 24 * 30
     }
   })
-  return { ok: true, code: finalCode, groupId: group._id, members: await listShareMembers(group._id) }
+  return { ok: true, code: finalCode, groupId: group._id, currentMemberId: scope.memberId || (await getActiveScope(openid)).memberId || '', members: await listShareMembers(group._id) }
 }
 
 async function findShareInvitation(code) {
@@ -778,7 +780,7 @@ async function acceptShareInvitation(openid, code, profile = {}) {
   // 重复打开当前家庭的邀请无需重新写入昵称、关系或成员角色。
   if (scope.shared && scope.groupId === invite.groupId) return { ...await getAllData(openid), alreadyJoined: true }
   const now = Date.now()
-  const name = cleanText(profile.name || '我', 16)
+  const name = cleanText(profile.name || '家人', 16)
   const relation = cleanText(profile.relation || '家人', 12)
   const existing = await db.collection(SHARE_MEMBER_COLLECTION)
     .where({ groupId: invite.groupId, memberOpenid: openid })

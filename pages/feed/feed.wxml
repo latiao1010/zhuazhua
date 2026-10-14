@@ -27,7 +27,12 @@
   </view>
 
   <view class="section-row"><view class="section-title">{{typeMeta.title}}</view><view class="record-toolbar"><text>{{dateFilterText}}</text><button wx:if="{{selectingRecords}}" bindtap="toggleRecordSelectionMode">取消选择</button><button wx:else bindtap="openRecordTools" aria-label="搜索、筛选与批量管理">管理 ···</button></view></view>
-  <view class="record-filters" wx:if="{{showFilters}}"><input cursor-spacing="24" value="{{recordSearch}}" placeholder="搜索名称、备注或状态" bindinput="onRecordSearch" confirm-type="search" /><picker mode="selector" range="{{authorOptions}}" value="{{authorFilterIndex}}" range-key="label" bindchange="onAuthorFilter"><view>{{authorFilterLabel}} ›</view></picker></view>
+  <view class="record-filters" wx:if="{{showFilters}}">
+    <input cursor-spacing="24" value="{{recordSearch}}" placeholder="搜索名称、备注或状态" bindinput="onRecordSearch" confirm-type="search" />
+    <picker class="author-filter" mode="selector" range="{{authorOptions}}" value="{{authorFilterIndex}}" range-key="label" bindchange="onAuthorFilter" aria-label="按记录人筛选">
+      <view class="author-filter-trigger"><text class="author-filter-label">{{authorFilterLabel}}</text><text class="author-filter-arrow">›</text></view>
+    </picker>
+  </view>
   <view class="filter-state" wx:if="{{filtersActive}}"><text>筛选结果 {{rows.length}} 条 · 上方为当日总计</text><button bindtap="clearRecordFilters">清除筛选</button></view>
 
   <view class="timeline" wx:if="{{rows.length}}">

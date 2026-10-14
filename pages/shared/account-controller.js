@@ -5,6 +5,7 @@ const cloudAlbum = require('../../utils/cloud-album')
 const cloud = require('../../utils/cloud')
 const cloudData = require('../../utils/cloud-data')
 const analytics = require('../../utils/analytics')
+const { buildFamilyMemberViews } = require('../../utils/family-members')
 const { PERSONALITY_OPTIONS, MAX_PERSONALITY_TAGS, normalizePersonalityTags } = require('../../utils/pet-profile')
 
 function saveProfileEntries(entries, module = 'profile') {
@@ -124,11 +125,21 @@ function shortInviteCode(petName) {
   return `ZZ-${nameCode || 'PET'}-${String(Date.now()).slice(-6)}`
 }
 
-function initialOf(name) {
-  return String(name || '家').trim().slice(0, 1) || '家'
+function familyActivityTimeText(timestamp, now) {
+  const date = new Date(timestamp)
+  if (!Number.isFinite(date.getTime())) return '时间待同步'
+  const day = dateKey(date)
+  const yesterday = new Date(now)
+  yesterday.setDate(yesterday.getDate() - 1)
+  const label = day === dateKey(now) ? '今天'
+    : day === dateKey(yesterday) ? '昨天'
+      : date.getFullYear() === now.getFullYear() ? `${date.getMonth() + 1}月${date.getDate()}日`
+        : day
+  return `${label} ${timeText(date)}`
 }
 
 function buildFamilyActivities() {
+  const now = new Date()
   const sources = [
     ['feeds', item => `记录了${item.type || '喂食'}${item.amount ? ` ${item.amount}` : ''}`],
     ['waters', item => `记录了饮水${item.amount ? ` ${item.amount}` : ''}`],
@@ -142,7 +153,7 @@ function buildFamilyActivities() {
     .map(item => ({ id: `${key}-${item.id}`, name: item.recordedByName, text: describe(item), time: Number(item._syncUpdatedAt) })))
     .sort((a, b) => b.time - a.time)
     .slice(0, 5)
-    .map(item => ({ ...item, timeText: new Date(item.time).toLocaleString() }))
+    .map(item => ({ ...item, timeText: familyActivityTimeText(item.time, now) }))
 }
 
 function dateKey(date) {
@@ -376,7 +387,7 @@ return {
     const supplies = store.normalizeSupplies(store.get('supplies'))
     const supplyView = buildSupplyView(supplies, store.get('feeds'))
     const growthPhotos = getGrowthPhotos()
-    const familyMembers = store.get('familyMembers').map(item => ({ ...item, initial: initialOf(item.name) }))
+    const familyMembers = buildFamilyMemberViews(store.get('familyMembers'), cloudData.getShareStatus())
     const today = store.todayKey()
     const breedOptions = buildBreedOptions(draft.breed)
     const pendingShareCode = this.data.pendingShareCode
@@ -409,7 +420,7 @@ return {
   },
   openFamilyManager() {
     hideNativeTabBar()
-    const familyMembers = store.get('familyMembers').map(item => ({ ...item, initial: initialOf(item.name) }))
+    const familyMembers = buildFamilyMemberViews(store.get('familyMembers'), cloudData.getShareStatus())
     this.setData({ familyOpen: true, familyMembers, familyActivities: buildFamilyActivities(), familyInviteCode: this.data.familyInviteCode || shortInviteCode(this.data.pet.name), familyDraftOpen: false })
     if (!this.data.shareShared || this.data.shareRole === 'owner') this.generateFamilyInvite()
   },
@@ -469,14 +480,14 @@ return {
   },
   saveFamilyMembers(members, toastTitle) {
     if (!this.ensureOwnerPermission('只有主人可以管理家庭成员')) return Promise.resolve({ ok: false })
-    const normalized = store.normalizeFamilyMembers(members).map(item => ({ ...item, initial: initialOf(item.name) }))
+    const normalized = store.normalizeFamilyMembers(members)
     this.setData({ familySaving: true })
-    return store.set('familyMembers', normalized.map(({ initial, ...item }) => item)).then(result => {
+    return store.set('familyMembers', normalized).then(result => {
       if (result && result.ok === false) analytics.failure('family', 'save_cloud', result.error)
       else analytics.track('family', 'complete', 'save_local')
       return result
     }).finally(() => {
-      this.setData({ familyMembers: normalized, familyDraftOpen: false, familyEditingIndex: -1, familySaving: false })
+      this.setData({ familyMembers: buildFamilyMemberViews(normalized, cloudData.getShareStatus()), familyDraftOpen: false, familyEditingIndex: -1, familySaving: false })
       wx.showToast({ title: toastTitle || '家庭共享已更新', icon: 'none' })
     })
   },
@@ -542,11 +553,10 @@ return {
     return cloudData.createShareInvitation({ petName: this.data.pet.name, code: this.data.familyInviteCode })
       .then(result => {
         if (result && result.ok !== false && result.code) {
-          const members = Array.isArray(result.members) && result.members.length
-            ? result.members.map(item => ({ ...item, initial: initialOf(item.name) }))
-            : this.data.familyMembers
-          this.setData({ familyInviteCode: result.code, familyMembers: members, familyInviteLoading: false })
-          store.set('familyMembers', members.map(({ initial, ...item }) => item), { skipCloud: true })
+          const members = store.normalizeFamilyMembers(Array.isArray(result.members) && result.members.length
+            ? result.members : this.data.familyMembers)
+          this.setData({ familyInviteCode: result.code, familyMembers: buildFamilyMemberViews(members, cloudData.getShareStatus()), familyInviteLoading: false })
+          store.set('familyMembers', members, { skipCloud: true })
         } else {
           this.setData({ familyInviteLoading: false })
         }
@@ -580,7 +590,7 @@ return {
     this.setData({ shareAccepting: true, pendingShareCode: '', sharePromptOpen: true, sharePromptCode: code, shareJoinError: '' })
     hideNativeTabBar()
     this._shareAcceptTask = Promise.resolve()
-      .then(() => cloudData.acceptShareInvitation(code, { name: '我', relation: '家人' }))
+      .then(() => cloudData.acceptShareInvitation(code, { name: '家人', relation: '家人' }))
       .then(result => {
         if (!result || result.ok === false) {
           throw new Error(result && result.error ? result.error : '加入失败，请检查共享码')
@@ -588,7 +598,7 @@ return {
         const pet = store.get('pet')
         const careDraft = store.normalizeCareSchedule(store.get('care'))
         const supplies = store.normalizeSupplies(store.get('supplies'))
-        const familyMembers = (result.share && result.share.members || store.get('familyMembers')).map(item => ({ ...item, initial: initialOf(item.name) }))
+        const familyMembers = buildFamilyMemberViews(result.share && result.share.members || store.get('familyMembers'), result.share || cloudData.getShareStatus())
         this.setData({
           pet,
           draft: { ...pet, togetherSince: pet.togetherSince || '', sex: pet.sex || '男孩' },

@@ -364,13 +364,13 @@
 .family-share-avatars text { display: flex; align-items: center; justify-content: center; width: 35rpx; height: 35rpx; margin-left: -8rpx; border: 3rpx solid #fff; border-radius: 50%; color: #7f604f; background: #ffe0cf; font-size: 22rpx; font-weight: 600; }
 .family-share-arrow { margin-left: 9rpx; color: #c7aaa0; font-size: 30rpx; }
 .family-page { position: fixed; z-index: 120; inset: 0; box-sizing: border-box; overflow-y: auto; padding: 28rpx 28rpx calc(40rpx + env(safe-area-inset-bottom)); background: var(--cream); color: var(--ink); }
-.family-top { display: grid; grid-template-columns: 76rpx minmax(0,1fr) 92rpx; align-items: center; min-height: 86rpx; }
+.family-top { display: grid; grid-template-columns: 124rpx minmax(0,1fr) 124rpx; align-items: center; min-height: 86rpx; }
 .family-back { display: flex; align-items: center; justify-content: center; width: 62rpx; height: 62rpx; border-radius: 26rpx; background: rgba(255,255,255,.82); box-shadow: none; font-size: 44rpx; line-height: 1; }
 .family-top>view:nth-child(2) { min-width:0; text-align: center; }
 .family-top>view:nth-child(2)>text { display: block; color: #302925; font-size: 31rpx; font-weight: 600; }
 .family-top>view:nth-child(2)>view { margin-top: 4rpx; color: var(--muted); font-size: 22rpx; }
-.family-add { width:100%!important; min-width:0; height:58rpx; margin:0!important; padding:0; box-sizing:border-box; border-radius:19rpx; color:#fff; background:var(--brand); font-size:22rpx; font-weight:600; line-height:58rpx; }
-.family-role-badge { justify-self: end; padding: 12rpx 16rpx; border-radius: 26rpx; color: #7b6a60; background: #fff; font-size: 22rpx; font-weight: 600; box-shadow: none; }
+.family-add { width:100%!important; max-width:92rpx; justify-self:end; min-width:0; height:58rpx; margin:0!important; padding:0; box-sizing:border-box; border-radius:19rpx; color:#fff; background:var(--brand); font-size:22rpx; font-weight:600; line-height:58rpx; }
+.family-role-badge { justify-self: end; padding: 12rpx 16rpx; border-radius: 26rpx; color: #7b6a60; background: #fff; font-size: 22rpx; font-weight: 600; white-space: nowrap; line-height:1.4; box-shadow: none; }
 .family-share-panel { display: flex; align-items: flex-start; margin-top: 22rpx; padding: 26rpx; border-radius: 26rpx; background: #fff0e5; box-shadow: none; flex-direction: column; }
 .family-share-panel>view:first-child { min-width: 0; flex: 1; }
 .family-share-panel>view:first-child>text { display: block; color: var(--muted); font-size: 24rpx; line-height: 1.7; }
