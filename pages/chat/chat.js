@@ -1,3 +1,5 @@
+const { instrument } = require('../../utils/analytics-page')
+const analytics = require('../../utils/analytics')
 const store = require('../../utils/store')
 const knowledge = require('../../utils/pet-knowledge')
 const cloudData = require('../../utils/cloud-data')
@@ -30,7 +32,7 @@ function dateLabel(message) {
   return `${date.getMonth() + 1}月${date.getDate()}日`
 }
 
-Page({
+Page(instrument('advisor', {
   data: {
     pet: {},
     input: '',
@@ -232,6 +234,7 @@ Page({
 
   finishReply(replyVersion, answer) {
     if (replyVersion !== this.replyVersion) return
+    analytics.track('advisor', 'complete', 'reply')
     const next = [...this.data.messages, {
       id: Date.now() + 1,
       role: 'ai',
@@ -269,6 +272,7 @@ Page({
         this.finishReply(replyVersion, answer)
       } catch (error) {
         if (replyVersion !== this.replyVersion) return
+        analytics.failure('advisor', 'reply', error)
         this.replyTimer = null
         this.setData({ thinking: false, replyError: '这次回答未能生成，请点击重试。' })
         this.scrollBottom()
@@ -334,4 +338,4 @@ Page({
   onShareAppMessage() {
     return { title: `和宠物顾问一起照顾${this.data.pet.name}`, path: '/pages/chat/chat' }
   }
-})
+}))

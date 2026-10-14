@@ -1,12 +1,14 @@
 @import "styles/icons.wxss";
 
 page {
-  --ink: #403735;
-  --muted: #897c76;
-  --orange: #e67b5d;
+  --ink: #2f3e38;
+  --muted: #6f7d75;
+  --brand: #52785e;
+  --brand-soft: #edf4ee;
+  --orange: #d7755c;
   --orange-soft: #fff0e7;
-  --cream: #fffaf7;
-  --line: #f4e7e0;
+  --cream: #fafcf9;
+  --line: #e3ebe4;
   background: var(--cream);
   color: var(--ink);
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -69,16 +71,18 @@ page {
 }
 
 .primary-btn {
-  color: #643b2d;
-  background: #ffbd9c;
+  color: #fff;
+  background: var(--brand);
   box-shadow: none;
 }
 
 .ghost-btn {
-  border: 2rpx solid #f1dfd4;
-  color: var(--orange);
-  background: #fff;
+  border: 1rpx solid var(--line);
+  color: var(--brand);
+  background: var(--brand-soft);
 }
+
+.primary-btn[disabled], .ghost-btn[disabled] { color: #87988b; background: #e8eee8; }
 
 button::after{ border: 0; }
 
@@ -139,7 +143,7 @@ button::after{ border: 0; }
 }
 
 .field{ margin-bottom: 22rpx; }
-.label{ display: block; margin-bottom: 10rpx; color: #766d66; font-size: 24rpx; font-weight: 700; }
+.label{ display: block; margin-bottom: 10rpx; color: var(--muted); font-size: 24rpx; font-weight: 500; }
 .input {
   width: 100%;
   height: 84rpx;

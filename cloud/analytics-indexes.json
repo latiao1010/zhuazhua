@@ -1,0 +1,248 @@
+{
+  "CreateIndexes": [
+    {
+      "IndexName": "ops_day",
+      "MgoKeySchema": {
+        "MgoIsUnique": false,
+        "MgoIndexKeys": [
+          {
+            "Name": "day",
+            "Direction": "1"
+          },
+          {
+            "Name": "kind",
+            "Direction": "1"
+          }
+        ]
+      }
+    },
+    {
+      "IndexName": "ops_active",
+      "MgoKeySchema": {
+        "MgoIsUnique": false,
+        "MgoIndexKeys": [
+          {
+            "Name": "recordType",
+            "Direction": "1"
+          },
+          {
+            "Name": "lastDay",
+            "Direction": "1"
+          }
+        ]
+      }
+    },
+    {
+      "IndexName": "ops_first",
+      "MgoKeySchema": {
+        "MgoIsUnique": false,
+        "MgoIndexKeys": [
+          {
+            "Name": "recordType",
+            "Direction": "1"
+          },
+          {
+            "Name": "firstDay",
+            "Direction": "1"
+          }
+        ]
+      }
+    },
+    {
+      "IndexName": "ops_flow",
+      "MgoKeySchema": {
+        "MgoIsUnique": false,
+        "MgoIndexKeys": [
+          {
+            "Name": "recordType",
+            "Direction": "1"
+          },
+          {
+            "Name": "startDay",
+            "Direction": "1"
+          },
+          {
+            "Name": "lastTime",
+            "Direction": "1"
+          }
+        ]
+      }
+    },
+    {
+      "IndexName": "ops_feedback_date",
+      "MgoKeySchema": {
+        "MgoIsUnique": false,
+        "MgoIndexKeys": [
+          {
+            "Name": "recordType",
+            "Direction": "1"
+          },
+          {
+            "Name": "createdAt",
+            "Direction": "-1"
+          },
+          {
+            "Name": "_id",
+            "Direction": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "IndexName": "ops_feedback_owner",
+      "MgoKeySchema": {
+        "MgoIsUnique": false,
+        "MgoIndexKeys": [
+          {
+            "Name": "recordType",
+            "Direction": "1"
+          },
+          {
+            "Name": "uid",
+            "Direction": "1"
+          },
+          {
+            "Name": "createdAt",
+            "Direction": "-1"
+          },
+          {
+            "Name": "_id",
+            "Direction": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "IndexName": "ops_feedback_status",
+      "MgoKeySchema": {
+        "MgoIsUnique": false,
+        "MgoIndexKeys": [
+          {
+            "Name": "recordType",
+            "Direction": "1"
+          },
+          {
+            "Name": "status",
+            "Direction": "1"
+          },
+          {
+            "Name": "createdAt",
+            "Direction": "-1"
+          },
+          {
+            "Name": "_id",
+            "Direction": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "IndexName": "ops_feedback_owner_status",
+      "MgoKeySchema": {
+        "MgoIsUnique": false,
+        "MgoIndexKeys": [
+          {
+            "Name": "recordType",
+            "Direction": "1"
+          },
+          {
+            "Name": "uid",
+            "Direction": "1"
+          },
+          {
+            "Name": "status",
+            "Direction": "1"
+          },
+          {
+            "Name": "createdAt",
+            "Direction": "-1"
+          },
+          {
+            "Name": "_id",
+            "Direction": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "IndexName": "ops_resolved",
+      "MgoKeySchema": {
+        "MgoIsUnique": false,
+        "MgoIndexKeys": [
+          {
+            "Name": "recordType",
+            "Direction": "1"
+          },
+          {
+            "Name": "status",
+            "Direction": "1"
+          },
+          {
+            "Name": "updatedAt",
+            "Direction": "1"
+          }
+        ]
+      }
+    },
+    {
+      "IndexName": "ops_quota",
+      "MgoKeySchema": {
+        "MgoIsUnique": false,
+        "MgoIndexKeys": [
+          {
+            "Name": "recordType",
+            "Direction": "1"
+          },
+          {
+            "Name": "expiresAt",
+            "Direction": "1"
+          }
+        ]
+      }
+    },
+    {
+      "IndexName": "ops_archive",
+      "MgoKeySchema": {
+        "MgoIsUnique": false,
+        "MgoIndexKeys": [
+          {
+            "Name": "recordType",
+            "Direction": "1"
+          },
+          {
+            "Name": "finalized",
+            "Direction": "1"
+          },
+          {
+            "Name": "complete",
+            "Direction": "1"
+          },
+          {
+            "Name": "purged",
+            "Direction": "1"
+          },
+          {
+            "Name": "day",
+            "Direction": "1"
+          }
+        ]
+      }
+    },
+    {
+      "IndexName": "ops_report_day",
+      "MgoKeySchema": {
+        "MgoIsUnique": false,
+        "MgoIndexKeys": [
+          {
+            "Name": "recordType",
+            "Direction": "1"
+          },
+          {
+            "Name": "day",
+            "Direction": "-1"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,15 +1,20 @@
-const {bingo}=require('./pet-bingo')
+const {bingo,BINGO_VERSION,canCompareBingo}=require('./pet-bingo')
 const {CLOUD_ENV_ID}=require('./cloud')
 const {personality}=require('./pet-personality')
 const {dateParts}=require('./pet-age')
 function readResult(raw){
  let result;try{result=JSON.parse(raw[0]==='{'?raw:decodeURIComponent(raw))}catch(e){throw new Error('这张分享卡片暂时无法打开')}
- if(!result||result.v!==1||!['age','personality','bingo'].includes(result.t)||!['cat','dog'].includes(result.s)||!dateParts(result.e))throw new Error('分享信息不完整，请重新生成')
- const base={v:1,t:result.t,n:String(result.n||'毛孩子').slice(0,12),s:result.s,e:result.e}
+ if(!result||!(result.v===1||result.t==='bingo'&&result.v===BINGO_VERSION)||!['age','personality','bingo'].includes(result.t)||!['cat','dog'].includes(result.s)||!dateParts(result.e))throw new Error('分享信息不完整，请重新生成')
+ const base={v:result.v,t:result.t,n:String(result.n||'毛孩子').slice(0,12),s:result.s,e:result.e}
  if(result.t==='bingo'){
-  bingo(result.q)
+  bingo(result.q,result.s,result.v)
   let peer
-  if(result.peer){bingo(result.peer.q);if(!['cat','dog'].includes(result.peer.s))throw new Error('好友卡片信息无效');peer={n:String(result.peer.n||'好友的毛孩子').slice(0,12),s:result.peer.s,q:result.peer.q}}
+  if(result.peer){
+   const version=result.peer.v===undefined?1:result.peer.v
+   bingo(result.peer.q,result.peer.s,version)
+   peer={v:version,n:String(result.peer.n||'好友的毛孩子').slice(0,12),s:result.peer.s,q:result.peer.q}
+   if(!canCompareBingo(base,peer))throw new Error('好友卡片的题目不一致，请重新制作')
+  }
   return {...base,q:result.q,...(peer?{peer}:{})}
  }
  if(result.t==='personality'){personality(result.q,result.s);return {...base,q:result.q}}
@@ -19,7 +24,7 @@ function readResult(raw){
 }
 function viewResult(result){
  if(result.t==='bingo'){
-  const b=bingo(result.q),peer=result.peer
+  const b=bingo(result.q,result.s,result.v),peer=result.peer
   const common=peer?result.q.filter(i=>peer.q.includes(i)):[]
   return {...b,name:result.n,species:result.s,tool:result.t,date:result.e,peer,commonCount:common.length,
    cells:b.cells.map(c=>({...c,peerSelected:!!peer&&peer.q.includes(c.id),common:common.includes(c.id)})),
@@ -32,21 +37,36 @@ function viewResult(result){
  return {tool:'age',name:result.n,species:result.s,date:result.e,ageText,humanAge:result.h,days:result.d,dayLabel:result.x?'已陪伴你':'来到世界',birthdayDays:result.b,stage:result.g,
   quote:result.h===null?'每一段陪伴，都值得被珍藏。':'原来，它也在认真长大。',shareTitle:result.h===null?`${result.n}的专属年龄卡片`:`我家${result.n}相当于人类约 ${result.h} 岁了！`}
 }
-function sharePath(result){return '/pages/play/result?r='+encodeURIComponent(JSON.stringify(result))}
+function sharePath(result){return '/pages/play/result?r='+encodeURIComponent(JSON.stringify(result))+'&src='+result.t+'_share'}
 function withTimeout(promise,ms){return new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('timeout')),ms);promise.then(v=>{clearTimeout(timer);resolve(v)},e=>{clearTimeout(timer);reject(e)})})}
-async function getCode(tool){
+function removeCodeFile(fs,filePath){try{fs.unlinkSync(filePath)}catch(_){}}
+function validateCodeImage(filePath){
+ return withTimeout(new Promise((resolve,reject)=>wx.getImageInfo({src:filePath,success:resolve,fail:reject})),5000)
+}
+async function getCode(tool,{force=false}={}){
  if(!wx.cloud||!wx.cloud.callFunction)throw new Error('cloud_unavailable')
- let envVersion='release';try{envVersion=wx.getAccountInfoSync().miniProgram.envVersion||'release'}catch(e){}
+ if(!['age','personality','bingo'].includes(tool))throw new Error('invalid_tool')
+ let envVersion='release',appId='current';try{const info=wx.getAccountInfoSync().miniProgram;envVersion=info.envVersion||'release';appId=info.appId||appId}catch(e){}
  const fs=wx.getFileSystemManager(),root=wx.env.USER_DATA_PATH
- const prefix=`${root}/paw-fun-code-v2-${tool}-${envVersion}`
- for(const extension of ['png','jpg']){const filePath=prefix+'.'+extension;try{fs.accessSync(filePath);return {filePath,envVersion}}catch(e){}}
+ const prefix=`${root}/paw-fun-code-v3-${appId}-${tool}-${envVersion}`
+ for(const extension of ['png','jpg']){
+  const filePath=prefix+'.'+extension
+  if(force){removeCodeFile(fs,filePath);continue}
+  try{fs.accessSync(filePath)}catch(_){continue}
+  try{await validateCodeImage(filePath);return {filePath,envVersion}}catch(_){removeCodeFile(fs,filePath)}
+ }
  // Public tool codes have no pet data and work in demo mode too.
  wx.cloud.init({env:CLOUD_ENV_ID})
  const response=await withTimeout(wx.cloud.callFunction({name:'pet-fun-code',config:{env:CLOUD_ENV_ID},data:{tool,envVersion}}),8000)
  const result=response&&response.result
- if(!result||!result.ok||typeof result.base64!=='string'||result.base64.length>900000)throw new Error('code_unavailable')
+ if(!result||!result.ok||typeof result.base64!=='string'||!result.base64.length||result.base64.length>900000||!['jpg','png'].includes(result.mime)){
+  const error=new Error('code_unavailable');error.reason=result&&result.reason||'service_unavailable';error.errCode=result&&result.errCode||0;throw error
+ }
  const filePath=prefix+(result.mime==='jpg'?'.jpg':'.png')
- await new Promise((resolve,reject)=>fs.writeFile({filePath,data:result.base64,encoding:'base64',success:resolve,fail:reject}))
+ try{
+  await new Promise((resolve,reject)=>fs.writeFile({filePath,data:result.base64,encoding:'base64',success:resolve,fail:reject}))
+  await validateCodeImage(filePath)
+ }catch(error){removeCodeFile(fs,filePath);throw error}
  return {filePath,envVersion}
 }
 function rounded(ctx,x,y,w,h,r,fill){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();ctx.fillStyle=fill;ctx.fill()}
@@ -65,14 +85,11 @@ function portrait(ctx,x,y,species){
 }
 function loadImage(canvas,path){return new Promise((resolve,reject)=>{const img=canvas.createImage();img.onload=()=>resolve(img);img.onerror=reject;img.src=path})}
 async function drawPoster(canvas,model,code){
+ if(!code||!code.filePath)throw new Error('miniprogram_code_required')
  const w=600,h=880;canvas.width=w*2;canvas.height=h*2;const ctx=canvas.getContext('2d');ctx.scale(2,2)
  ctx.fillStyle=model.tool==='age'?'#fff2e8':'#eff8f2';ctx.fillRect(0,0,w,h)
  rounded(ctx,28,28,544,824,30,'#fffdf9');text(ctx,'爪爪日常  /  陪伴小发现',58,73,17,'#a88772')
- if(model.photo){
-  const img=await withTimeout(loadImage(canvas,model.photo),5000)
-  const side=Math.min(img.width,img.height)
-  ctx.save();ctx.beginPath();ctx.arc(300,175,75,0,Math.PI*2);ctx.clip();ctx.drawImage(img,(img.width-side)/2,(img.height-side)/2,side,side,225,100,150,150);ctx.restore()
- }else portrait(ctx,300,175,model.species)
+ portrait(ctx,300,175,model.species)
  ctx.textAlign='center';text(ctx,model.name,300,287,31,'#493b35','bold')
  if(model.tool==='age'){
   text(ctx,'今年 '+model.ageText,300,329,23,'#9a7f70')
@@ -92,8 +109,10 @@ async function drawPoster(canvas,model,code){
   model.metrics.forEach((item,i)=>{const y=465+i*46;ctx.textAlign='left';text(ctx,item.label,62,y,20,'#8b7a6c');rounded(ctx,169,y-14,285,10,5,'#edf1e8');if(item.value)rounded(ctx,169,y-14,285*item.value/100,10,5,'#a6c5ac');ctx.textAlign='right';text(ctx,item.value+'%',530,y,21,'#759179','bold')});ctx.textAlign='center';text(ctx,model.quote,300,668,19,'#8a907b')
  }
  ctx.textAlign='left';text(ctx,model.tool==='age'?'年龄为科普估算，不代表实际生理年龄':model.tool==='bingo'?'日常趣味观察 · 勾选属于它的小习惯':'趣味观察结果 · 指数不是行为概率',60,712,15,'#a7978b');text(ctx,'生成于 '+model.date,60,735,14,'#b4a397')
- if(code){const img=await withTimeout(loadImage(canvas,code.filePath),5000);ctx.drawImage(img,435,738,98,98);text(ctx,model.tool==='bingo'?'你家中了几项？':'你也来测一测',60,788,24,'#8d6850','bold');text(ctx,code.envVersion==='release'?'长按识别小程序码':'开发 / 体验码，仅授权用户可访问',60,817,15,'#a8917c')}
- else{text(ctx,model.tool==='bingo'?'你家中了几项？':'你也来测一测',60,785,24,'#8d6850','bold');text(ctx,'微信搜索「爪爪日常」',60,818,18,'#a8917c')}
+ const img=await withTimeout(loadImage(canvas,code.filePath),5000)
+ ctx.drawImage(img,422,722,116,116)
+ text(ctx,model.tool==='bingo'?'你家中了几项？':'你也来测一测',60,788,24,'#8d6850','bold')
+ text(ctx,code.envVersion==='release'?'长按识别小程序码':'开发 / 体验码，仅授权用户可访问',60,817,15,'#a8917c')
  return new Promise((resolve,reject)=>wx.canvasToTempFilePath({canvas,x:0,y:0,width:w*2,height:h*2,destWidth:w*2,destHeight:h*2,fileType:'png',success:r=>resolve(r.tempFilePath),fail:reject}))
 }
 module.exports={readResult,viewResult,sharePath,getCode,drawPoster}

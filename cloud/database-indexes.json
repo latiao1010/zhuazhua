@@ -1,10 +1,316 @@
 {
   "environment": "cloudbase-d3glshm6n124d98a4",
   "indexes": [
-    { "collection": "pet_shared_records", "name": "scope_key", "unique": false, "fields": [{ "name": "scopeId", "order": "asc" }, { "name": "key", "order": "asc" }] },
-    { "collection": "pet_data", "name": "scope_key", "unique": false, "fields": [{ "name": "scopeId", "order": "asc" }, { "name": "key", "order": "asc" }] },
-    { "collection": "pet_share_members", "name": "member_status_updated", "unique": false, "fields": [{ "name": "memberOpenid", "order": "asc" }, { "name": "status", "order": "asc" }, { "name": "updatedAt", "order": "desc" }] },
-    { "collection": "pet_share_members", "name": "group_status", "unique": false, "fields": [{ "name": "groupId", "order": "asc" }, { "name": "status", "order": "asc" }] },
-    { "collection": "pet_share_invites", "name": "code_status", "unique": false, "fields": [{ "name": "code", "order": "asc" }, { "name": "status", "order": "asc" }] }
+    {
+      "collection": "pet_shared_records",
+      "name": "scope_key",
+      "unique": false,
+      "fields": [
+        {
+          "name": "scopeId",
+          "order": "asc"
+        },
+        {
+          "name": "key",
+          "order": "asc"
+        }
+      ]
+    },
+    {
+      "collection": "pet_data",
+      "name": "scope_key",
+      "unique": false,
+      "fields": [
+        {
+          "name": "scopeId",
+          "order": "asc"
+        },
+        {
+          "name": "key",
+          "order": "asc"
+        }
+      ]
+    },
+    {
+      "collection": "pet_share_members",
+      "name": "member_status_updated",
+      "unique": false,
+      "fields": [
+        {
+          "name": "memberOpenid",
+          "order": "asc"
+        },
+        {
+          "name": "status",
+          "order": "asc"
+        },
+        {
+          "name": "updatedAt",
+          "order": "desc"
+        }
+      ]
+    },
+    {
+      "collection": "pet_share_members",
+      "name": "group_status",
+      "unique": false,
+      "fields": [
+        {
+          "name": "groupId",
+          "order": "asc"
+        },
+        {
+          "name": "status",
+          "order": "asc"
+        }
+      ]
+    },
+    {
+      "collection": "pet_share_invites",
+      "name": "code_status",
+      "unique": false,
+      "fields": [
+        {
+          "name": "code",
+          "order": "asc"
+        },
+        {
+          "name": "status",
+          "order": "asc"
+        }
+      ]
+    },
+    {
+      "collection": "pet_usage_events_v1",
+      "name": "ops_day",
+      "unique": false,
+      "fields": [
+        {
+          "name": "day",
+          "order": "asc"
+        },
+        {
+          "name": "kind",
+          "order": "asc"
+        }
+      ]
+    },
+    {
+      "collection": "pet_usage_events_v1",
+      "name": "ops_active",
+      "unique": false,
+      "fields": [
+        {
+          "name": "recordType",
+          "order": "asc"
+        },
+        {
+          "name": "lastDay",
+          "order": "asc"
+        }
+      ]
+    },
+    {
+      "collection": "pet_usage_events_v1",
+      "name": "ops_first",
+      "unique": false,
+      "fields": [
+        {
+          "name": "recordType",
+          "order": "asc"
+        },
+        {
+          "name": "firstDay",
+          "order": "asc"
+        }
+      ]
+    },
+    {
+      "collection": "pet_usage_events_v1",
+      "name": "ops_flow",
+      "unique": false,
+      "fields": [
+        {
+          "name": "recordType",
+          "order": "asc"
+        },
+        {
+          "name": "startDay",
+          "order": "asc"
+        },
+        {
+          "name": "lastTime",
+          "order": "asc"
+        }
+      ]
+    },
+    {
+      "collection": "pet_usage_events_v1",
+      "name": "ops_feedback_date",
+      "unique": false,
+      "fields": [
+        {
+          "name": "recordType",
+          "order": "asc"
+        },
+        {
+          "name": "createdAt",
+          "order": "desc"
+        },
+        {
+          "name": "_id",
+          "order": "desc"
+        }
+      ]
+    },
+    {
+      "collection": "pet_usage_events_v1",
+      "name": "ops_feedback_owner",
+      "unique": false,
+      "fields": [
+        {
+          "name": "recordType",
+          "order": "asc"
+        },
+        {
+          "name": "uid",
+          "order": "asc"
+        },
+        {
+          "name": "createdAt",
+          "order": "desc"
+        },
+        {
+          "name": "_id",
+          "order": "desc"
+        }
+      ]
+    },
+    {
+      "collection": "pet_usage_events_v1",
+      "name": "ops_feedback_status",
+      "unique": false,
+      "fields": [
+        {
+          "name": "recordType",
+          "order": "asc"
+        },
+        {
+          "name": "status",
+          "order": "asc"
+        },
+        {
+          "name": "createdAt",
+          "order": "desc"
+        },
+        {
+          "name": "_id",
+          "order": "desc"
+        }
+      ]
+    },
+    {
+      "collection": "pet_usage_events_v1",
+      "name": "ops_feedback_owner_status",
+      "unique": false,
+      "fields": [
+        {
+          "name": "recordType",
+          "order": "asc"
+        },
+        {
+          "name": "uid",
+          "order": "asc"
+        },
+        {
+          "name": "status",
+          "order": "asc"
+        },
+        {
+          "name": "createdAt",
+          "order": "desc"
+        },
+        {
+          "name": "_id",
+          "order": "desc"
+        }
+      ]
+    },
+    {
+      "collection": "pet_usage_events_v1",
+      "name": "ops_resolved",
+      "unique": false,
+      "fields": [
+        {
+          "name": "recordType",
+          "order": "asc"
+        },
+        {
+          "name": "status",
+          "order": "asc"
+        },
+        {
+          "name": "updatedAt",
+          "order": "asc"
+        }
+      ]
+    },
+    {
+      "collection": "pet_usage_events_v1",
+      "name": "ops_quota",
+      "unique": false,
+      "fields": [
+        {
+          "name": "recordType",
+          "order": "asc"
+        },
+        {
+          "name": "expiresAt",
+          "order": "asc"
+        }
+      ]
+    },
+    {
+      "collection": "pet_usage_events_v1",
+      "name": "ops_archive",
+      "unique": false,
+      "fields": [
+        {
+          "name": "recordType",
+          "order": "asc"
+        },
+        {
+          "name": "finalized",
+          "order": "asc"
+        },
+        {
+          "name": "complete",
+          "order": "asc"
+        },
+        {
+          "name": "purged",
+          "order": "asc"
+        },
+        {
+          "name": "day",
+          "order": "asc"
+        }
+      ]
+    },
+    {
+      "collection": "pet_usage_events_v1",
+      "name": "ops_report_day",
+      "unique": false,
+      "fields": [
+        {
+          "name": "recordType",
+          "order": "asc"
+        },
+        {
+          "name": "day",
+          "order": "desc"
+        }
+      ]
+    }
   ]
 }

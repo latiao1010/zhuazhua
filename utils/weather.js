@@ -2,6 +2,7 @@ const CACHE_TTL = 15 * 60 * 1000
 const LOCATION_TTL = 5 * 60 * 1000
 const HOUR = 3600000
 const LOCATION_SCOPE = 'scope.userFuzzyLocation'
+const { CLOUD_ENV_ID } = require('./cloud')
 
 const CONDITIONS = {
   0: ['晴', '☀️'], 1: ['晴间多云', '🌤️'], 2: ['多云', '⛅'], 3: ['阴', '☁️'],
@@ -14,6 +15,7 @@ const CONDITIONS = {
 
 let pending = null
 let cache = null
+let weatherCloudReady = false
 
 function number(value) {
   return value === null || value === undefined || value === '' ? NaN : Number(value)
@@ -25,8 +27,13 @@ function emptyWeather(status = 'idle') {
     denied: '开启位置授权后，自动显示当地天气',
     unsupported: '当前微信版本暂不支持定位天气，请更新微信',
     location_failed: '暂时无法定位，请检查系统定位服务后重试',
-    unavailable: '天气暂时无法获取，请稍后重试'
+    unavailable: '天气暂时无法获取，请稍后重试',
+    cloud_unavailable: '天气服务暂未连接，请稍后重试',
+    weather_timeout: '天气查询超时，请检查网络后重试',
+    weather_busy: '天气服务繁忙，请稍后重试',
+    weather_data_unavailable: '天气数据正在更新，请稍后重试'
   }
+  if (!messages[status]) status = 'unavailable'
   return {
     live: false, status, location: '', temperature: '--', apparent: '--', condition: '',
     icon: '🌤️', rainTime: '', maxRainChance: null, updatedLabel: '',
@@ -144,13 +151,28 @@ function parseForecast(data, city, now = Date.now()) {
     observedAt, updatedLabel: clockLabel(current.time, offset), rainTime, maxRainChance, rainText
   }
 }
-function fetchForecast(position) {
-  return request('https://api.open-meteo.com/v1/forecast', {
-    latitude: position.latitude, longitude: position.longitude,
-    current: 'temperature_2m,apparent_temperature,weather_code,is_day',
-    hourly: 'precipitation_probability,precipitation', forecast_hours: 25,
-    timezone: 'auto', timeformat: 'unixtime'
-  })
+async function fetchForecast(position) {
+  if (!wx.cloud || typeof wx.cloud.callFunction !== 'function') throw new Error('cloud_unavailable')
+  try {
+    // 天气是独立的只读公共数据，演示模式也可查询；不经过宠物档案同步。
+    if (!weatherCloudReady) {
+      if (typeof wx.cloud.init === 'function') wx.cloud.init({ env: CLOUD_ENV_ID, traceUser: true })
+      weatherCloudReady = true
+    }
+    const response = await wx.cloud.callFunction({ name: 'pet-weather', config: { env: CLOUD_ENV_ID }, data: {
+      latitude: Number(position.latitude.toFixed(2)), longitude: Number(position.longitude.toFixed(2))
+    } })
+    const result = response && response.result
+    if (result && result.ok === true && result.data) return result.data
+    const code = result && result.code
+    throw new Error(code === 'upstream_timeout' ? 'weather_timeout' : code === 'upstream_busy' ? 'weather_busy'
+      : code === 'upstream_data' ? 'weather_data_unavailable' : 'unavailable')
+  } catch (error) {
+    const message = String(error && (error.errMsg || error.message) || '')
+    if (/timeout|timed out/i.test(message)) throw new Error('weather_timeout')
+    if (/FUNCTION_NOT_FOUND|FUNCTION_NOT_EXIST|function.*not.*exist|函数不存在/i.test(message)) throw new Error('cloud_unavailable')
+    throw error
+  }
 }
 async function loadCurrentWeather(force) {
   // 先检查授权，授权撤回后不显示之前缓存的位置或天气。
@@ -182,7 +204,7 @@ async function loadCurrentWeather(force) {
 }
 function getWeather({ force = false } = {}) {
   if (pending) return pending
-  pending = loadCurrentWeather(force).catch(() => emptyWeather('unavailable')).then(weather => {
+  pending = loadCurrentWeather(force).catch(error => emptyWeather(error && error.message || 'unavailable')).then(weather => {
     pending = null
     return weather
   })

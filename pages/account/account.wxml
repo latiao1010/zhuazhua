@@ -1,41 +1,123 @@
-<view hidden="{{!pageVisible}}">
-<view class="page account-page">
-  <view class="topbar">
-    <view><view class="page-title">宠物与照护</view></view>
+<view class="account-theme" hidden="{{!pageVisible}}">
+<view class="share-join-overlay" wx:if="{{sharePromptOpen}}" catchtouchmove="noop" catchtap="noop">
+  <view class="share-join-dialog" role="dialog" aria-label="加入家庭共享">
+    <text class="share-join-title">加入家庭共享</text>
+    <text class="share-join-description">加入后，和家人一起照护同一只宠物。</text>
+    <view class="share-join-code"><text>收到的共享码</text><text>{{sharePromptCode}}</text></view>
+    <text class="share-join-status {{shareJoinError ? 'share-join-error' : ''}}" aria-live="polite">{{shareAccepting ? '正在同步并加入，请稍候…' : (shareJoinError || '是否加入这只宠物的家庭档案？')}}</text>
+    <view class="share-join-actions">
+      <button class="share-join-cancel" bindtap="cancelAcceptShare" disabled="{{shareAccepting}}">稍后</button>
+      <button class="share-join-confirm" bindtap="confirmAcceptShare" loading="{{shareAccepting}}" disabled="{{shareAccepting}}">{{shareAccepting ? '正在加入' : (shareJoinError ? '重试加入' : '加入')}}</button>
+    </view>
   </view>
-
-  <view class="profile-cover display-profile-card card">
-    <view class="cover-glow"></view>
-    <view class="avatar-wrap display-avatar" bindtap="editAvatar">
+</view>
+<view class="account-dashboard">
+  <view class="account-profile-card">
+  <view class="account-hero">
+    <button class="account-button account-portrait" hover-class="account-pressed" bindtap="editAvatar" disabled="{{shareReadOnly}}" aria-label="{{shareReadOnly ? '宠物头像' : '更换宠物头像'}}">
       <image src="{{pet.avatar}}" mode="aspectFill"></image>
-      <view class="display-avatar-edit">编辑</view>
-    </view>
-    <view class="profile-display-info">
-      <view class="display-name-line">
-        <view class="display-name-main" data-field="name" bindtap="openProfileFieldEdit"><text>基本资料</text><view>{{pet.name}}<text class="inline-edit-mark">›</text></view></view>
-        <view class="birthday-chip" data-field="birthday" bindtap="openProfileFieldEdit"><text>生日</text><view>{{pet.birthday || '点击填写'}} <text>›</text></view></view>
-      </view>
-      <view class="pet-meta">
-        <view data-field="breed" bindtap="openProfileFieldEdit">{{pet.breed}}<text class="pet-meta-arrow">›</text></view>
-        <view data-field="sex" bindtap="openProfileFieldEdit"><text>•</text>{{pet.sex}}<text class="pet-meta-arrow">›</text></view>
-        <view data-field="weight" bindtap="openProfileFieldEdit">{{pet.weight ? pet.weight + ' kg' : '填写体重'}}<text class="pet-meta-arrow">›</text></view>
-      </view>
+      <text wx:if="{{!shareReadOnly}}">换头像</text>
+    </button>
+    <view class="account-identity">
+      <view class="account-identity-top"><text>宠物档案</text><text class="account-role" wx:if="{{shareShared}}">{{shareReadOnly ? '共享 · 只读' : shareRoleLabel}}</text><button class="account-button account-feedback" bindtap="openFeedback">反馈与帮助 ›</button></view>
+      <button class="account-button account-pet-name" hover-class="account-pressed" data-field="name" bindtap="openProfileFieldEdit" aria-label="{{shareReadOnly ? '查看昵称' : '修改昵称'}}"><text>{{pet.name || '你的宠物'}}</text><text>›</text></button>
+      <text class="account-hero-note">把它的每一面，好好珍藏</text>
     </view>
   </view>
 
-  <view class="care-compact-heading"><view>档案管理</view></view>
-  <view class="care-compact-list">
-    <view class="care-compact-row" bindtap="openGrowthAlbum"><view>成长相册</view><text>{{growthPhotos.length}} 张照片</text><text>›</text></view>
-    <view class="care-compact-row" bindtap="openFamilyManager"><view>家庭共享</view><text>{{familyMembers.length}} 位成员</text><text>›</text></view>
+  <view class="account-basics">
+    <view class="account-block-heading"><text>基本资料</text><text>{{shareReadOnly ? '点击查看' : '点击编辑'}}</text></view>
+    <view class="account-basics-grid">
+      <button class="account-button account-fact" hover-class="account-pressed" data-field="breed" bindtap="openProfileFieldEdit"><view><text>品种</text><text>›</text></view><text class="{{pet.breed ? '' : 'account-empty'}}">{{pet.breed || '待填写'}}</text></button>
+      <button class="account-button account-fact" hover-class="account-pressed" data-field="sex" bindtap="openProfileFieldEdit"><view><text>性别</text><text>›</text></view><text class="{{pet.sex ? '' : 'account-empty'}}">{{pet.sex || '待填写'}}</text></button>
+      <button class="account-button account-fact" hover-class="account-pressed" data-field="birthday" bindtap="openProfileFieldEdit"><view><text>生日</text><text>›</text></view><text class="{{pet.birthday ? '' : 'account-empty'}}">{{pet.birthday || '待填写'}}</text></button>
+      <button class="account-button account-fact" hover-class="account-pressed" data-field="togetherSince" bindtap="openProfileFieldEdit"><view><text>相遇日期</text><text>›</text></view><text class="{{pet.togetherSince ? '' : 'account-empty'}}">{{pet.togetherSince || '记下相遇的那天'}}</text></button>
+    </view>
   </view>
-  <view class="care-compact-heading"><view>宠物档案</view><text>点击项目补充资料</text></view>
-  <view class="pet-record-list">
-    <view class="pet-record-row" data-field="chipId" bindtap="openProfileFieldEdit"><view>芯片号</view><text>{{pet.chipId || '未填写'}}</text><text>›</text></view>
-    <view class="pet-record-row" data-field="neutered" bindtap="openProfileFieldEdit"><view>绝育状态</view><text>{{pet.neutered || '未设置'}}</text><text>›</text></view>
-    <view class="pet-record-row" data-field="allergies" bindtap="openProfileFieldEdit"><view>过敏史</view><text>{{pet.allergies || '未填写'}}</text><text>›</text></view>
-    <view class="pet-record-row" data-field="clinic" bindtap="openProfileFieldEdit"><view>常用医院</view><text>{{pet.clinic || '未填写'}}</text><text>›</text></view>
+  <view class="account-basics account-health">
+    <view class="account-block-heading"><text>健康资料</text><text>{{shareReadOnly ? '点击查看' : '点击编辑'}}</text></view>
+    <view class="account-basics-grid">
+      <button class="account-button account-fact" hover-class="account-pressed" data-field="neutered" bindtap="openProfileFieldEdit"><view><text>绝育状态</text><text>›</text></view><text class="{{pet.neutered ? '' : 'account-empty'}}">{{pet.neutered || '待填写'}}{{pet.neutered === '已绝育' && pet.neuteredDate ? ' · ' + pet.neuteredDate : ''}}</text></button>
+      <button class="account-button account-fact" hover-class="account-pressed" data-field="allergies" bindtap="openProfileFieldEdit"><view><text>过敏史</text><text>›</text></view><text class="{{pet.allergies && pet.allergies !== '未填写' ? '' : 'account-empty'}}">{{pet.allergies || '待填写'}}</text></button>
+      <button class="account-button account-fact" hover-class="account-pressed" data-field="chipId" bindtap="openProfileFieldEdit"><view><text>芯片号</text><text>›</text></view><text class="{{pet.chipId && pet.chipId !== '未填写' ? '' : 'account-empty'}}">{{pet.chipId || '待填写'}}</text></button>
+      <button class="account-button account-fact" hover-class="account-pressed" data-field="clinic" bindtap="openProfileFieldEdit"><view><text>常用医院</text><text>›</text></view><text class="{{pet.clinic && pet.clinic !== '未填写' ? '' : 'account-empty'}}">{{pet.clinic || '待填写'}}</text></button>
+    </view>
   </view>
-  <view class="privacy-note">资料在本机缓存，并支持云端同步与家庭共享；照片可上传云端。</view>
+  </view>
+
+  <view class="account-actions">
+    <button class="account-button account-action" data-entry="album" hover-class="account-pressed" bindtap="openGrowthAlbum">
+      <view class="account-entry-icon account-icon-peach"><view class="warm-icon warm-icon-album"></view></view>
+      <text class="account-action-title">成长相册</text>
+      <text class="account-action-meta">{{growthPhotos.length ? growthPhotos.length + ' 张照片' : '记录第一张'}}</text>
+      <text class="account-chevron">›</text>
+    </button>
+    <button class="account-button account-action" data-entry="family" hover-class="account-pressed" bindtap="openFamilyManager">
+      <view class="account-entry-icon account-icon-green"><view class="warm-icon warm-icon-family"></view></view>
+      <text class="account-action-title">家庭共享</text>
+      <text class="account-action-meta">{{familyMembers.length ? familyMembers.length + ' 位成员' : '邀请家人'}}</text>
+      <text class="account-chevron">›</text>
+    </button>
+    <button class="account-button account-action" hover-class="account-pressed" data-section="care" bindtap="openProfileSection">
+      <view class="account-entry-icon account-icon-peach"><view class="warm-icon warm-icon-paw"></view></view>
+      <text class="account-action-title">照护信息</text>
+      <text class="account-action-meta">习惯与备注</text>
+      <text class="account-chevron">›</text>
+    </button>
+  </view>
+</view>
+
+<view class="account-detail-overlay" wx:if="{{profileSection}}" catchtap="dismissProfileSection">
+  <view class="account-detail-sheet {{careProfileEditing ? 'account-detail-editing' : ''}}" catchtap="noop">
+    <view class="account-detail-heading">
+      <view><text>{{careProfileEditing ? '编辑照护信息' : '照护信息'}}</text><text>{{shareReadOnly ? '共享档案 · 只读查看' : careProfileEditing ? '均为选填，记下家人需要知道的习惯' : '记下它的需要，让家人更懂它'}}</text></view>
+      <button class="account-button account-detail-close" bindtap="closeProfileSection" disabled="{{careProfileSaving}}" aria-label="{{careProfileEditing ? '取消编辑' : '关闭'}}">×</button>
+    </view>
+    <scroll-view class="account-detail-content" scroll-y show-scrollbar="{{false}}">
+      <view class="account-care-groups">
+        <view class="account-care-group" wx:for="{{careProfileFields}}" wx:key="key">
+          <view class="account-care-heading"><text>{{item.title}}</text><text wx:if="{{careProfileEditing}}">选填</text></view>
+          <block wx:if="{{careProfileEditing}}">
+            <textarea class="account-care-input" value="{{careProfileDraft[item.key]}}" data-key="{{item.key}}" maxlength="{{item.maxLength}}" cursor-spacing="96" disabled="{{careProfileSaving}}" bindinput="onCareProfileInput" placeholder="{{item.placeholder}}" placeholder-class="account-care-placeholder" />
+            <text class="account-care-count">{{careProfileDraft[item.key].length}} / {{item.maxLength}}</text>
+          </block>
+          <text wx:else class="account-care-copy {{pet[item.key] ? '' : 'account-care-empty'}}" selectable>{{pet[item.key] || '暂未补充'}}</text>
+        </view>
+        <view class="account-care-group">
+          <view class="account-care-heading"><text>相处习惯</text><text wx:if="{{careProfileEditing}}">选填</text></view>
+          <block wx:if="{{careProfileEditing}}">
+            <view class="account-care-label"><text>性格与社交</text><text>已选 {{careProfileDraft.personalityTags.length}} / {{maxPersonalityTags}}</text></view>
+            <view class="account-care-tags">
+              <button class="account-button account-care-tag {{item.selected ? 'selected' : ''}}" wx:for="{{careProfileTagOptions}}" wx:key="label" data-label="{{item.label}}" bindtap="toggleCareProfileTag" disabled="{{careProfileSaving}}" aria-pressed="{{item.selected}}">{{item.label}}{{item.selected ? ' ✓' : ''}}</button>
+            </view>
+            <view class="account-care-label account-care-commands"><text>熟悉的口令</text></view>
+            <textarea class="account-care-input" value="{{careProfileDraft.familiarCommands}}" data-key="familiarCommands" maxlength="300" cursor-spacing="96" disabled="{{careProfileSaving}}" bindinput="onCareProfileInput" placeholder="平时的叫法、听得懂的口令和手势" placeholder-class="account-care-placeholder" />
+            <text class="account-care-count">{{careProfileDraft.familiarCommands.length}} / 300</text>
+          </block>
+          <block wx:else>
+            <view class="account-care-saved-tags" wx:if="{{pet.personalityTags.length}}"><text wx:for="{{pet.personalityTags}}" wx:key="*this">{{item}}</text></view>
+            <view wx:if="{{pet.familiarCommands}}" class="{{pet.personalityTags.length ? 'account-care-commands' : ''}}"><text class="account-care-sublabel">熟悉的口令</text><text class="account-care-copy" selectable>{{pet.familiarCommands}}</text></view>
+            <text wx:if="{{!pet.personalityTags.length && !pet.familiarCommands}}" class="account-care-copy account-care-empty">暂未补充</text>
+          </block>
+        </view>
+        <view class="account-care-group account-care-notes">
+          <view class="account-care-heading"><text>其他注意事项</text><text wx:if="{{careProfileEditing}}">选填</text></view>
+          <block wx:if="{{careProfileEditing}}">
+            <textarea class="account-care-input" value="{{careProfileDraft.careNotes}}" data-key="careNotes" maxlength="500" cursor-spacing="96" disabled="{{careProfileSaving}}" bindinput="onCareProfileInput" placeholder="例如：怕吹风机，不喜欢被抱" placeholder-class="account-care-placeholder" />
+            <text class="account-care-count">{{careProfileDraft.careNotes.length}} / 500</text>
+          </block>
+          <text wx:else class="account-care-copy {{pet.careNotes ? '' : 'account-care-empty'}}" selectable>{{pet.careNotes || '暂未补充'}}</text>
+        </view>
+      </view>
+    </scroll-view>
+    <view class="account-care-actions" wx:if="{{!shareReadOnly}}">
+      <block wx:if="{{careProfileEditing}}">
+        <button class="account-button account-care-cancel" bindtap="cancelCareProfileEdit" disabled="{{careProfileSaving}}">取消</button>
+        <button class="account-button account-care-save" bindtap="saveCareProfile" loading="{{careProfileSaving}}" disabled="{{careProfileSaving}}">{{careProfileSaving ? '保存中' : '保存全部'}}</button>
+      </block>
+      <button wx:else class="account-button account-care-save" bindtap="editCareProfile">{{careProfileHasContent ? '编辑照护信息' : '补充照护信息'}}</button>
+    </view>
+  </view>
 </view>
 
 <include src="../shared/care-panels.wxml" />
@@ -68,8 +150,8 @@
   <view class="family-member-card" wx:for="{{familyMembers}}" wx:key="id">
     <view class="family-member-avatar">{{item.initial}}</view>
     <view class="family-member-info">
-      <view><text>{{item.name}}</text><text>{{item.status}}</text></view>
-      <text>{{item.relation}} · {{item.roleLabel}}</text>
+      <view><text>{{item.displayName}}</text><text>{{item.status}}</text></view>
+      <text>{{item.detailText}}</text>
       <text wx:if="{{item.lastActive}}">最近活跃 {{item.lastActive}}</text>
     </view>
     <view class="family-member-actions">
@@ -109,10 +191,40 @@
 <view class="profile-field-overlay" wx:if="{{profileFieldEditOpen}}" catchtap="closeProfileFieldEdit">
   <view class="profile-field-sheet" catchtap="noop">
     <view class="profile-field-head">
-      <view>修改{{profileFieldTitle}}</view>
+      <view>{{shareReadOnly ? '查看' : '修改'}}{{profileFieldTitle}}</view>
       <text bindtap="closeProfileFieldEdit">×</text>
     </view>
-    <input cursor-spacing="24" wx:if="{{profileField === 'name' || profileField === 'chipId' || profileField === 'neutered' || profileField === 'allergies' || profileField === 'clinic'}}" class="profile-field-input" value="{{profileFieldValue}}" focus="{{true}}" bindinput="onProfileFieldInput" placeholder="请输入{{profileFieldTitle}}" />
+    <text class="profile-field-readonly" selectable wx:if="{{shareReadOnly && profileField !== 'personalityTags'}}">{{profileFieldValue || '未填写'}}{{profileField === 'neutered' && profileFieldValue === '已绝育' && profileNeuteredDate ? ' · ' + profileNeuteredDate : ''}}</text>
+    <input cursor-spacing="24" wx:elif="{{profileField === 'name' || profileField === 'chipId' || profileField === 'allergies' || profileField === 'clinic'}}" class="profile-field-input" value="{{profileFieldValue}}" focus="{{true}}" disabled="{{profileFieldSaving}}" bindinput="onProfileFieldInput" placeholder="请输入{{profileFieldTitle}}" />
+    <block wx:elif="{{profileField === 'coatColor'}}">
+      <text class="profile-field-readonly" selectable wx:if="{{shareReadOnly}}">{{profileFieldValue || '还没有填写毛色'}}</text>
+      <block wx:else>
+        <input class="profile-field-input" value="{{profileFieldValue}}" maxlength="32" cursor-spacing="24" focus="{{true}}" disabled="{{profileFieldSaving}}" bindinput="onProfileFieldInput" placeholder="例如：黄白双色、黑色、奶油色" />
+        <view class="profile-field-caption"><text>选填，可描述主要毛色和配色</text><text>{{profileFieldValue.length}} / 32</text></view>
+      </block>
+    </block>
+    <block wx:elif="{{profileFieldOptions.multiline}}">
+      <textarea class="profile-field-textarea" value="{{profileFieldValue}}" maxlength="{{profileFieldOptions.maxLength}}" cursor-spacing="32" disabled="{{profileFieldSaving}}" bindinput="onProfileFieldInput" placeholder="{{profileFieldOptions.placeholder}}" />
+      <view class="profile-field-caption"><text>{{profileFieldOptions.hint}}</text><text>{{profileFieldValue.length}} / {{profileFieldOptions.maxLength}}</text></view>
+    </block>
+    <block wx:elif="{{profileField === 'personalityTags'}}">
+      <block wx:if="{{shareReadOnly}}">
+        <view class="profile-personality-preview" wx:if="{{profilePersonalityTags.length}}"><text class="profile-personality-chip" wx:for="{{profilePersonalityTags}}" wx:key="*this">{{item}}</text></view>
+        <text class="profile-field-readonly" wx:else>还没有填写性格标签</text>
+      </block>
+      <block wx:else>
+        <view class="profile-field-help">按日常相处的观察选择，可多选。</view>
+        <view class="profile-personality-options"><button class="profile-personality-option {{item.selected ? 'selected' : ''}}" wx:for="{{profilePersonalityOptions}}" wx:key="label" data-label="{{item.label}}" bindtap="toggleProfilePersonality" disabled="{{profileFieldSaving}}" aria-pressed="{{item.selected}}">{{item.label}}<text wx:if="{{item.selected}}"> ✓</text></button></view>
+        <view class="profile-field-caption"><text>已选 {{profilePersonalityTags.length}} / {{maxPersonalityTags}}，可留空</text><button class="profile-field-clear" wx:if="{{profilePersonalityTags.length}}" disabled="{{profileFieldSaving}}" bindtap="clearProfilePersonality">清空</button></view>
+      </block>
+    </block>
+    <block wx:elif="{{profileField === 'neutered'}}">
+      <picker mode="selector" range="{{neuteredOptions}}" value="{{profileFieldNeuteredIndex}}" disabled="{{profileFieldSaving}}" bindchange="onProfileFieldNeutered"><view class="profile-field-picker">{{profileFieldValue && profileFieldValue !== '未设置' && profileFieldValue !== '未填写' ? profileFieldValue : '请选择绝育状态'}}<text>›</text></view></picker>
+      <block wx:if="{{profileFieldValue === '已绝育'}}">
+        <view class="profile-field-caption"><text>绝育日期（选填）</text><button class="profile-field-clear" wx:if="{{profileNeuteredDate}}" disabled="{{profileFieldSaving}}" bindtap="clearNeuteredDate">清除</button></view>
+        <picker mode="date" value="{{profileNeuteredDate || today}}" start="{{pet.birthday}}" end="{{today}}" disabled="{{profileFieldSaving}}" bindchange="onNeuteredDate"><view class="profile-field-picker">{{profileNeuteredDate || '不记得日期可以留空'}}<text>›</text></view></picker>
+      </block>
+    </block>
     <picker wx:elif="{{profileField === 'breed'}}" mode="selector" range="{{breedOptions}}" value="{{profileFieldBreedIndex}}" bindchange="onProfileFieldBreed">
       <view class="profile-field-picker">{{profileFieldValue}}<text>›</text></view>
     </picker>
@@ -125,7 +237,12 @@
     <picker wx:elif="{{profileField === 'birthday'}}" mode="date" value="{{profileFieldValue}}" end="{{today}}" bindchange="onProfileFieldDate">
       <view class="profile-field-picker">{{profileFieldValue}}<text>›</text></view>
     </picker>
-    <view class="profile-field-actions">
+    <block wx:elif="{{profileField === 'togetherSince'}}">
+      <picker mode="date" value="{{profileFieldValue || today}}" start="{{pet.birthday}}" end="{{today}}" disabled="{{profileFieldSaving}}" bindchange="onProfileFieldDate"><view class="profile-field-picker">{{profileFieldValue || '选择相遇日期'}}<text>›</text></view></picker>
+      <view class="profile-field-caption"><text>首页从这一天计算相伴天数，可留空</text><button class="profile-field-clear" wx:if="{{profileFieldValue}}" disabled="{{profileFieldSaving}}" bindtap="clearTogetherDate">清除</button></view>
+    </block>
+    <view class="profile-field-actions profile-field-actions-single" wx:if="{{shareReadOnly}}"><button bindtap="closeProfileFieldEdit">关闭</button></view>
+    <view class="profile-field-actions" wx:else>
       <button bindtap="closeProfileFieldEdit">取消</button>
       <button loading="{{profileFieldSaving}}" disabled="{{profileFieldSaving}}" bindtap="saveProfileFieldEdit">{{profileFieldSaving ? '保存中…' : '保存'}}</button>
     </view>
@@ -149,6 +266,7 @@
     <view class="edit-form-row"><text>性别</text><picker mode="selector" range="{{sexOptions}}" value="{{sexIndex}}" bindchange="onSex"><view>{{draft.sex}} ›</view></picker></view>
     <view class="edit-form-row"><text>当前体重</text><view class="edit-weight"><input cursor-spacing="24" type="digit" value="{{draft.weight}}" data-key="weight" bindinput="onInput" placeholder="0.0" /><text>kg</text></view></view>
     <view class="edit-form-row"><text>宠物生日</text><picker mode="date" value="{{draft.birthday}}" end="{{today}}" bindchange="onDate"><view>{{draft.birthday}} ›</view></picker></view>
+    <view class="edit-form-row"><text>相遇日期（选填）</text><picker mode="date" value="{{draft.togetherSince || today}}" start="{{draft.birthday}}" end="{{today}}" bindchange="onTogetherDate"><view>{{draft.togetherSince || '选择日期'}} ›</view></picker></view>
   </view>
   <button class="profile-edit-save" loading="{{saving}}" disabled="{{saving}}" bindtap="savePet">{{saving ? '正在保存…' : '保存资料'}}</button>
   <view class="profile-edit-note">资料在本机缓存，并支持云端同步与家庭共享；照片可上传云端。</view>
@@ -163,15 +281,15 @@
   <view class="growth-album-summary">
     <view class="growth-album-summary-icon">📸</view>
     <view class="growth-album-summary-copy"><text>已收藏 {{growthPhotos.length}} 张</text></view>
-    <button loading="{{uploadingGrowthPhotos}}" disabled="{{uploadingGrowthPhotos}}" bindtap="chooseGrowthPhotos">{{uploadingGrowthPhotos ? '保存中…' : '上传照片'}}</button>
+    <button wx:if="{{!shareReadOnly}}" loading="{{uploadingGrowthPhotos}}" disabled="{{uploadingGrowthPhotos}}" bindtap="chooseGrowthPhotos">{{uploadingGrowthPhotos ? '保存中…' : '上传照片'}}</button>
   </view>
   <view class="growth-empty" wx:if="{{!growthPhotos.length}}"><view class="empty-companion"><view class="warm-icon warm-icon-album"></view></view>
-    <view>还没有成长照片</view><text>点击“上传照片”，从今天开始记录吧</text>
+    <view>还没有成长照片</view><text>{{shareReadOnly ? '家人上传后，照片会显示在这里' : '点击“上传照片”，从今天开始记录吧'}}</text>
   </view>
   <view class="growth-photo-grid" wx:else>
     <view class="growth-photo-item" wx:for="{{growthPhotos}}" wx:key="id" data-index="{{index}}" bindtap="previewGrowthPhoto">
       <image src="{{item.path}}" mode="aspectFill"></image>
-      <text class="growth-photo-delete" data-index="{{index}}" catchtap="deleteGrowthPhoto">×</text>
+      <text wx:if="{{!shareReadOnly}}" class="growth-photo-delete" data-index="{{index}}" catchtap="deleteGrowthPhoto">×</text>
       <view><text>{{item.dayKey}}</text><text wx:if="{{item.time}}">{{item.time}}</text></view>
     </view>
   </view>

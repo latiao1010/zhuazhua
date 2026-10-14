@@ -1,0 +1,37 @@
+<view class="feedback-page">
+  <view class="feedback-heading">让爪爪更好用</view>
+  <view class="muted">遇到问题，或有想要的功能，都可以告诉我们。</view>
+  <view class="debug-note" wx:if="{{debug}}">当前为调试模式，反馈仅保存在本机。</view>
+  <view class="feedback-card">
+    <view class="pickers">
+      <picker range="{{categories}}" range-key="label" value="{{categoryIndex}}" bindchange="chooseCategory" disabled="{{sending}}"><view><text>反馈类型</text><view>{{categories[categoryIndex].label}} <text>⌄</text></view></view></picker>
+      <picker range="{{modules}}" range-key="label" value="{{moduleIndex}}" bindchange="chooseModule" disabled="{{sending}}"><view><text>相关功能</text><view>{{modules[moduleIndex].label}} <text>⌄</text></view></view></picker>
+    </view>
+    <textarea value="{{message}}" bindinput="input" maxlength="1000" disabled="{{sending}}" placeholder="例如：生成年龄卡片时一直在加载。可以写下操作步骤，方便我们定位问题。" cursor-spacing="100" />
+    <view class="count">{{message.length}} / 1000</view>
+    <view class="muted">反馈仅你和管理员可查看；提交时会附带所选功能、版本及系统类型。请勿填写密码、联系方式或敏感资料。</view>
+    <view class="error" wx:if="{{error}}">{{error}}</view>
+    <button class="primary" bindtap="submit" loading="{{sending}}" disabled="{{sending}}">{{sending ? '正在提交' : debug ? '保存调试反馈' : '提交反馈'}}</button>
+  </view>
+  <view class="feedback-card">
+    <view class="section-heading">我的反馈<button class="text-button" bindtap="refreshRows" loading="{{loading}}">刷新</button></view>
+    <button class="text-button error" wx:if="{{listError}}" bindtap="refreshRows">{{listError}}</button>
+    <view class="feedback-row" wx:for="{{rows}}" wx:key="id">
+      <view class="row-heading"><text>{{item.typeLabel}} · {{item.moduleLabel}}</text><text class="status">{{item.statusLabel}}</text></view>
+      <text class="message" selectable>{{item.message}}</text><view class="muted">{{item.dateLabel}}</view>
+      <view class="reply-card" wx:if="{{item.reply}}"><view class="reply-heading">处理回复</view><text class="message" selectable>{{item.reply}}</text><view class="muted" wx:if="{{item.fixVersion}}">对应修复版本：{{item.fixVersion}}</view><view class="muted">{{item.replyDateLabel}}</view></view>
+      <view class="muted reply-pending" wx:elif="{{item.status === 'resolved'}}">已处理，暂无文字回复。</view>
+    </view>
+    <view class="muted empty" wx:if="{{!rows.length && !loading && !listError}}">你还没有提交反馈</view>
+    <button wx:if="{{cursor}}" class="text-button" bindtap="moreRows" loading="{{loading}}">查看更多</button>
+  </view>
+  <view class="feedback-card privacy">
+    <button class="section-heading text-button" bindtap="togglePrivacy">使用数据说明 <text>{{privacyOpen ? '收起' : '展开'}}</text></button>
+    <block wx:if="{{privacyOpen}}">
+      <view class="muted">为改进功能，记录模块操作、首页入口曝光、操作耗时与结果、活跃日期、来源标记、版本和系统类型，并使用经转换的微信账号标识去重。还记录统计发送失败、丢弃数量和接收延迟，使用随机标识合并设备发送诊断。不会自动上传聊天正文、照片、宠物健康资料或精确位置。反馈内容仅在你主动提交时上传。</view>
+      <view class="setting"><text>参与使用统计</text><switch color="#52785e" checked="{{enabled}}" bindchange="toggleAnalytics" /></view>
+      <view class="muted">关闭后停止后续使用统计，并清除待上传事件；已上传的数据不会由此删除。反馈功能仍可使用。</view>
+    </block>
+  </view>
+  <button wx:if="{{admin}}" class="text-button admin-entry" bindtap="openAnalytics">{{debug ? '使用统计与调试反馈' : '管理员运营看板'}} ›</button>
+</view>

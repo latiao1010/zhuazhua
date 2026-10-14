@@ -2,11 +2,13 @@ const assert = require('assert')
 const fs = require('fs')
 const vm = require('vm')
 const path = require('path')
+const { createRequire } = require('module')
 const root = path.resolve(__dirname, '..')
 const copy = value => value == null ? value : JSON.parse(JSON.stringify(value))
 function load(file, deps = {}, extra = {}) {
   const module = { exports:{} }
-  vm.runInNewContext(fs.readFileSync(path.join(root,file),'utf8'), { module, exports:module.exports, require: name => deps[name] || require(name), console, Date, Math, Set, Map, Promise, ...extra }, { filename:file })
+  const localRequire = createRequire(path.join(root, file))
+  vm.runInNewContext(fs.readFileSync(path.join(root,file),'utf8'), { module, exports:module.exports, require: name => Object.prototype.hasOwnProperty.call(deps, name) ? deps[name] : localRequire(name), console, Date, Math, Set, Map, Promise, ...extra }, { filename:file })
   return module.exports
 }
 async function main() {

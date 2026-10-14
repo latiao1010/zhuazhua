@@ -1,0 +1,20 @@
+{
+  "envId": "cloudbase-d3glshm6n124d98a4",
+  "functionRoot": "../cloudfunctions",
+  "functions": [
+    {
+      "name": "pet-analytics",
+      "timeout": 20,
+      "runtime": "Nodejs16.13",
+      "installDependency": true,
+      "handler": "index.main",
+      "triggers": [
+        {
+          "name": "analytics_hourly",
+          "type": "timer",
+          "config": "0 10 * * * * *"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+/* Keep the original form layout; only compact the nine behavior tiles. */
+.bingo-entry .bingo-grid {
+  gap: 8rpx;
+  margin: 12rpx 0;
+}
+
+.bingo-entry .bingo-cell {
+  min-height: 44px;
+  height: 100rpx;
+  gap: 6rpx;
+  padding: 8rpx 4rpx !important;
+  border-radius: 16rpx;
+}
+
+.bingo-entry .bingo-check {
+  flex: none;
+  width: 28rpx;
+  height: 28rpx;
+  font-size: 21rpx;
+}
+
+@media (max-height: 680px) {
+  .bingo-entry .bingo-cell {
+    height: 88rpx;
+    gap: 4rpx;
+    padding: 6rpx 4rpx !important;
+  }
+}

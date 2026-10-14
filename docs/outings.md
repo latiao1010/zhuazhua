@@ -13,7 +13,7 @@
 
 ## 数据更新
 
-资料输入为 `server/place-research/city-content.json`，城市目录为同目录 `city-targets.json`。本版 323 篇来源整理为 37 个城市、591 处地点线索，5 个无法确定具体名称的条目未纳入。
+资料输入为 `server/place-research/city-content.json`，城市目录为同目录 `city-targets.json`。本版 561 篇来源整理为 117 个城市、1062 处地点线索，5 个无法确定具体名称的条目未纳入。
 
 ```sh
 python3 server/build-outings.py

@@ -1,0 +1,179 @@
+/* Keep the on-screen bingo result compact; exported posters retain their layout. */
+.result-page.bingo-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 0;
+  padding: 12rpx 28rpx calc(16rpx + env(safe-area-inset-bottom));
+}
+
+.bingo-page .result-caption {
+  flex: none;
+  margin: 0 0 12rpx;
+  font-size: 22rpx;
+  line-height: 1.4;
+}
+
+.bingo-page .result-card {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 112rpx minmax(0, 1fr) auto;
+  grid-template-rows: auto 50rpx 44rpx auto minmax(0, 1fr) auto auto auto;
+  padding: 20rpx 24rpx;
+  border-radius: 28rpx;
+}
+
+.bingo-page .result-brand {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  padding-bottom: 16rpx;
+  font-size: 20rpx;
+}
+
+.bingo-page .pet-portrait {
+  grid-column: 1;
+  grid-row: 2 / 4;
+  align-self: center;
+  justify-self: start;
+  margin: -32rpx;
+  transform: scale(.6);
+}
+
+.bingo-page .result-name {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: end;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  font-size: 32rpx;
+  line-height: 1.4;
+}
+
+.bingo-page .bingo-result-title {
+  grid-column: 2;
+  grid-row: 3;
+  align-self: center;
+  margin: 0;
+  text-align: left;
+  font-size: 23rpx;
+  line-height: 1.4;
+}
+
+.bingo-page .bingo-result-count {
+  grid-column: 3;
+  grid-row: 2 / 4;
+  align-self: center;
+  margin: 0 0 0 12rpx;
+  font-size: 23rpx;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.bingo-page .bingo-result-count > text {
+  font-size: 44rpx;
+}
+
+.bingo-page .bingo-peer {
+  grid-column: 1 / -1;
+  grid-row: 4;
+  margin: 8rpx 0 0;
+  font-size: 22rpx;
+  line-height: 1.4;
+}
+
+.bingo-page .bingo-peer > text {
+  font-size: 21rpx;
+}
+
+.bingo-page .bingo-grid {
+  grid-column: 1 / -1;
+  grid-row: 5;
+  min-height: 0;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 10rpx;
+  margin: 16rpx 0 10rpx;
+}
+
+.bingo-page .bingo-cell {
+  min-height: 0;
+  height: 100%;
+  gap: 8rpx;
+  padding: 8rpx 4rpx !important;
+  border-radius: 18rpx;
+  font-size: 24rpx !important;
+}
+
+.bingo-page .bingo-check {
+  flex: none;
+}
+
+.bingo-page .bingo-summary {
+  grid-column: 1 / -1;
+  grid-row: 6;
+  margin: 0;
+  font-size: 23rpx;
+  line-height: 1.5;
+}
+
+.bingo-page .result-quote {
+  grid-column: 1 / -1;
+  grid-row: 7;
+  margin: 6rpx 0;
+  font-size: 22rpx;
+  line-height: 1.4;
+}
+
+.bingo-page .result-date {
+  grid-column: 1 / -1;
+  grid-row: 8;
+  font-size: 19rpx;
+  line-height: 1.4;
+}
+
+.bingo-page .result-note {
+  flex: none;
+  margin: 12rpx 4rpx;
+  font-size: 22rpx;
+  line-height: 1.4;
+}
+
+.bingo-page .result-actions {
+  flex: none;
+  gap: 8px;
+}
+
+.bingo-page .result-actions button {
+  height: 44px;
+  border-radius: 22rpx;
+}
+
+@media (max-height: 560px) {
+  .bingo-page .result-actions {
+    flex-direction: row;
+  }
+
+  .bingo-page .result-actions button {
+    flex: 1;
+    min-width: 0;
+    width: 0 !important;
+    font-size: 26rpx;
+  }
+}
+
+@media (max-height: 520px) {
+  .bingo-page .result-caption {
+    display: none;
+  }
+
+  .bingo-page .result-card {
+    padding: 16rpx 20rpx;
+  }
+
+  .bingo-page .result-brand {
+    padding-bottom: 10rpx;
+  }
+}

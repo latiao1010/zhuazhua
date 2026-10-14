@@ -1,3 +1,4 @@
+const { instrument } = require('../../utils/analytics-page')
 const store = require('../../utils/store')
 const cloudData = require('../../utils/cloud-data')
 const { buildWeightTrend } = require('../../utils/weight-trend')
@@ -11,17 +12,30 @@ const TYPES = [
   { key: 'walk', storeKey: 'walks', label: '散步', field: 'duration', unit: '分钟', tone: 'blue' }
 ]
 const number = value => Number((String(value == null ? '' : value).match(/[\d.]+/) || [0])[0]) || 0
-Page({
+// Keep these dimensions aligned with .records-advisor-float.
+const ADVISOR_WIDTH = 144
+const ADVISOR_HEIGHT = 44
+const advisorBounds = () => {
+  const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
+  return { right: Math.max(8, info.windowWidth - ADVISOR_WIDTH - 8), bottom: Math.max(8, info.windowHeight - ADVISOR_HEIGHT - 8) }
+}
+const clampAdvisor = (position, bounds) => ({
+  left: Math.max(8, Math.min(bounds.right, position.left)),
+  top: Math.max(8, Math.min(bounds.bottom, position.top))
+})
+Page(instrument('records', {
   ...carePage,
-  data: { ...carePage.data, pet: {}, records: [], today: '', readOnly: false, weightTrendOpen: false, weightTrend: {}, weightCount: 0, advisorStyle: '' },
+  data: { ...carePage.data, advisorFloating: true, advisorStyle: '', pet: {}, records: [], today: '', readOnly: false, weightTrendOpen: false, weightTrend: {}, weightCount: 0 },
   onShow() {
     carePage.onShow.call(this)
     this.visible = true
     this.refresh()
+    this.clampAdvisorPosition()
     cloudData.syncOnResume().then(() => { if (this.visible) this.refresh() }).catch(() => {})
   },
-  onHide() { this.visible = false; carePage.onHide.call(this); this.setData({ weightTrendOpen: false, careDetailOpen: false, supplyOpen: false }) },
+  onHide() { this.visible = false; this._advisorDrag = null; carePage.onHide.call(this); this.setData({ weightTrendOpen: false, careDetailOpen: false, supplyOpen: false }) },
   onUnload() { this.visible = false },
+  onResize() { this._advisorDrag = null; this.clampAdvisorPosition() },
   refresh() {
     this.refreshCareOverview()
     const today = store.todayKey()
@@ -54,10 +68,23 @@ Page({
   closeWeightTrend() { this.setData({ weightTrendOpen: false }) },
   editWeight() { if (!this.data.readOnly) openTab('account', 'weight') },
   openVisitData() { wx.navigateTo({ url: '/pages/manage/manage' }) },
+  openFloatingAdvisor() {
+    if (Date.now() < (this._advisorTapBlockedUntil || 0)) return
+    carePage.openAdvisor.call(this)
+  },
+  setAdvisorPosition(position) {
+    this._advisorPosition = position
+    this.setData({ advisorStyle: `left:${position.left}px;top:${position.top}px;right:auto;bottom:auto;` })
+  },
+  clampAdvisorPosition() {
+    if (this._advisorPosition) this.setAdvisorPosition(clampAdvisor(this._advisorPosition, advisorBounds()))
+  },
   startAdvisorDrag(e) {
     const touch = e.touches && e.touches[0]
     if (!touch) return
-    this._advisorDrag = { ...this._advisorPosition, x: touch.clientX, y: touch.clientY, moved: false }
+    const bounds = advisorBounds()
+    const position = this._advisorPosition || { left: bounds.right - 8, top: bounds.bottom - 4 }
+    this._advisorDrag = { ...clampAdvisor(position, bounds), x: touch.clientX, y: touch.clientY, bounds, moved: false }
   },
   moveAdvisorDrag(e) {
     const drag = this._advisorDrag
@@ -65,21 +92,14 @@ Page({
     if (!drag || !touch) return
     const dx = touch.clientX - drag.x
     const dy = touch.clientY - drag.y
-    if (Math.abs(dx) + Math.abs(dy) < 4) return
+    if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 6) return
     drag.moved = true
-    const info = wx.getWindowInfo ? wx.getWindowInfo() : { windowWidth: 375, windowHeight: 667 }
-    const scale = info.windowWidth / 750
-    const cardWidth = 212 * scale
-    const cardHeight = 70 * scale
-    const left = Math.max(8, Math.min(info.windowWidth - cardWidth - 8, (drag.left == null ? info.windowWidth - cardWidth - 28 * scale : drag.left) + dx))
-    const top = Math.max(8, Math.min(info.windowHeight - cardHeight - 8, (drag.top == null ? info.windowHeight - cardHeight - 112 * scale : drag.top) + dy))
-    drag.left = left
-    drag.top = top
-    drag.x = touch.clientX
-    drag.y = touch.clientY
-    this._advisorPosition = { left, top }
-    this.setData({ advisorStyle: `left:${left}px;top:${top}px;right:auto;bottom:auto;` })
+    this._advisorTapBlockedUntil = Date.now() + 400
+    this.setAdvisorPosition(clampAdvisor({ left: drag.left + dx, top: drag.top + dy }, drag.bounds))
   },
-  endAdvisorDrag() { this._advisorDrag = null },
+  endAdvisorDrag() {
+    if (this._advisorDrag && this._advisorDrag.moved) this._advisorTapBlockedUntil = Date.now() + 400
+    this._advisorDrag = null
+  },
   noop() {}
-})
+}))

@@ -42,15 +42,13 @@
       <view id="reply-error" class="reply-error" wx:if="{{replyError}}"><text>{{replyError}}</text><button bindtap="retryReply">重新回答</button></view>
       <view id="followups-start" class="followup-thread" wx:if="{{messages.length && !thinking && !replyError}}">
         <view class="message-row ai followup-row">
-          <view class="bubble-avatar"><view class="warm-icon warm-icon-companion"></view></view>
           <view class="bubble ai-bubble followup-panel">
             <view class="followup-heading">{{followUpHeading}}</view>
-            <view class="followup-subtitle">围绕当前回答继续了解</view>
-            <block>
+            <view class="followup-options">
               <view class="followup-option {{item.action === 'back' ? 'back' : ''}} {{item.visited ? 'visited' : ''}}" hover-class="prompt-pressed" wx:for="{{followUps}}" wx:key="label" data-text="{{item.text}}" data-label="{{item.label}}" data-category="{{followUpCategory}}" data-action="{{item.action}}" bindtap="onFollowUpTap">
                 <text class="followup-label">{{item.label}}</text><text class="visited-note" wx:if="{{item.visited}}">✓ 今日已问</text><text class="followup-arrow">{{item.action === 'back' ? '‹' : '›'}}</text>
               </view>
-            </block>
+            </view>
           </view>
         </view>
         <view id="followups-end"></view>

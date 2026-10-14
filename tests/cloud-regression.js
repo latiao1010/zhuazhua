@@ -63,6 +63,9 @@ async function run() {
             { id: 'owner', name: '我', relation: '主人', role: 'owner', roleLabel: '主人', status: '已加入', joinedAt: '2026-08-05' }
           ] } })
         }
+        if (options.name === 'pet-data' && options.data.action === 'previewShareInvitation') {
+          return Promise.resolve({ result: { ok: true, groupId: 'group-1', alreadyJoined: false, share: storage.paw_share_status || { shared: false } } })
+        }
         if (options.name === 'pet-data' && options.data.action === 'acceptShareInvitation') {
           return Promise.resolve({ result: { ok: true, data: {
             pet: { name: '共享糯米', breed: '柯基', sex: '男孩', birthday: '2023-03-16', weight: 11.2, avatar: '/assets/momo-chibi.jpg' },
@@ -84,6 +87,7 @@ async function run() {
       }
     },
     getLocation(options) { options.success({ latitude: 31.2, longitude: 121.4 }) },
+    getSetting(options) { options.success({ authSetting: {} }) },
     getStorageSync(key) { return storage[key] === undefined ? '' : storage[key] },
     setStorageSync(key, value) { storage[key] = value },
     request() { throw new Error('cloud mode should not call wx.request') },
@@ -102,7 +106,9 @@ async function run() {
 
   const weather = fresh('utils/weather.js')
   const forecast = await weather.getWeather()
-  assert.strictEqual(forecast.location, '本地提示')
+  assert.strictEqual(forecast.location, '')
+  assert.strictEqual(forecast.status, 'unsupported')
+  assert.strictEqual(forecast.temperature, '--')
   assert.strictEqual(forecast.live, false)
 
   const album = fresh('utils/cloud-album.js')

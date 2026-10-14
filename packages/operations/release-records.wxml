@@ -1,0 +1,32 @@
+<view class="stats-card release-card">
+ <view class="section-heading">版本上线记录<button wx:if="{{source === 'cloud'}}" bindtap="refreshReleases" loading="{{releaseLoading}}">刷新</button></view>
+ <view class="stats-note">记录小程序实际发布的版本、改动和目标；登记不会执行发布。时间按北京时间填写，列表按登记时间排列。</view>
+ <view class="stats-note" wx:if="{{source === 'local'}}">切换“正式用户”登记和查看上线记录。</view>
+ <block wx:else>
+  <view class="error-card" wx:if="{{releaseError}}">{{releaseError}}</view>
+  <view class="empty" wx:if="{{!releaseRows.length && !releaseError}}">{{releaseLoading ? '正在加载…' : '尚未登记上线记录'}}</view>
+  <view class="release-row" wx:for="{{releaseRows}}" wx:key="id">
+   <view class="section-heading"><text>{{item.version}}</text><button data-id="{{item.id}}" bindtap="editRelease" disabled="{{releaseSaving || releaseEdit}}">编辑</button></view>
+   <view class="stats-note">上线：{{item.dateLabel}}</view>
+   <text class="release-copy" selectable>{{item.notes}}</text>
+   <view class="release-goal"><text>观察目标</text>{{item.goal}}</view>
+   <view class="stats-note" wx:if="{{versionOptions[versionA] === item.version || versionOptions[versionB] === item.version}}">此版本正在上方对比中</view>
+  </view>
+  <button class="feedback-more" wx:if="{{releaseCursor}}" bindtap="moreReleases" loading="{{releaseLoading}}">更早记录</button>
+  <button class="feedback-more" wx:if="{{!releaseEdit}}" bindtap="editRelease">＋ 登记已上线版本</button>
+  <view class="reply-editor release-editor" wx:if="{{releaseEdit}}">
+   <view class="release-label">小程序版本号</view>
+   <input value="{{releaseEdit.version}}" data-field="version" bindinput="inputRelease" maxlength="32" disabled="{{releaseSaving || releaseEdit.id}}" placeholder="与微信后台发布版本号一致" />
+   <view class="release-label">实际上线时间 · 北京时间</view>
+   <view class="release-time"><picker mode="date" value="{{releaseEdit.date}}" start="2020-01-01" data-field="date" bindchange="inputRelease" disabled="{{releaseSaving}}"><view>{{releaseEdit.date}} ⌄</view></picker><picker mode="time" value="{{releaseEdit.time}}" data-field="time" bindchange="inputRelease" disabled="{{releaseSaving}}"><view>{{releaseEdit.time}} ⌄</view></picker></view>
+   <view class="release-label">这次改了什么</view>
+   <textarea value="{{releaseEdit.notes}}" data-field="notes" bindinput="inputRelease" maxlength="1000" disabled="{{releaseSaving}}" placeholder="例如：缩短年龄卡片生成等待时间" cursor-spacing="100" />
+   <view class="reply-count">{{releaseEdit.notes.length}} / 1000</view>
+   <view class="release-label">希望改善哪个指标</view>
+   <textarea class="release-target" value="{{releaseEdit.goal}}" data-field="goal" bindinput="inputRelease" maxlength="200" disabled="{{releaseSaving}}" placeholder="例如：发布后 7 天观察生成耗时和失败率" cursor-spacing="100" />
+   <view class="reply-count">{{releaseEdit.goal.length}} / 200</view>
+   <view class="error-card" wx:if="{{releaseFormError}}">{{releaseFormError}}</view>
+   <view class="reply-actions"><button bindtap="cancelRelease" disabled="{{releaseSaving}}">收起</button><button class="reply-save" bindtap="saveRelease" loading="{{releaseSaving}}" disabled="{{releaseSaving}}">保存上线记录</button></view>
+  </view>
+ </block>
+</view>

@@ -1,3 +1,5 @@
+const { normalizePersonalityTags } = require('./pet-profile')
+
 const KEYS = {
   pet: 'paw_pet',
   feeds: 'paw_feeds',
@@ -141,7 +143,16 @@ function normalizePet(value) {
     breed: typeof pet.breed === 'string' && pet.breed.trim() ? pet.breed.trim() : isDemoMode() ? seedPet.breed : '待完善',
     sex: typeof pet.sex === 'string' && pet.sex ? pet.sex : seedPet.sex,
     birthday,
-    togetherSince: isValidDateKey(pet.togetherSince) ? pet.togetherSince : birthday,
+    togetherSince: isValidDateKey(pet.togetherSince) ? pet.togetherSince : '',
+    neutered: typeof pet.neutered === 'string' ? pet.neutered.trim() : '',
+    neuteredDate: isValidDateKey(pet.neuteredDate) ? pet.neuteredDate : '',
+    careNotes: typeof pet.careNotes === 'string' ? pet.careNotes.trim() : '',
+    dietHabits: typeof pet.dietHabits === 'string' ? pet.dietHabits.trim() : '',
+    outingHabits: typeof pet.outingHabits === 'string' ? pet.outingHabits.trim() : '',
+    familiarCommands: typeof pet.familiarCommands === 'string' ? pet.familiarCommands.trim() : '',
+    coatColor: typeof pet.coatColor === 'string' ? pet.coatColor.trim() : '',
+    markings: typeof pet.markings === 'string' ? pet.markings.trim() : '',
+    personalityTags: normalizePersonalityTags(pet.personalityTags),
     weight: Number.isFinite(weight) && weight > 0 ? pet.weight : isDemoMode() ? seedPet.weight : 0,
     avatar: typeof pet.avatar === 'string' && pet.avatar ? pet.avatar : seedPet.avatar,
     tags: Array.isArray(pet.tags) ? pet.tags : seedPet.tags
@@ -167,9 +178,8 @@ function normalizeFamilyMembers(value) {
         lastActive: isValidDateKey(item.lastActive) ? item.lastActive : ''
       }
     })
-  const members = normalized.length ? normalized : seedFamilyMembers
-  if (!members.some(item => item.role === 'owner')) return [...seedFamilyMembers, ...members]
-  return members.map((item, index) => index === 0 && item.role !== 'owner' ? { ...item, role: 'owner', roleLabel: ROLE_LABELS.owner, relation: item.relation || '主人' } : item)
+  // Preserve the actual roles regardless of server ordering; never promote the first member.
+  return normalized.length ? normalized : seedFamilyMembers
 }
 
 function getDefaultCareSchedule() {

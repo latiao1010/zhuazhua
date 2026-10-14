@@ -4,13 +4,13 @@ const FAVORITES_KEY = 'paw_outing_favorites_v1'
 const CITY_KEY = 'paw_outing_city_v1'
 const MAX_SHARE = 12
 const CATEGORIES = [
-  { id: 'all', label: '全部', glyph: '去' },
-  { id: 'eat', label: '吃饭', glyph: '食' },
-  { id: 'coffee', label: '喝咖啡', glyph: '咖' },
-  { id: 'stay', label: '住一晚', glyph: '宿' },
-  { id: 'outdoor', label: '户外玩', glyph: '野' },
-  { id: 'shop', label: '逛一逛', glyph: '逛' },
-  { id: 'other', label: '其他', glyph: '游' }
+  { id: 'all', label: '全部' },
+  { id: 'eat', label: '吃饭' },
+  { id: 'coffee', label: '喝咖啡' },
+  { id: 'stay', label: '住一晚' },
+  { id: 'outdoor', label: '户外玩' },
+  { id: 'shop', label: '逛一逛' },
+  { id: 'other', label: '其他' }
 ]
 const FILTERS = [
   { id: 'indoor', label: '室内有携宠线索', short: '室内携宠', values: ['yes'] },
@@ -67,7 +67,7 @@ function card(place, savedIds = []) {
   const tags = place.status === 'pending' ? FILTERS.filter(f => f.values.includes(place.policy[f.id])).map(f => f.short) : []
   return {
     id: place.id, name: place.name, city: place.city, location: place.location,
-    category: primary.label, categoryId: primary.id, glyph: primary.glyph,
+    category: primary.label, categoryId: primary.id,
     tags: tags.slice(0, 3), status: place.status, statusLabel: STATUS[place.status],
     sourceCount: place.sources.length, saved: savedIds.includes(place.id)
   }

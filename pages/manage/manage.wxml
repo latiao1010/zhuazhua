@@ -15,7 +15,7 @@
       <picker mode="date" value="{{end}}" start="{{start}}" end="{{today}}" bindchange="onEnd"><view class="visit-date"><text class="date-caption">结束日期</text><view>{{end}}<text>⌄</text></view></view></picker>
     </view>
     <view class="visit-record-count {{recordCount ? '' : 'empty'}}">{{rangeError || (recordCount ? '已选时段共 ' + recordCount + ' 条记录' : '该时间段暂无记录，请选择其他日期')}}</view>
-    <view class="visit-privacy"><view><view>隐藏昵称与性别</view><text>生成的摘要仅保留就诊所需信息</text></view><switch checked="{{redact}}" bindchange="onRedact" color="#e67b5d" /></view>
+    <view class="visit-privacy"><view><view>隐藏昵称与性别</view><text>生成的摘要仅保留就诊所需信息</text></view><switch checked="{{redact}}" bindchange="onRedact" color="#52785e" /></view>
     <button class="visit-generate" hover-class="visit-pressed" bindtap="generateSummary">生成就诊摘要 <text>→</text></button>
     <block wx:if="{{summaryText}}">
       <view class="visit-preview-title">摘要预览<text>展开查看明细</text></view>
@@ -32,4 +32,5 @@
     </block>
     <button class="visit-export" hover-class="visit-pressed" loading="{{exporting}}" disabled="{{exporting}}" bindtap="exportVisitData">{{exporting ? '正在导出…' : '导出'}}</button>
   </view>
+  <view class="section" wx:if="{{analyticsVisible}}"><button class="visit-export" bindtap="openAnalytics">使用统计 ›</button></view>
 </view>

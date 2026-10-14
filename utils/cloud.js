@@ -19,13 +19,16 @@ function callFunction(name, data) {
   init()
   if (!isAvailable()) return Promise.reject(new Error('cloud_unavailable'))
   const mode = wx.getStorageSync && wx.getStorageSync('paw_data_mode')
-  return wx.cloud.callFunction({ name, data }).then(response => {
+  // 延迟引用避免 cloud 与 analytics 的初始化循环；只测实际云端读写请求。
+  const operation = name === 'pet-data' && data && (['setDataItem', 'mutateDataRecord'].includes(data.action) ? 'sync_write' : data.action === 'getAllData' ? 'sync_read' : '')
+  const finish = operation ? require('./analytics').startOperation('home', operation) : () => {}
+  return Promise.resolve().then(() => wx.cloud.callFunction({ name, data })).then(response => {
     if (wx.getStorageSync && mode !== wx.getStorageSync('paw_data_mode')) throw new Error('data_mode_changed')
     const result = response && response.result
-    if (result && result.ok !== false) return result || {}
+    if (result && result.ok !== false) { finish(); return result || {} }
     const error = result && result.error
     throw new Error(String(error || 'cloud_function_failed'))
-  })
+  }).catch(error => { finish(error, error.message === 'data_mode_changed'); throw error })
 }
 
 function uploadFile(cloudPath, filePath) {

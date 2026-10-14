@@ -1,0 +1,50 @@
+天气云端查询 · 2026-10-11
+
+原因与方案
+- 用户真机天气不可用；在开发者工具启用 setting.urlCheck 后，Open-Meteo 与 BigDataCloud 均返回 request:fail url not in domain list。用户提供的后台截图也显示尚未配置服务器域名。
+- 前端保留隐私检查与 wx.getFuzzyLocation 授权，把两位小数的大致坐标交给独立 pet-weather 云函数。天气不再从手机直接请求 Open-Meteo，不依赖该 request 域名配置。
+- 城市识别仍使用合法的 BigDataCloud 客户端接口；这个免费接口不迁到服务器。客户端未配置该域名或解析失败时显示“当前位置”，温度和降水查询不受影响。模拟器明确显示“模拟器位置”。
+
+实现
+- 新函数目录 cloudfunctions/pet-weather，使用现有相同版本 wx-server-sdk 4.0.2；无数据库写入、无 OpenAPI 权限、无定时任务。
+- 服务端从微信调用上下文取得 OPENID，不使用客户端提交的身份；校验坐标范围并保留两位小数。上游地址与参数固定，不支持客户端 URL。
+- 上游仅接受 HTTP 200 JSON，响应最多 128 KiB，总请求时限 8 秒；拒绝无效、明显过期和未来天气，仅返回页面所需字段。
+- 实例内天气缓存 10 分钟，最多 128 处位置、32 个并发位置；同一位置并发合并。缓存不写库，不将坐标、账号或上游密钥写入业务日志。
+- utils/weather.js 按既有云环境调用 pet-weather；缓存、授权撤回、定位失败和天气新鲜度规则继续保留。明确显示云服务未连接、查询超时、服务繁忙和数据更新中的状态，不用示例天气作为真实结果。
+- 初次完整部署前，需用户允许开发者工具部署 pet-weather。云端成功后，核对函数运行超时配置足以覆盖上游 8 秒限时，再验证调用与开域名校验后的页面。
+
+本地验证
+- tests/weather.js：15/15，包括城市域名被拦截后的天气成功、两位坐标、授权撤回、不支持定位、云函数未部署、网络失败及恢复。
+- tests/weather-cloud.js：10/10，包括身份校验、固定上游、坐标验证、并发与缓存限制、错误不泄露、HTTP/JSON/体积限制、连接总超时。
+- tests/cloud-regression.js：8/8；修改 JS 语法检查通过。以上均不替代部署后的云端和手机验收。
+
+运营时的服务配置
+- 当前沿用项目已有 Open-Meteo 免费接口供非商业测试。若投入商业使用，应取得相应服务许可；函数支持环境变量 OPEN_METEO_API_KEY，并自动改用 customer-api.open-meteo.com，密钥仅保留在云端。
+- 免费接口条款与商业端点：https://open-meteo.com/en/pricing ，https://open-meteo.com/en/docs 。
+- BigDataCloud 客户端使用范围：https://www.bigdatacloud.com/docs/support/account 。
+
+状态
+- 已发起完整部署 pet-weather 到已确认环境 cloudbase-d3glshm6n124d98a4，taskId=confirmation_cloud_fn_deploy_92aaba71-34db-4302-b744-e01e0ae585bb，返回 pending / Waiting for user confirmation。
+- 已发起独立的前端体验包上传 3.2.3-test.1011，taskId=confirmation_upload_9c0c3e7b-b74d-490e-978f-a7ed31eaf68f，同样 pending / Waiting for user confirmation；手机选版应等待云端实际核验完成。
+- 用户确认后：上传任务内外层均成功，3.2.3-test.1011 主包 1333599 字节，总包 2603784 字节；无需重传。
+- 第一项部署任务外层 success，但 pet-weather 内层错误 FailedOperation.UpdateFunctionCode，原因“当前函数处于Creating状态，无法进行此操作，请稍后重试”。不能按部署成功处理。
+- 后续 cloud_fn_info 确认函数已 Active，runtime=Nodejs16.13，timeout=3 秒。已在状态就绪后重新发起同一函数完整部署，taskId=confirmation_cloud_fn_deploy_22d001ff-bf65-4c08-ad46-eece16b053fa，返回 pending / Waiting for user confirmation；确认后只查该新任务。
+- 云函数执行超时 3 秒小于代码的上游 8 秒限时，需在云开发配置改为 20 秒。已检查可用 CLI 没有更新此设置的接口；电脑操作工具选择开发者工具应用返回 noWindowsAvailable，无法代改，已请用户手动设置。不要在这两个步骤完成前报告天气恢复。
+- 最新完整检查点在 .codex-temp/weather-fix-pending.json。
+- 域名校验已恢复此前的 false；部署后临时开启验证，再恢复原设置。真实云端返回、手机天气恢复、加入按钮真机复测均仍待确认。
+
+补部署与实际调用核验（2026-10-11 22:25）
+- 用户再次确认后，查询补部署任务 confirmation_cloud_fn_deploy_22d001ff-bf65-4c08-ad46-eece16b053fa：内外层均成功，pet-weather filesCount=4、packSize=2.9 KB；无需再次部署。
+- cloud_fn_info 仍返回 Active、Nodejs16.13、timeout=3。通过模拟器真实微信云调用、公开示例坐标 31.2,121.4 请求 pet-weather，4857 ms 后失败，errCode=-504003，明确错误 Invoking task timed out after 3 seconds。
+- 已请用户进入云开发 → 云函数 → pet-weather → 配置，将执行超时时间改为20秒并保存；现有工具没有此配置写入接口，电脑操作无可用开发者工具窗口。收到保存确认后再读取实际配置和请求天气。
+- 尚未执行部署后的开启域名校验页面验收，未让用户选择新版体验包或宣称手机恢复。project.private.config.json 仍为原值 urlCheck=false。
+
+20秒配置与页面验收（2026-10-11 22:30）
+- 用户保存后，cloud_fn_info 确认 Active、Nodejs16.13、timeout=20。
+- 同一公开示例坐标通过实际微信云调用返回 ok=true，温度19.2℃、观测距当前878秒、25项小时预测，耗时3765 ms。未模拟上游结果，未使用第二手机位置或身份。
+- 临时启用 project.private.config.json 的 setting.urlCheck=true，刷新并实际点击首页 .weather-refresh。页面 weather.live=true、status=ready、temperature=19、condition=晴、weatherLoading=false。
+- 同时用客户端对原 Open-Meteo 域名作只读探测，仍明确返回 request:fail url not in domain list，证明域名校验生效；页面天气成功来自新的云函数路径。
+- 截图 /tmp/weather-cloud-verified-1011.jpg 确认实际展示19℃、晴、未来24小时降水概率最高4%。模拟器位置与天气不能替代手机定位验收。
+- 核验后已恢复此前 urlCheck=false 并刷新。未修改业务代码、未再次上传、未再次部署。
+- 下一步由用户在微信公众平台将已上传的3.2.3-test.1011设为体验版，手机完全退出小程序后重新扫码，点击天气重试。公众平台受电脑操作工具限制，后台设版需用户手动；手机天气恢复仍待用户确认。
+- 用户按上述手机复测步骤回复“可以了”，天气真机恢复已由用户确认。此结论范围仅为天气；单击加入和双账号数据权限仍按原验收继续。

@@ -1,5 +1,7 @@
+const { instrument } = require('../../utils/analytics-page')
+const analytics = require('../../utils/analytics')
 const model = require('./model')
-Page({
+Page(instrument('saved', {
   data: { shared: false, rows: [], selected: [], selectedCount: 0, total: 0, missingCount: 0, maxShare: model.MAX_SHARE, shareTitle: '', hasSelection: false },
   onLoad(options = {}) {
     this.sharedIds = Object.prototype.hasOwnProperty.call(options, 'ids') ? model.sharedIds(options.ids) : null
@@ -18,6 +20,8 @@ Page({
   openPlace(e) { model.navigate('detail', 'id=' + e.currentTarget.dataset.id) },
   toggleSaved(e) {
     const result = model.toggleFavorite(e.currentTarget.dataset.id)
+    if (result.ok) analytics.track('saved', 'complete', 'favorite')
+    else analytics.failure('saved', 'favorite', 'unavailable')
     if (!result.ok) wx.showToast({ title: result.message, icon: 'none' })
     this.refresh()
   },
@@ -41,4 +45,4 @@ Page({
   browse() { model.navigate('index', '', true) },
   onShareAppMessage() { return model.listShare(this.data.selected) },
   onShareTimeline() { const s = model.listShare(this.data.selected); return { title: s.title, query: s.query || 'ids=' } }
-})
+}))

@@ -1,8 +1,10 @@
+const { instrument } = require('../../utils/analytics-page')
 const store = require('../../utils/store')
 const cloudData = require('../../utils/cloud-data')
 const cloud = require('../../utils/cloud')
 const summary = require('../../utils/visit-summary')
 const exportCache = require('../../utils/export-cache')
+const analytics = require('../../utils/analytics')
 const VISIT_RECORD_KEYS = ['feeds', 'waters', 'stools', 'walks', 'careRecords', 'weightRecords']
 function rangeStart(end, preset) {
   const date = new Date(`${end}T00:00:00`)
@@ -24,11 +26,12 @@ function changeSummary(value) {
   const text = fields.filter(key => value[key] !== undefined && value[key] !== '').map(key => value[key]).join(' · ')
   return text || (Array.isArray(value) ? `${value.length} 项` : '配置已更新')
 }
-Page({
+Page(instrument('export', {
   data: { pageVisible: true, demo: false, showDemoSwitch: false, syncing: false, previewLoading: false, remoteChanges: [], renderedRemoteChanges: [], remoteVisibleCount: 20, syncText: '', start: '', end: '', today: '', summaryText: '', summaryHeader: '', summarySections: [], recordCount: 0, activeRange: '7', rangePreset: '7', rangeError: '', exporting: false, redact: false, reminderTime: '09:00', reminderReady: false, reminderMessage: '正在检查提醒服务…', careItems: [], reminderBusy: false },
   onShow() {
     exportCache.cleanup()
     this.setData({ pageVisible:true })
+    analytics.access().then(access => { if (this.data.pageVisible) this.setData({ analyticsVisible: access.visible }) })
     const today = store.todayKey()
     const preset = this.data.rangePreset
     const start = preset ? rangeStart(today, preset) : this.data.start
@@ -48,6 +51,7 @@ Page({
     this.loadReminder()
   },
   onHide() { this.setData({ pageVisible:false }) },
+  openAnalytics() { wx.navigateTo({ url: '/packages/operations/analytics' }) },
   async loadRemoteChanges() {
     if (this.data.demo || this.data.previewLoading) return
     this.setData({ previewLoading:true })
@@ -164,8 +168,8 @@ Page({
   },
   generateSummary() {
     if (!this.refreshVisitCount()) return wx.showToast({ title:this.data.rangeError || '该时间段暂无记录，请调整日期', icon:'none' })
-    try { this.updateSummaryPreview() }
-    catch(e) { wx.showToast({ title:e.message, icon:'none' }) }
+    try { this.updateSummaryPreview(); analytics.track('export', 'complete', 'summary') }
+    catch(e) { analytics.failure('export', 'summary', e); wx.showToast({ title:e.message, icon:'none' }) }
   },
   copySummary() { if(this.data.summaryText) wx.setClipboardData({ data:this.data.summaryText }) },
   exportVisitData() {
@@ -174,23 +178,27 @@ Page({
     try {
       const content = summary.buildSummary(this.data.start, this.data.end, { redact:this.data.redact })
       this.shareTextFile(`就诊记录_${this.data.start}_${this.data.end}.txt`, content)
-    } catch (error) { wx.showToast({ title:error.message || '资料生成失败', icon:'none' }) }
+    } catch (error) { analytics.failure('export', 'export_file', error); wx.showToast({ title:error.message || '资料生成失败', icon:'none' }) }
   },
   shareTextFile(name, content) {
     if (this.data.exporting) return
     this.setData({ exporting:true })
+    const finish = analytics.startOperation('export', 'export_build')
     let path
     const failed = (error, writing) => {
+      finish(error)
       if (path) exportCache.end(path)
       this.setData({ exporting:false })
       const message = String(error && (error.errMsg || error.message) || '')
       if (/cancel/i.test(message)) return
+      analytics.failure('export', 'export_file', error)
       wx.showModal({ title:writing ? '文件生成失败' : '导出未完成', content:writing ? '请检查设备存储空间后重新导出。' : '当前环境未能导出文件，请在手机微信中重试，或更新微信后再试。', showCancel:false })
     }
     try {
       path = `${wx.env.USER_DATA_PATH}/${name}`
       exportCache.begin(path)
       wx.getFileSystemManager().writeFile({ filePath:path, data:content, encoding:'utf8', success:()=> {
+        finish()
         exportCache.remember(path)
         let platform = ''
         try { platform = wx.getDeviceInfo ? wx.getDeviceInfo().platform : wx.getSystemInfoSync().platform } catch (_) {}
@@ -199,7 +207,7 @@ Page({
         if (typeof exportFile !== 'function') return failed(new Error('unsupported'))
         try {
           exportFile.call(wx, { filePath:path, ...(saveToDisk ? {} : { fileName:name }),
-            success:()=> { exportCache.end(path); this.setData({ exporting:false }); wx.showToast({ title:'导出成功', icon:'success' }) },
+            success:()=> { analytics.track('export', 'complete', 'export_file'); exportCache.end(path); this.setData({ exporting:false }); wx.showToast({ title:'导出成功', icon:'success' }) },
             fail:error=>failed(error, false)
           })
         } catch (error) { failed(error, false) }
@@ -233,4 +241,4 @@ Page({
     try { await cloud.callFunction('pet-data',{ action:'pauseCareReminder', id:e.currentTarget.dataset.id }); await this.loadReminder() }
     catch(error) { wx.showToast({ title:'暂停失败，请重试', icon:'none' }) }
   }
-})
+}))

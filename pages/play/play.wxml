@@ -1,18 +1,22 @@
-<view class="page play-page">
+<view class="page play-page {{tool === 'age' ? 'age-entry' : tool === 'bingo' ? 'bingo-entry' : ''}}">
  <block wx:if="{{!started}}">
-  <view class="play-hero"><view class="play-icon"><view class="warm-icon {{tool === 'age' ? 'warm-icon-paw' : 'warm-icon-companion'}}"></view></view><view class="eyebrow">陪伴，也有新发现</view><view class="page-title">{{tool === 'bingo' ? '这些小习惯\n你家中了几项？' : tool === 'age' ? '它的人类年龄\n比你想的更有趣' : '你家的毛孩子\n藏着哪种小性格？'}}</view><view class="play-sub">{{tool === 'bingo' ? '点亮属于它的日常，拼出一张可爱的小档案。' : tool === 'age' ? '算算年龄、数数相伴的日子，留下一张专属纪念卡。' : '10 道生活小问题，约 2 分钟，发现它独一份的可爱。'}}</view></view>
+  <view class="play-hero"><view class="play-icon"><view class="warm-icon {{tool === 'age' ? 'warm-icon-paw' : 'warm-icon-companion'}}"></view></view><view class="eyebrow">陪伴，也有新发现</view><view class="page-title">{{tool === 'bingo' ? '这些小习惯\n你家中了几项？' : tool === 'age' ? '它的人类年龄' : '你家的毛孩子\n藏着哪种小性格？'}}</view><view class="play-sub">{{tool === 'bingo' ? '点亮属于它的日常，拼出一张可爱的小档案。' : tool === 'age' ? '算算年龄，留下一张专属纪念卡。' : '10 道生活小问题，约 2 分钟，发现它独一份的可爱。'}}</view></view>
   <view class="play-form card">
    <view class="label">它是</view><view class="species-tabs"><button class="{{species === 'dog' ? 'active' : ''}}" data-value="dog" bindtap="chooseSpecies">狗狗</button><button class="{{species === 'cat' ? 'active' : ''}}" data-value="cat" bindtap="chooseSpecies">猫咪</button></view>
-   <view class="field"><text class="label">它的名字</text><input class="input" maxlength="12" value="{{name}}" data-field="name" bindinput="input" placeholder="例如：可乐" cursor-spacing="24" /></view>
+   <view class="field name-field"><text class="label">它的名字</text><input class="input" maxlength="12" value="{{name}}" data-field="name" bindinput="input" placeholder="例如：可乐" cursor-spacing="24" /></view>
    <block wx:if="{{tool === 'age'}}">
-    <view class="field"><text class="label">出生日期</text><picker mode="date" value="{{birthday || today}}" end="{{today}}" data-field="birthday" bindchange="chooseDate"><view class="input play-picker">{{birthday || '请选择出生日期'}}<text>›</text></view></picker></view>
-    <view class="field" wx:if="{{species === 'dog'}}"><text class="label">成年后的体型</text><picker range="{{sizeOptions}}" value="{{size}}" bindchange="chooseSize"><view class="input play-picker">{{sizeOptions[size]}}<text>›</text></view></picker><view class="field-note">体型暂按档案体重预选；幼犬请按预计成年体型调整。</view></view>
-    <view class="field"><text class="label">品种（选填）</text><input class="input" maxlength="24" value="{{breed}}" data-field="breed" bindinput="input" placeholder="例如：柯基、布偶或混血" cursor-spacing="24" /><view class="field-note">品种仅作备注，换算依据为猫狗类别与犬只体型。</view></view>
-    <view class="field"><view class="field-label-row"><text class="label">开始相伴的日期（选填）</text><text wx:if="{{togetherSince}}" bindtap="clearTogether">清除</text></view><picker mode="date" value="{{togetherSince || birthday || today}}" start="{{birthday}}" end="{{today}}" data-field="togetherSince" bindchange="chooseDate"><view class="input play-picker">{{togetherSince || '例如：来到你家的那一天'}}<text>›</text></view></picker><view class="field-note">未填写时，卡片展示“来到世界多少天”。</view></view>
+    <view class="field birthday-field"><text class="label">出生日期</text><picker mode="date" value="{{birthday || today}}" end="{{today}}" data-field="birthday" bindchange="chooseDate"><view class="input play-picker">{{birthday || '请选择出生日期'}}<text>›</text></view></picker></view>
+    <view class="field">
+     <text class="label">{{species === 'cat' ? '成年后的体型（选填）' : '成年后的体型'}}</text>
+     <picker wx:if="{{species === 'dog'}}" range="{{sizeOptions}}" value="{{size}}" bindchange="chooseSize"><view class="input play-picker">{{sizeOptions[size]}}<text>›</text></view></picker>
+     <picker wx:else range="{{catSizeOptions}}" value="{{catSize < 0 ? 1 : catSize}}" bindchange="chooseSize"><view class="input play-picker {{catSize < 0 ? 'picker-placeholder' : ''}}">{{catSize < 0 ? '请选择猫咪体型' : catSizeOptions[catSize]}}<text>›</text></view></picker>
+     <view class="field-note">{{species === 'dog' ? '按档案体重预选，幼犬请选预计成年体型。' : '按成年体格参考，毛量与胖瘦不作依据；不参与换算。'}}</view>
+    </view>
+    <view class="field"><text class="label">品种（选填）</text><input class="input" maxlength="24" value="{{breed}}" data-field="breed" bindinput="input" placeholder="{{species === 'cat' ? '例如：英短、布偶或混血' : '例如：柯基、柴犬或混血'}}" cursor-spacing="24" /><view class="field-note">品种仅作备注，不影响年龄换算。</view></view>
    </block>
    <block wx:if="{{tool === 'bingo'}}">
     <view class="bingo-invite" wx:if="{{peer}}">和 {{peer.n}} 比一比<text>先选你家毛孩子的习惯，完成后揭晓共同命中的项目。</text></view>
-    <view class="bingo-heading"><text>点一下勾选，再点取消</text><text bindtap="clearBingo">清空</text></view>
+    <view class="bingo-heading"><text>点一下勾选，再点取消</text><text class="bingo-clear" bindtap="clearBingo">清空</text></view>
     <view class="bingo-grid"><button wx:for="{{bingoCells}}" wx:key="id" class="bingo-cell {{item.selected ? 'checked' : ''}} {{item.winning ? 'winning' : ''}}" data-id="{{item.id}}" bindtap="toggleBingo" aria-label="{{item.label + (item.selected ? '，已选' : '，未选')}}"><text class="bingo-check">{{item.selected ? '✓' : '＋'}}</text><text>{{item.label}}</text></button></view>
     <view class="bingo-summary">已中 {{bingoCount}} / 9 项<text>{{bingoLines ? ' · 连成 ' + bingoLines + ' 条线！' : ' · 横、竖、斜连满三格就是 Bingo'}}</text></view>
    </block>

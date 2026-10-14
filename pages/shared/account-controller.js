@@ -4,8 +4,11 @@ const store = require('../../utils/store')
 const cloudAlbum = require('../../utils/cloud-album')
 const cloud = require('../../utils/cloud')
 const cloudData = require('../../utils/cloud-data')
+const analytics = require('../../utils/analytics')
+const { buildFamilyMemberViews } = require('../../utils/family-members')
+const { PERSONALITY_OPTIONS, MAX_PERSONALITY_TAGS, normalizePersonalityTags } = require('../../utils/pet-profile')
 
-function saveProfileEntries(entries) {
+function saveProfileEntries(entries, module = 'profile') {
   const tasks = entries.map(([key, value]) => {
     try { return Promise.resolve(store.set(key, value)) }
     catch (error) { return Promise.reject(error) }
@@ -14,8 +17,11 @@ function saveProfileEntries(entries) {
     if (results.some(result => result.status === 'fulfilled' && result.value && result.value.error === 'readonly')) throw new Error('只读成员不能修改共享档案')
     const pending = results.some(result => result.status === 'rejected' || (result.value && result.value.ok === false))
     if (pending && !entries.every(([key, value]) => JSON.stringify(store.get(key)) === JSON.stringify(value))) throw new Error('资料未完整保存，请重试')
+    analytics.track(module, 'complete', 'save_local')
+    if (entries.some(([key]) => key === 'weightRecords')) analytics.track('weight', 'complete', 'save_local')
+    if (pending) analytics.failure(module, 'save_cloud', 'unavailable')
     return pending
-  })
+  }).catch(error => { analytics.failure(module, 'save_local', error); throw error })
 }
 
 function showNativeTabBar() {
@@ -48,10 +54,38 @@ const PROFILE_FIELDS = {
   sex: { title: '性别' },
   weight: { title: '体重' },
   birthday: { title: '生日' },
+  togetherSince: { title: '相遇日期' },
   chipId: { title: '芯片号' },
   neutered: { title: '绝育状态' },
   allergies: { title: '过敏史' },
-  clinic: { title: '常用医院' }
+  clinic: { title: '常用医院' },
+  careNotes: { title: '照护注意事项', multiline: true, maxLength: 500, placeholder: '例如：怕吹风机；不喜欢被抱；散步时容易追车。', hint: '选填，共享成员可查看这些照护备注' },
+  dietHabits: { title: '饮食习惯', multiline: true, maxLength: 300, preview: '常吃的主粮、食物偏好与吃饭习惯', placeholder: '例如：平时吃的主粮品牌和口味；喜欢、不爱吃的食物；吃饭时需要有人陪着。', hint: '选填，记录家人喂食时需要知道的习惯' },
+  outingHabits: { title: '外出习惯', multiline: true, maxLength: 300, preview: '乘车反应、牵引习惯与外出注意点', placeholder: '例如：坐车容易晕车；习惯胸背；看到小动物容易冲跑；不喜欢坐推车。', hint: '选填，方便家人带它出门时提前准备' },
+  familiarCommands: { title: '熟悉的口令', multiline: true, maxLength: 300, preview: '平时的叫法，以及它听得懂的口令', placeholder: '例如：平时叫“糯糯”；“坐下”配合手掌向下；“回来”“等一下”是常用口令。', hint: '选填，可一起写下对应手势和回应习惯' },
+  coatColor: { title: '毛色' },
+  markings: { title: '辨识特征', multiline: true, maxLength: 200, placeholder: '例如：左耳有黑色斑点；胸前一撮白毛；尾巴末端是白色。', hint: '选填，记录容易辨认的外形特征' },
+  personalityTags: { title: '性格与社交' }
+}
+
+const CARE_PROFILE_TEXT_KEYS = ['dietHabits', 'outingHabits', 'familiarCommands', 'careNotes']
+function buildCareProfile(pet) {
+  return CARE_PROFILE_TEXT_KEYS.reduce((profile, key) => {
+    profile[key] = typeof pet[key] === 'string' ? pet[key] : ''
+    return profile
+  }, { personalityTags: normalizePersonalityTags(pet.personalityTags) })
+}
+
+function hasCareProfileContent(pet) {
+  return CARE_PROFILE_TEXT_KEYS.some(key => typeof pet[key] === 'string' && pet[key].trim()) || normalizePersonalityTags(pet.personalityTags).length > 0
+}
+
+const NEUTERED_OPTIONS = ['未绝育', '已绝育', '不清楚']
+function buildNeuteredOptions(value) {
+  const saved = typeof value === 'string' ? value.trim() : ''
+  // 旧版是自由文本，保留旧选项，避免打开后直接保存覆盖原记录。
+  return saved && !['未设置', '未填写'].includes(saved) && !NEUTERED_OPTIONS.includes(saved)
+    ? [saved, ...NEUTERED_OPTIONS] : NEUTERED_OPTIONS
 }
 
 const BREED_OPTIONS = ['柯基', '金毛', '拉布拉多', '泰迪', '贵宾', '比熊', '博美', '柴犬', '边牧', '萨摩耶', '哈士奇', '雪纳瑞', '法斗', '英斗', '巴哥', '吉娃娃', '约克夏', '腊肠犬', '马尔济斯', '中华田园犬', '混血犬', '橘猫', '狸花猫', '英短', '美短', '布偶', '暹罗', '缅因猫', '加菲猫', '其他']
@@ -91,11 +125,21 @@ function shortInviteCode(petName) {
   return `ZZ-${nameCode || 'PET'}-${String(Date.now()).slice(-6)}`
 }
 
-function initialOf(name) {
-  return String(name || '家').trim().slice(0, 1) || '家'
+function familyActivityTimeText(timestamp, now) {
+  const date = new Date(timestamp)
+  if (!Number.isFinite(date.getTime())) return '时间待同步'
+  const day = dateKey(date)
+  const yesterday = new Date(now)
+  yesterday.setDate(yesterday.getDate() - 1)
+  const label = day === dateKey(now) ? '今天'
+    : day === dateKey(yesterday) ? '昨天'
+      : date.getFullYear() === now.getFullYear() ? `${date.getMonth() + 1}月${date.getDate()}日`
+        : day
+  return `${label} ${timeText(date)}`
 }
 
 function buildFamilyActivities() {
+  const now = new Date()
   const sources = [
     ['feeds', item => `记录了${item.type || '喂食'}${item.amount ? ` ${item.amount}` : ''}`],
     ['waters', item => `记录了饮水${item.amount ? ` ${item.amount}` : ''}`],
@@ -109,7 +153,7 @@ function buildFamilyActivities() {
     .map(item => ({ id: `${key}-${item.id}`, name: item.recordedByName, text: describe(item), time: Number(item._syncUpdatedAt) })))
     .sort((a, b) => b.time - a.time)
     .slice(0, 5)
-    .map(item => ({ ...item, timeText: new Date(item.time).toLocaleString() }))
+    .map(item => ({ ...item, timeText: familyActivityTimeText(item.time, now) }))
 }
 
 function dateKey(date) {
@@ -293,12 +337,22 @@ return {
     growthPhotos: [], growthAlbumOpen: false, uploadingGrowthPhotos: false,
     newAvatarTemp: '', saving: false, changed: false, today: '', sexOptions: ['男孩', '女孩'], sexIndex: 0,
     profileFieldEditOpen: false, profileField: '', profileFieldTitle: '', profileFieldValue: '',
+    profileFieldOptions: {},
+    careProfileFields: [
+      { key: 'dietHabits', title: '饮食习惯', placeholder: '常吃的主粮、口味偏好、吃饭习惯', maxLength: 300 },
+      { key: 'outingHabits', title: '外出习惯', placeholder: '牵引习惯、乘车反应、出门要留意的事', maxLength: 300 }
+    ],
+    careProfileEditing: false, careProfileSaving: false, careProfileDraft: {}, careProfileTagOptions: [], careProfileHasContent: false,
     profileFieldSexIndex: 0, profileFieldBreedIndex: 0, breedOptions: BREED_OPTIONS,
+    profileFieldNeuteredIndex: 0, neuteredOptions: NEUTERED_OPTIONS, profileNeuteredDate: '',
+    profileSection: '',
+    profilePersonalityOptions: [], profilePersonalityTags: [], maxPersonalityTags: MAX_PERSONALITY_TAGS,
     weightPickerRanges: WEIGHT_PICKER_RANGES, weightPickerValue: [9, 0], profileFieldSaving: false,
     familyMembers: [], familyOpen: false, familyInviteCode: '', familyDraftOpen: false, familyDraft: {},
     familyEditingIndex: -1, familyRoleOptions: FAMILY_ROLE_OPTIONS, familyRelationOptions: FAMILY_RELATION_OPTIONS,
     familyRoleIndex: 0, familyRelationIndex: 0, familySaving: false, familyInviteLoading: false,
-    pendingShareCode: '', shareAccepting: false, shareShared: false, shareRole: 'owner',
+    pendingShareCode: '', sharePromptOpen: false, sharePromptCode: '', shareJoinError: '',
+    shareAccepting: false, shareShared: false, shareRole: 'owner',
     shareRoleLabel: '主人', shareReadOnly: false, familyActivities: []
   },
   onLoad(options = {}) {
@@ -316,28 +370,47 @@ return {
       shareReadOnly: !(store.isDemoMode && store.isDemoMode()) && !!share.shared && share.role === 'viewer' })
   },
   onShow() {
+    // 回到小程序时保留正在填写的照护草稿，避免被 onShow 清空。
     this.setData({ pageVisible:true })
-    showNativeTabBar()
+    // 启动同步也会触发 onShow；保留确认按钮节点和处理状态，不重建邀请界面。
+    if (this.data.sharePromptOpen || this.data.shareAccepting) {
+      hideNativeTabBar()
+      return
+    }
+    const keepFamilyOpen = this.data.familyOpen
+    if (this.data.profileSection === 'care') hideNativeTabBar()
+    else showNativeTabBar()
     if (store.ensureSeedData) store.ensureSeedData()
     const pet = store.get('pet')
-    const draft = { ...pet, togetherSince: pet.togetherSince || pet.birthday, sex: pet.sex || '男孩' }
+    const draft = { ...pet, togetherSince: pet.togetherSince || '', sex: pet.sex || '男孩' }
     const careDraft = store.normalizeCareSchedule(store.get('care'))
     const supplies = store.normalizeSupplies(store.get('supplies'))
     const supplyView = buildSupplyView(supplies, store.get('feeds'))
     const growthPhotos = getGrowthPhotos()
-    const familyMembers = store.get('familyMembers').map(item => ({ ...item, initial: initialOf(item.name) }))
+    const familyMembers = buildFamilyMemberViews(store.get('familyMembers'), cloudData.getShareStatus())
     const today = store.todayKey()
     const breedOptions = buildBreedOptions(draft.breed)
     const pendingShareCode = this.data.pendingShareCode
     const shareStatus = cloudData.getShareStatus()
     const shareRole = shareStatus.role || 'owner'
     this.setData({ pet, draft, profileEditOpen: false, careDraft, careView: buildCareView(careDraft), careRecords: store.get('careRecords'), careDetailOpen: false, careMenuOpen: false, careSubView: '', selectedCare: {}, selectedCareRecords: [], selectedRecordDate: today, selectedMonth: today.slice(0, 7), selectedMonthText: monthText(today.slice(0, 7)), careCalendar: [], supplies, supplyView, supplyOpen: false, selectedSupplyKey: '', selectedSupply: {}, supplyDraft: {}, supplyHistory: [], growthPhotos, growthAlbumOpen: false, uploadingGrowthPhotos: false, newAvatarTemp: '', saving: false, changed: false, today, sexIndex: draft.sex === '女孩' ? 1 : 0, profileFieldEditOpen: false, profileField: '', profileFieldTitle: '', profileFieldValue: '', profileFieldSexIndex: draft.sex === '女孩' ? 1 : 0, profileFieldBreedIndex: Math.max(0, breedOptions.indexOf(draft.breed)), breedOptions, weightPickerRanges: WEIGHT_PICKER_RANGES, weightPickerValue: buildWeightPickerValue(draft.weight), profileFieldSaving: false, familyMembers, familyOpen: false, familyInviteCode: this.data.familyInviteCode || shortInviteCode(pet.name), familyDraftOpen: false, familyDraft: {}, familyEditingIndex: -1, familyRoleIndex: 0, familyRelationIndex: 0, familySaving: false, familyInviteLoading: false, pendingShareCode, shareShared: !!shareStatus.shared, shareRole, shareRoleLabel: FAMILY_ROLE_LABELS[shareRole] || '主人', shareReadOnly: !!shareStatus.shared && shareRole === 'viewer' })
+    if (this.data.shareReadOnly && this.data.careProfileEditing) {
+      this._careProfileOriginal = null
+      this.setData({ careProfileEditing: false, careProfileDraft: {}, careProfileTagOptions: [] })
+    }
+    if (keepFamilyOpen) {
+      this.setData({ familyOpen: true })
+      hideNativeTabBar()
+    }
     if (pendingShareCode) this.promptAcceptShare(pendingShareCode)
     const target = require('../../utils/tab-navigation').takeTarget(options.tabName || (options.careOnly ? 'care' : 'account'))
     if (target && CARE_TYPES[target]) this.openCareDetail({ currentTarget: { dataset: { key: target } } })
     if (target && SUPPLY_TYPES[target]) this.openSupply({ currentTarget: { dataset: { key: target } } })
-    if (target === 'care-overview') wx.nextTick(() => wx.pageScrollTo({ selector: '#care-overview', duration: 200 }))
-    if (!options.careOnly && target === 'weight') this.openProfileFieldEdit({ currentTarget: { dataset: { field: 'weight' } } })
+    // 记录页的护理概览常驻首屏，只有其他页面需要定位滚动。
+    if (target === 'care-overview' && options.tabName !== 'records') wx.nextTick(() => {
+      wx.pageScrollTo({ selector: '#care-overview', duration: 200 })
+    })
+    if (!options.careOnly && ['weight', 'togetherSince'].includes(target)) this.openProfileFieldEdit({ currentTarget: { dataset: { field: target } } })
   },
   onHide() {
     this.setData({ pageVisible:false })
@@ -347,7 +420,7 @@ return {
   },
   openFamilyManager() {
     hideNativeTabBar()
-    const familyMembers = store.get('familyMembers').map(item => ({ ...item, initial: initialOf(item.name) }))
+    const familyMembers = buildFamilyMemberViews(store.get('familyMembers'), cloudData.getShareStatus())
     this.setData({ familyOpen: true, familyMembers, familyActivities: buildFamilyActivities(), familyInviteCode: this.data.familyInviteCode || shortInviteCode(this.data.pet.name), familyDraftOpen: false })
     if (!this.data.shareShared || this.data.shareRole === 'owner') this.generateFamilyInvite()
   },
@@ -407,10 +480,14 @@ return {
   },
   saveFamilyMembers(members, toastTitle) {
     if (!this.ensureOwnerPermission('只有主人可以管理家庭成员')) return Promise.resolve({ ok: false })
-    const normalized = store.normalizeFamilyMembers(members).map(item => ({ ...item, initial: initialOf(item.name) }))
+    const normalized = store.normalizeFamilyMembers(members)
     this.setData({ familySaving: true })
-    return store.set('familyMembers', normalized.map(({ initial, ...item }) => item)).finally(() => {
-      this.setData({ familyMembers: normalized, familyDraftOpen: false, familyEditingIndex: -1, familySaving: false })
+    return store.set('familyMembers', normalized).then(result => {
+      if (result && result.ok === false) analytics.failure('family', 'save_cloud', result.error)
+      else analytics.track('family', 'complete', 'save_local')
+      return result
+    }).finally(() => {
+      this.setData({ familyMembers: buildFamilyMemberViews(normalized, cloudData.getShareStatus()), familyDraftOpen: false, familyEditingIndex: -1, familySaving: false })
       wx.showToast({ title: toastTitle || '家庭共享已更新', icon: 'none' })
     })
   },
@@ -476,11 +553,10 @@ return {
     return cloudData.createShareInvitation({ petName: this.data.pet.name, code: this.data.familyInviteCode })
       .then(result => {
         if (result && result.ok !== false && result.code) {
-          const members = Array.isArray(result.members) && result.members.length
-            ? result.members.map(item => ({ ...item, initial: initialOf(item.name) }))
-            : this.data.familyMembers
-          this.setData({ familyInviteCode: result.code, familyMembers: members, familyInviteLoading: false })
-          store.set('familyMembers', members.map(({ initial, ...item }) => item), { skipCloud: true })
+          const members = store.normalizeFamilyMembers(Array.isArray(result.members) && result.members.length
+            ? result.members : this.data.familyMembers)
+          this.setData({ familyInviteCode: result.code, familyMembers: buildFamilyMemberViews(members, cloudData.getShareStatus()), familyInviteLoading: false })
+          store.set('familyMembers', members, { skipCloud: true })
         } else {
           this.setData({ familyInviteLoading: false })
         }
@@ -492,34 +568,40 @@ return {
       })
   },
   promptAcceptShare(code) {
+    if (!code || this.data.shareAccepting || this.data.sharePromptOpen) return
+    // 确认交给页面按钮，避免依赖原生弹窗的关闭/确认回调。
+    this.setData({ pendingShareCode: '', sharePromptOpen: true, sharePromptCode: code, shareJoinError: '' })
+    hideNativeTabBar()
+  },
+  confirmAcceptShare() {
+    if (this._shareAcceptTask) return this._shareAcceptTask
+    if (!this.data.sharePromptOpen || !this.data.sharePromptCode) return
+    return this.acceptShareInvitation(this.data.sharePromptCode)
+  },
+  cancelAcceptShare() {
     if (this.data.shareAccepting) return
-    wx.showModal({
-      title: '加入家庭共享',
-      content: `收到共享码 ${code}，是否加入这只宠物的家庭档案？`,
-      confirmText: '加入',
-      cancelText: '稍后',
-      success: res => {
-        if (!res.confirm) return this.setData({ pendingShareCode: '' })
-        this.acceptShareInvitation(code)
-      }
-    })
+    this.setData({ pendingShareCode: '', sharePromptOpen: false, sharePromptCode: '', shareJoinError: '' })
+    if (!this.data.familyOpen && this.data.profileSection !== 'care') showNativeTabBar()
   },
   acceptShareInvitation(code) {
-    this.setData({ shareAccepting: true })
-    return cloudData.acceptShareInvitation(code, { name: '我', relation: '家人' })
+    if (this._shareAcceptTask) return this._shareAcceptTask
+    if (!code) return Promise.resolve({ ok: false, error: '缺少共享码，请重新打开邀请' })
+    // 在第一个异步请求前更新按钮；连点复用任务，处理中不能关闭确认界面。
+    this.setData({ shareAccepting: true, pendingShareCode: '', sharePromptOpen: true, sharePromptCode: code, shareJoinError: '' })
+    hideNativeTabBar()
+    this._shareAcceptTask = Promise.resolve()
+      .then(() => cloudData.acceptShareInvitation(code, { name: '家人', relation: '家人' }))
       .then(result => {
         if (!result || result.ok === false) {
-          wx.showToast({ title: result && result.error ? result.error : '加入失败，请检查共享码', icon: 'none' })
-          this.setData({ shareAccepting: false, pendingShareCode: '' })
-          return result
+          throw new Error(result && result.error ? result.error : '加入失败，请检查共享码')
         }
         const pet = store.get('pet')
         const careDraft = store.normalizeCareSchedule(store.get('care'))
         const supplies = store.normalizeSupplies(store.get('supplies'))
-        const familyMembers = store.get('familyMembers').map(item => ({ ...item, initial: initialOf(item.name) }))
+        const familyMembers = buildFamilyMemberViews(result.share && result.share.members || store.get('familyMembers'), result.share || cloudData.getShareStatus())
         this.setData({
           pet,
-          draft: { ...pet, togetherSince: pet.togetherSince || pet.birthday, sex: pet.sex || '男孩' },
+          draft: { ...pet, togetherSince: pet.togetherSince || '', sex: pet.sex || '男孩' },
           careDraft,
           careView: buildCareView(careDraft),
           supplies,
@@ -529,15 +611,29 @@ return {
           familyOpen: true,
           shareAccepting: false,
           pendingShareCode: '',
+          sharePromptOpen: false,
+          sharePromptCode: '',
+          shareJoinError: '',
           shareShared: true,
           shareRole: result.share && result.share.role || 'admin',
           shareRoleLabel: FAMILY_ROLE_LABELS[result.share && result.share.role || 'admin'] || '共同照护',
           shareReadOnly: result.share && result.share.role === 'viewer'
         })
         hideNativeTabBar()
-        wx.showToast({ title: '已加入家庭共享', icon: 'none' })
+        if (result.syncWarning) wx.showModal({ title: '已在这个家庭中', content: result.syncWarning, showCancel: false, confirmText: '知道了' })
+        else wx.showToast({ title: result.alreadyJoined ? '已在这个家庭中' : '已加入家庭共享', icon: 'none' })
         return result
       })
+      .catch(error => {
+        const message = error.message || '暂时无法加入，请检查网络后重试'
+        this.setData({ shareAccepting: false, pendingShareCode: '', sharePromptOpen: true, sharePromptCode: code, shareJoinError: message })
+        return { ok: false, error: message }
+      })
+      .finally(() => {
+        this._shareAcceptTask = null
+        this.setData({ shareAccepting: false })
+      })
+    return this._shareAcceptTask
   },
   openSupply(e) {
     const key = e.currentTarget.dataset.key
@@ -586,6 +682,7 @@ return {
       history: [record, ...(supplies[key].history || [])].slice(0, 30)
     }
     store.set('supplies', supplies)
+    analytics.track('supplies', 'complete', 'save_local')
     const supplyView = buildSupplyView(supplies, store.get('feeds'))
     this.setData({ supplies, supplyView, supplyOpen: false, selectedSupply: supplyView[key], supplyHistory: supplies[key].history.slice(0, 10) })
     wx.showToast({ title: `${config.label}拆封记录已保存`, icon: 'none' })
@@ -620,12 +717,15 @@ return {
         const dayKey = store.todayKey()
         cloudAlbum.saveGrowthPhotos(tempPaths, { createdAt, dayKey, time: timeText(captured) })
           .then(savedPhotos => {
+            if (savedPhotos.length) analytics.track('album', 'complete', 'save_local')
+            else analytics.failure('album', 'save_local', 'unavailable')
             const growthPhotos = [...savedPhotos, ...getGrowthPhotos()].sort((a, b) => b.createdAt - a.createdAt)
             store.set('growthPhotos', growthPhotos)
             this.setData({ growthPhotos, uploadingGrowthPhotos: false })
             wx.showToast({ title: savedPhotos.length ? `已添加 ${savedPhotos.length} 张成长照片` : '成长照片保存失败', icon: 'none' })
           })
-          .catch(() => {
+          .catch(error => {
+            analytics.failure('album', 'save_cloud', error)
             this.setData({ uploadingGrowthPhotos: false })
             wx.showToast({ title: '云端保存失败，请稍后重试', icon: 'none' })
           })
@@ -651,6 +751,7 @@ return {
       success: res => {
         if (!res.confirm) return
         const removeFromAlbum = toastTitle => {
+          analytics.track('album', 'complete', 'deleteGrowthPhoto')
           const growthPhotos = this.data.growthPhotos.filter(item => !sameGrowthPhoto(item, photo))
           store.set('growthPhotos', growthPhotos)
           this.setData({ growthPhotos })
@@ -670,12 +771,12 @@ return {
     })
   },
   openProfileEdit() {
-    const draft = { ...this.data.pet, togetherSince: this.data.pet.togetherSince || this.data.pet.birthday, sex: this.data.pet.sex || '男孩' }
+    const draft = { ...this.data.pet, togetherSince: this.data.pet.togetherSince || '', sex: this.data.pet.sex || '男孩' }
     hideNativeTabBar()
     this.setData({ profileEditOpen: true, draft, sexIndex: draft.sex === '女孩' ? 1 : 0, newAvatarTemp: '', changed: false })
   },
   closeProfileEdit() {
-    const draft = { ...this.data.pet, togetherSince: this.data.pet.togetherSince || this.data.pet.birthday, sex: this.data.pet.sex || '男孩' }
+    const draft = { ...this.data.pet, togetherSince: this.data.pet.togetherSince || '', sex: this.data.pet.sex || '男孩' }
     this.setData({ profileEditOpen: false, draft, sexIndex: draft.sex === '女孩' ? 1 : 0, newAvatarTemp: '', saving: false, changed: false })
     showNativeTabBar()
   },
@@ -708,27 +809,123 @@ return {
       })
     })
   },
+  openProfileSection(e) {
+    const section = e.currentTarget.dataset.section
+    if (section !== 'care' || this.data.careProfileSaving) return
+    const pet = store.get('pet')
+    this.setData({ profileSection: section, pet, careProfileEditing: false, careProfileHasContent: hasCareProfileContent(pet) })
+    hideNativeTabBar()
+  },
+  dismissProfileSection() {
+    if (!this.data.careProfileEditing) this.closeProfileSection()
+  },
+  closeProfileSection() {
+    if (this.data.careProfileSaving) return
+    if (this.data.careProfileEditing) return this.cancelCareProfileEdit()
+    this.setData({ profileSection: '', careProfileDraft: {}, careProfileTagOptions: [] })
+    showNativeTabBar()
+  },
+  editCareProfile() {
+    if (this.data.profileSection !== 'care' || this.data.careProfileSaving || !this.ensureWritable()) return
+    const pet = store.get('pet')
+    const careProfileDraft = buildCareProfile(pet)
+    this._careProfileOriginal = buildCareProfile(pet)
+    const careProfileTagOptions = [...new Set([...PERSONALITY_OPTIONS, ...careProfileDraft.personalityTags])]
+      .map(label => ({ label, selected: careProfileDraft.personalityTags.includes(label) }))
+    this.setData({ pet, careProfileEditing: true, careProfileDraft, careProfileTagOptions })
+  },
+  cancelCareProfileEdit() {
+    if (this.data.careProfileSaving) return
+    const pet = store.get('pet')
+    this._careProfileOriginal = null
+    this.setData({ pet, careProfileEditing: false, careProfileDraft: {}, careProfileTagOptions: [], careProfileHasContent: hasCareProfileContent(pet) })
+  },
+  onCareProfileInput(e) {
+    if (!this.data.careProfileEditing || this.data.careProfileSaving || !this.ensureWritable()) return
+    const key = e.currentTarget.dataset.key
+    if (!CARE_PROFILE_TEXT_KEYS.includes(key)) return
+    this.setData({ [`careProfileDraft.${key}`]: e.detail.value })
+  },
+  toggleCareProfileTag(e) {
+    if (!this.data.careProfileEditing || this.data.careProfileSaving || !this.ensureWritable()) return
+    const label = e.currentTarget.dataset.label
+    if (!this.data.careProfileTagOptions.some(item => item.label === label)) return
+    const selected = this.data.careProfileDraft.personalityTags
+    if (!selected.includes(label) && selected.length >= MAX_PERSONALITY_TAGS) {
+      return wx.showToast({ title: `最多选择${MAX_PERSONALITY_TAGS}个标签`, icon: 'none' })
+    }
+    const tags = selected.includes(label) ? selected.filter(tag => tag !== label) : [...selected, label]
+    this.setData({
+      'careProfileDraft.personalityTags': tags,
+      careProfileTagOptions: this.data.careProfileTagOptions.map(item => ({ ...item, selected: tags.includes(item.label) }))
+    })
+  },
+  saveCareProfile() {
+    if (!this.data.careProfileEditing || this.data.careProfileSaving || !this.ensureWritable()) return
+    const original = this._careProfileOriginal
+    if (!original) return
+    const draft = buildCareProfile(this.data.careProfileDraft)
+    const patch = {}
+    for (const key of CARE_PROFILE_TEXT_KEYS) {
+      const value = draft[key].trim()
+      if (value === original[key].trim()) continue
+      if (value.length > PROFILE_FIELDS[key].maxLength) {
+        return wx.showToast({ title: `${PROFILE_FIELDS[key].title}最多${PROFILE_FIELDS[key].maxLength}字`, icon: 'none' })
+      }
+      patch[key] = value
+    }
+    if (JSON.stringify(draft.personalityTags) !== JSON.stringify(original.personalityTags)) patch.personalityTags = draft.personalityTags
+    if (!Object.keys(patch).length) return this.cancelCareProfileEdit()
+    // 只合并本次修改的照护字段，保留编辑期间其他资料的更新。
+    const pet = { ...store.get('pet'), ...patch }
+    this.setData({ careProfileSaving: true })
+    return saveProfileEntries([['pet', pet]], 'care_profile').then(pending => {
+      const savedPet = store.get('pet')
+      this._careProfileOriginal = null
+      this.setData({
+        pet: savedPet,
+        draft: { ...savedPet, togetherSince: savedPet.togetherSince || '', sex: savedPet.sex || '男孩' },
+        careProfileSaving: false, careProfileEditing: false, careProfileDraft: {}, careProfileTagOptions: [],
+        careProfileHasContent: hasCareProfileContent(savedPet)
+      })
+      wx.showToast({ title: pending ? '已保存在本机，云端尚未同步' : '照护信息已保存', icon: 'none' })
+    }).catch(error => {
+      this.setData({ careProfileSaving: false })
+      wx.showToast({ title: error.message || '保存失败，请重试', icon: 'none' })
+    })
+  },
   openProfileFieldEdit(e) {
-    if (!this.ensureWritable()) return
+    if (this.data.profileFieldSaving) return
     const field = e.currentTarget.dataset.field
     const config = PROFILE_FIELDS[field]
     if (!config) return
     const value = this.data.pet[field]
     const breedOptions = buildBreedOptions(field === 'breed' ? value : this.data.pet.breed)
+    const neuteredOptions = buildNeuteredOptions(this.data.pet.neutered)
+    const profilePersonalityTags = normalizePersonalityTags(this.data.pet.personalityTags)
+    const profilePersonalityOptions = [...new Set([...PERSONALITY_OPTIONS, ...profilePersonalityTags])]
+      .map(label => ({ label, selected: profilePersonalityTags.includes(label) }))
     const weightPickerValue = field === 'weight' ? buildWeightPickerValue(value) : this.data.weightPickerValue
     this.setData({
       profileFieldEditOpen: true,
       profileField: field,
       profileFieldTitle: config.title,
+      profileFieldOptions: config,
       profileFieldValue: value === undefined || value === null ? '' : String(value),
       profileFieldSexIndex: this.data.pet.sex === '女孩' ? 1 : 0,
       profileFieldBreedIndex: Math.max(0, breedOptions.indexOf(String(value || ''))),
+      profileFieldNeuteredIndex: Math.max(0, neuteredOptions.indexOf(value)),
+      neuteredOptions,
+      profileNeuteredDate: this.data.pet.neuteredDate || '',
+      profilePersonalityTags,
+      profilePersonalityOptions,
       breedOptions,
       weightPickerValue,
       profileFieldSaving: false
     })
   },
   closeProfileFieldEdit() {
+    if (this.data.profileFieldSaving) return
     this.setData({ profileFieldEditOpen: false, profileField: '', profileFieldTitle: '', profileFieldValue: '', profileFieldSaving: false })
   },
   onProfileFieldInput(e) {
@@ -749,8 +946,36 @@ return {
   onProfileFieldDate(e) {
     this.setData({ profileFieldValue: e.detail.value })
   },
+  clearTogetherDate() {
+    if (!this.data.profileFieldSaving) this.setData({ profileFieldValue: '' })
+  },
+  onProfileFieldNeutered(e) {
+    const index = Number(e.detail.value)
+    const value = this.data.neuteredOptions[index]
+    if (!value) return
+    this.setData({ profileFieldNeuteredIndex: index, profileFieldValue: value })
+  },
+  onNeuteredDate(e) { this.setData({ profileNeuteredDate: e.detail.value }) },
+  clearNeuteredDate() {
+    if (!this.data.profileFieldSaving) this.setData({ profileNeuteredDate: '' })
+  },
+  toggleProfilePersonality(e) {
+    if (this.data.profileFieldSaving || this.data.profileField !== 'personalityTags' || !this.ensureWritable()) return
+    const label = e.currentTarget.dataset.label
+    if (!this.data.profilePersonalityOptions.some(item => item.label === label)) return
+    const selected = this.data.profilePersonalityTags
+    if (!selected.includes(label) && selected.length >= MAX_PERSONALITY_TAGS) {
+      return wx.showToast({ title: `最多选择${MAX_PERSONALITY_TAGS}个标签`, icon: 'none' })
+    }
+    const profilePersonalityTags = selected.includes(label) ? selected.filter(tag => tag !== label) : [...selected, label]
+    this.setData({ profilePersonalityTags, profilePersonalityOptions: this.data.profilePersonalityOptions.map(item => ({ ...item, selected: profilePersonalityTags.includes(item.label) })) })
+  },
+  clearProfilePersonality() {
+    if (this.data.profileFieldSaving || !this.ensureWritable()) return
+    this.setData({ profilePersonalityTags: [], profilePersonalityOptions: this.data.profilePersonalityOptions.map(item => ({ ...item, selected: false })) })
+  },
   saveProfilePatch(patch, options = {}) {
-    const pet = { ...this.data.pet, ...patch }
+    const pet = { ...store.get('pet'), ...patch }
     const entries = [['pet', pet]]
     const weightChanged = patch.weight !== undefined && Number(patch.weight) !== Number(this.data.pet.weight)
     if (weightChanged) {
@@ -764,7 +989,7 @@ return {
     return saveProfileEntries(entries).then(pending => {
       this.setData({
         pet,
-        draft: { ...pet, togetherSince: pet.togetherSince || pet.birthday, sex: pet.sex || '男孩' },
+        draft: { ...pet, togetherSince: pet.togetherSince || '', sex: pet.sex || '男孩' },
         sexIndex: pet.sex === '女孩' ? 1 : 0,
         profileFieldEditOpen: false,
         profileField: '',
@@ -782,6 +1007,7 @@ return {
     })
   },
   saveProfileFieldEdit() {
+    if (this.data.profileFieldSaving || !this.ensureWritable()) return
     const field = this.data.profileField
     if (!PROFILE_FIELDS[field]) return
     const raw = String(this.data.profileFieldValue || '').trim()
@@ -799,10 +1025,35 @@ return {
       patch.weight = weight
     } else if (field === 'birthday') {
       if (!isValidDateKey(raw) || raw > this.data.today) return wx.showToast({ title: '请选择正确的生日', icon: 'none' })
+      if (this.data.pet.togetherSince && raw > this.data.pet.togetherSince) return wx.showToast({ title: '生日不能晚于相遇日期', icon: 'none' })
+      if (this.data.pet.neuteredDate && raw > this.data.pet.neuteredDate) return wx.showToast({ title: '生日不能晚于绝育日期', icon: 'none' })
       patch.birthday = raw
-      if (!this.data.pet.togetherSince || this.data.pet.togetherSince < raw) patch.togetherSince = raw
-    } else if (['chipId', 'neutered', 'allergies', 'clinic'].includes(field)) {
-      patch[field] = raw || (field === 'neutered' ? '未设置' : '未填写')
+    } else if (field === 'togetherSince') {
+      if (raw && (!isValidDateKey(raw) || raw > this.data.today)) return wx.showToast({ title: '请选择正确的相遇日期', icon: 'none' })
+      if (raw && this.data.pet.birthday && raw < this.data.pet.birthday) return wx.showToast({ title: '相遇日期不能早于生日', icon: 'none' })
+      patch.togetherSince = raw
+    } else if (field === 'neutered') {
+      if (!this.data.neuteredOptions.includes(raw)) return wx.showToast({ title: '请选择绝育状态', icon: 'none' })
+      patch.neutered = raw
+      if (raw === '已绝育') {
+        const date = this.data.profileNeuteredDate
+        if (date && (!isValidDateKey(date) || date > this.data.today)) return wx.showToast({ title: '请选择正确的绝育日期', icon: 'none' })
+        if (date && this.data.pet.birthday && date < this.data.pet.birthday) return wx.showToast({ title: '绝育日期不能早于生日', icon: 'none' })
+        patch.neuteredDate = date
+      } else if (NEUTERED_OPTIONS.includes(raw)) {
+        patch.neuteredDate = ''
+      }
+    } else if (PROFILE_FIELDS[field].multiline) {
+      const config = PROFILE_FIELDS[field]
+      if (raw.length > config.maxLength) return wx.showToast({ title: `最多填写${config.maxLength}字`, icon: 'none' })
+      patch[field] = raw
+    } else if (field === 'coatColor') {
+      if (raw.length > 32) return wx.showToast({ title: '毛色最多填写32字', icon: 'none' })
+      patch.coatColor = raw
+    } else if (field === 'personalityTags') {
+      patch.personalityTags = normalizePersonalityTags(this.data.profilePersonalityTags)
+    } else if (['chipId', 'allergies', 'clinic'].includes(field)) {
+      patch[field] = raw || '未填写'
     }
     this.setData({ profileFieldSaving: true })
     return this.saveProfilePatch(patch)
@@ -814,8 +1065,9 @@ return {
   },
   onDate(e) {
     const birthday = e.detail.value
-    this.setData({ draft: { ...this.data.draft, birthday, togetherSince: this.data.draft.togetherSince || birthday }, changed: true })
+    this.setData({ 'draft.birthday': birthday, changed: true })
   },
+  onTogetherDate(e) { this.setData({ 'draft.togetherSince': e.detail.value, changed: true }) },
   onCareDate(e) {
     const careDraft = { ...this.data.careDraft, [e.currentTarget.dataset.key]: e.detail.value }
     this.setData({ careDraft, careView: buildCareView(careDraft), changed: true })
@@ -849,12 +1101,6 @@ return {
     this.setData({ careDetailOpen: false, careMenuOpen: false, careSubView: '' })
     showNativeTabBar()
   },
-  startAdvisorDrag(e) {
-    const touch = e.touches && e.touches[0]
-    if (touch) this._advisorDrag = { x: touch.clientX, y: touch.clientY }
-  },
-  moveAdvisorDrag() {},
-  endAdvisorDrag() { this._advisorDrag = null },
   noop() {},
   backCareView() {
     this.closeCareDetail()
@@ -905,6 +1151,7 @@ return {
     const careDraft = { ...this.data.careDraft, [config.cycleKey]: cycle }
     const careView = buildCareView(careDraft)
     store.set('care', careDraft)
+    analytics.track('care', 'complete', 'save_local')
     this.setData({ careDraft, careView, selectedCare: careView[key] })
     wx.showToast({ title: '提醒设置已保存' })
   },
@@ -947,12 +1194,14 @@ return {
           renderedCareRecords: selectedCareRecords.slice(0, this.data.careHistoryVisibleCount || 20),
           careCalendar: buildCalendar(this.data.selectedMonth, recordDate, selectedCareRecords)
         })
+        analytics.track('care', 'complete', 'markCareDone')
         wx.showToast({ title: isLatestRecord ? `已记录，下次 ${calculatedNextDate}` : '历史记录已补充', icon: 'none' })
       }
     })
   },
   savePet() {
-    const draft = { ...this.data.draft, togetherSince: this.data.draft.togetherSince || this.data.draft.birthday }
+    if (this.data.saving || !this.ensureWritable()) return
+    const draft = { ...this.data.draft, togetherSince: this.data.draft.togetherSince || '' }
     const careDraft = { ...this.data.careDraft }
     const weight = Number(draft.weight)
     draft.name = String(draft.name || '').trim()
@@ -961,8 +1210,9 @@ return {
     if (!draft.breed) return wx.showToast({ title: '请填写品种', icon: 'none' })
     if (!Number.isFinite(weight) || weight <= 0) return wx.showToast({ title: '请填写正确体重', icon: 'none' })
     if (!isValidDateKey(draft.birthday) || draft.birthday > this.data.today) return wx.showToast({ title: '请选择正确的生日', icon: 'none' })
-    if (!isValidDateKey(draft.togetherSince) || draft.togetherSince > this.data.today) return wx.showToast({ title: '请选择正确的相遇日', icon: 'none' })
-    if (draft.togetherSince < draft.birthday) return wx.showToast({ title: '相遇日不能早于生日', icon: 'none' })
+    if (draft.togetherSince && (!isValidDateKey(draft.togetherSince) || draft.togetherSince > this.data.today)) return wx.showToast({ title: '请选择正确的相遇日', icon: 'none' })
+    if (draft.togetherSince && draft.togetherSince < draft.birthday) return wx.showToast({ title: '相遇日不能早于生日', icon: 'none' })
+    if (draft.neuteredDate && draft.neuteredDate < draft.birthday) return wx.showToast({ title: '生日不能晚于绝育日期', icon: 'none' })
     draft.weight = weight
     const cycleKeys = ['dewormingCycle', 'vaccineCycle', 'bathCycle', 'dentalCycle', 'nailCycle', 'medicineCycle']
     if (cycleKeys.some(key => !Number.isFinite(Number(careDraft[key])) || Number(careDraft[key]) <= 0)) return wx.showToast({ title: '护理周期需填写正确数字', icon: 'none' })

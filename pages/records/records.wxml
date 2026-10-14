@@ -1,4 +1,5 @@
-<view class="page records-page">
+<view class="records-screen">
+<view class="page records-page {{readOnly ? 'records-readonly-page' : ''}}">
   <view class="records-header">
     <view class="records-heading"><text class="records-kicker">日常照护手记</text><text class="records-date">{{today}}</text></view>
     <view class="records-identity">
@@ -34,6 +35,10 @@
     <view class="export-icon" aria-hidden="true"><view class="record-icon icon-document"></view></view>
     <view class="export-copy"><view>整理就诊资料</view><text>汇总日常记录，就诊时更好说明</text></view><text class="export-arrow">↗</text>
   </button>
+</view>
+  <view class="records-advisor-float {{weightTrendOpen || careDetailOpen || supplyOpen ? 'advisor-float-hidden' : ''}}" style="{{advisorStyle}}" bindtap="openFloatingAdvisor" catchtouchstart="startAdvisorDrag" catchtouchmove="moveAdvisorDrag" catchtouchend="endAdvisorDrag" catchtouchcancel="endAdvisorDrag" hover-class="record-pressed" role="button" aria-label="专属养护建议，可拖动调整位置">
+    <text>专属养护建议</text><text class="advisor-float-arrow">›</text>
+  </view>
 </view>
 <include src="../shared/weight-sheet.wxml" />
 <include src="../shared/care-panels.wxml" />

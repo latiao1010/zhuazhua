@@ -12,7 +12,7 @@
     <view class="care-compact-row" data-key="dogFood" bindtap="openSupply"><view>狗粮余量</view><text>{{supplyView.dogFood.daysText}}</text><text>›</text></view>
     <view class="care-compact-row" data-key="snack" bindtap="openSupply"><view>零食余量</view><text>{{supplyView.snack.daysText}}</text><text>›</text></view>
   </view>
-  <view class="care-advisor-heading"><view>养护问答</view><text>根据记录获取建议</text></view>
-  <view class="care-advisor-card" style="{{advisorStyle}}" bindtap="openAdvisor" catchtouchstart="startAdvisorDrag" catchtouchmove="moveAdvisorDrag" catchtouchend="endAdvisorDrag" aria-label="养护问答">
+  <view class="care-advisor-heading" wx:if="{{!advisorFloating}}"><view>养护问答</view><text>根据记录获取建议</text></view>
+  <view class="care-advisor-card" wx:if="{{!advisorFloating}}" bindtap="openAdvisor" hover-class="record-pressed" role="button" aria-label="养护问答">
     <view class="care-advisor-copy"><view>专属养护建议</view></view><text class="care-advisor-arrow">›</text>
   </view>
